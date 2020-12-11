@@ -1,0 +1,12 @@
+# Temp and vendor folders
+/.vscode/
+/tmp/
+/vendor/
+
+# Temp and environment variables
+.DS_Store
+composer.lock
+composer.pharsendgrid.env
+"sendgrid.env" 
+
+.env

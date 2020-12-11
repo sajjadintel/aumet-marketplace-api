@@ -1,0 +1,21 @@
+{
+	"name": "aumet-tech/aumet-marketplace-api",
+	"description": "Aumet Marketplace API using Fat Free Framework",
+	"type": "project",
+	"require": {
+		"gomoob/php-pushwoosh": "~1.0",
+		"bcosca/fatfree": "^3.7",
+		"sendgrid/sendgrid": "^7.4",
+		"adhocore/jwt": "^1.0",
+		"webmozart/assert": "^1.7",
+		"geoip2/geoip2": "~2.0a",
+		"vlucas/phpdotenv": "^4.1"
+	},
+	"license": "Aumet all rights reserved",
+	"authors": [
+		{
+			"name": "Alaa Al Atrash",
+			"email": "a.atrash@aumet.com"
+		}
+	]
+}
