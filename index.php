@@ -90,7 +90,7 @@ switch (getenv('ENV')) {
 }
 
 // Connect Info
-$dbName = getenv('DB_NAME');
+$dbName = getenv('DB_NAME_MAIN');
 $dbPort = getenv('DB_PORT');
 
 $f3->set('dbUsername', $dbUsername);
