@@ -146,6 +146,17 @@ class MainController
                             if (!$dbUser->dry()) {
                                 $this->isAuth = true;
                                 $this->objUser = $dbUser;
+
+
+                                $dbEntityList = new GenericModel($this->db, 'vwAccountEntities');
+                                $dbEntityList->id = "entityId";
+                                $dbEntityList->name = "entityName_" . $this->language;
+                                $dbEntityList->getWhere("accountId={$dbUser->accountId}");
+
+                                while (!$dbEntityList->dry()) {
+                                    $this->objEntityList[$dbEntityList->id] = $dbEntityList->name;
+                                    $dbEntityList->next();
+                                }
                             }
                         }
                     }

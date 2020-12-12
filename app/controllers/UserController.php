@@ -83,7 +83,7 @@ class UserController extends MainController
         $emailFromName = Constants::APP_MAIN_EMAIL_FROM_NAME;
         $emailTo = $user->email;
         $emailToName = $userFullName;
-        $emailSubject = "Welcome to E Poets Society";
+        $emailSubject = "Welcome to Aumet";
 
         // TODO: SEND EMAIL
         $renderFile = 'emails/templates/welcome.html';
@@ -211,6 +211,7 @@ class UserController extends MainController
         $res->email = $this->objUser->email;
         $res->roleName = $this->objUser['roleName'];
         $res->cartCount = $this->objUser->cartCount;
+        $res->entityList = $this->objEntityList;
         $res->accessToken = $this->accessToken;
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
