@@ -6,7 +6,7 @@ $f3->route('POST /v1/users/signin', 'UserController->postSignIn');
 $f3->route('POST /v1/users/signup', '');
 $f3->route('POST /v1/users/password/forgot', '');
 $f3->route('POST /v1/users/password/reset', '');
-$f3->route('POST /v1/users/signout', 'UserController->postSignUp');
+$f3->route('POST /v1/users/signout', 'UserController->postSignOut');
 $f3->route('GET /v1/users/profile', 'UserController->getProfile');
 
 ##################################################
@@ -32,6 +32,11 @@ $f3->route('GET /v1/pharmacy/orders', '');
 # note for ORDERS -- it can have a GET parameter for type (new, pending, unpaid, history). if no type is found, get ALL orders 
 $f3->route('POST /v1/pharmacy/orders', '');
 $f3->route('POST /v1/pharmacy/orders/reportmissing', '');
+
+###################
+## Feedback Endpoints
+$f3->route('GET /v1/pharmacy/feedbacks', '');
+$f3->route('POST /v1/pharmacy/feedbacks', '');
 
 #####################################################
 ##### OLD ROUTES FROM PREVIOUS PROJECT

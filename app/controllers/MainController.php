@@ -15,6 +15,7 @@ class MainController
     protected $accessTokenPayload;
 
     protected $objUser;
+    protected $objEntityList;
 
     // header values being used
     protected $accessToken;
