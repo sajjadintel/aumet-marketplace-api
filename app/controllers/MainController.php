@@ -4,7 +4,7 @@ use Ahc\Jwt\JWT;
 
 class MainController
 {
-    const APIKey = "zTvkXwJSSRa5DVvTgQhaUW52DkpkeSk";
+    const APIKey = "zTvkXwJSSRa5DVvTgQhaUW52DkpkeSz";
     const JWTSecretKey = "mxczKngV84P/26qs+}nrj!T>RD^5^3F=";
 
     protected $f3;
@@ -91,20 +91,20 @@ class MainController
         array_key_exists("x-session-id", $headers) ? $this->sessionId = $headers['x-session-id'] : $this->f3->error(Constants::HTTP_UNSUPPORTED_MEDIA_TYPE, $this->f3->get('RESPONSE.415_missingHeader', $this->f3->get('RESPONSE.entity_sessionId')));
 
         // Optional Headers
-        if (array_key_exists("x-api-os", $headers)) {
-            $this->deviceType = $headers['x-api-os'];
+        if (array_key_exists("x-device-os", $headers)) {
+            $this->deviceType = $headers['x-device-os'];
         }
 
-        if (array_key_exists("x-api-device-id", $headers)) {
-            $this->deviceId = $headers['x-api-device-id'];
+        if (array_key_exists("x-device-id", $headers)) {
+            $this->deviceId = $headers['x-device-id'];
         }
 
-        if (array_key_exists("x-api-mnc", $headers)) {
-            $this->mnc = $headers['x-api-mnc'];
+        if (array_key_exists("x-device-mnc", $headers)) {
+            $this->mnc = $headers['x-device-mnc'];
         }
 
-        if (array_key_exists("x-api-mcc", $headers)) {
-            $this->mcc = $headers['x-api-mcc'];
+        if (array_key_exists("x-device-mcc", $headers)) {
+            $this->mcc = $headers['x-device-mcc'];
         }
     }
 

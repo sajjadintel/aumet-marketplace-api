@@ -1,9 +1,34 @@
 <?php
 
+###################
+## User Endpoints
+$f3->route('POST /v1/users/signin', '');
+$f3->route('POST /v1/users/signout', '');
+$f3->route('GET /v1/user/profile', '');
 
+##################################################
+## PHARMACY ACCESS
 
+###################
+## Products Endpoints
+$f3->route('GET /v1/pharmacy/products', '');
+# note for PRODUCTS -- it can have a GET parameter for limit, offset, sort
+$f3->route('GET /v1/pharmacy/products/@id', '');
 
+#################
+## Cart Endpoints
+$f3->route('GET /v1/pharmacy/cart', '');
+$f3->route('POST /v1/pharmacy/cart/product', '');
+$f3->route('POST /v1/pharmacy/cart/bonus', '');
+$f3->route('POST /v1/pharmacy/cart/update', '');
+$f3->route('POST /v1/pharmacy/cart/delete', '');
 
+###################
+## Orders Endpoints
+$f3->route('GET /v1/pharmacy/orders', '');
+# note for ORDERS -- it can have a GET parameter for type (new, pending, unpaid, history). if no type is found, get ALL orders 
+$f3->route('POST /v1/pharmacy/orders', '');
+$f3->route('POST /v1/pharmacy/orders/reportmissing', '');
 
 #####################################################
 ##### OLD ROUTES FROM PREVIOUS PROJECT
