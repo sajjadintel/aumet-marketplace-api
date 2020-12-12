@@ -1,6 +1,10 @@
 <?php
 
 ###################
+## General Endpoints
+$f3->route('GET /v1/app/settings', 'AppController->getAppDetails');
+
+###################
 ## User Endpoints
 $f3->route('POST /v1/users/signin', 'UserController->postSignIn');
 $f3->route('POST /v1/users/signup', '');
@@ -11,6 +15,10 @@ $f3->route('GET /v1/users/profile', 'UserController->getProfile');
 
 ##################################################
 ## PHARMACY ACCESS
+
+###################
+## Display Endpoints
+$f3->route('GET /v1/pharmacy/display/menu', '');
 
 ###################
 ## Products Endpoints
