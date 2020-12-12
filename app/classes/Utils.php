@@ -94,4 +94,58 @@ class Utils
         $envArray = explode(",", $envString);
         return in_array($string, $envArray);
     }
+
+
+    public static function getMenuById($db, $menuId, $lang, $parentItemId = 0)
+    {
+
+        if (!is_numeric($menuId)) {
+            return [];
+        }
+        $dbItem = new GenericModel($db, "menuItemApp");
+        $dbItem->title = "title_" . $lang;
+        $dbItem->subtitle = "subtitle_" . $lang;
+        $dbItem->getWhere("menuId = $menuId AND parentItemId=$parentItemId AND isActive = 1");
+
+        $menuList = [];
+        while (!$dbItem->dry()) {
+            switch ($dbItem->type) {
+                case "menu":
+                    $menu = [
+                        "title" => $dbItem->title,
+                        "icon" => $dbItem->icon,
+                        "callbackUrl" => $dbItem->callbackUrl
+                    ];
+                    $menuList[] = $menu;
+                    break;
+                case "section":
+                    $section = [
+                        "title" => $dbItem->title,
+                        "subtitle" => $dbItem->subtitle,
+                        "layout" => $dbItem->layout,
+                        "sectionData" => Utils::getMenuById($db, $menuId, $lang, $dbItem->id)
+                    ];
+                    $menuList[] = $section;
+                    break;
+
+                case "item":
+                    $item = [
+                        "title" => $dbItem->title,
+                        "subtitle" => $dbItem->subtitle,
+                        "icon" => $dbItem->icon,
+                        "color" => $dbItem->color,
+                        "tapAction" => (json_decode($dbItem->tapAction, true))
+                    ];
+                    $menuList[] = $item;
+                    break;
+
+                default:
+                    break;
+            }
+
+            $dbItem->next();
+        }
+
+        return $menuList;
+    }
 }

@@ -17,4 +17,25 @@ class AppController extends MainController
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_appSettings')), $res);
     }
+
+    public function getMenu()
+    {
+        $this->validateUser();
+        $res = Utils::getMenuById($this->db, $this->objUser->menuId, $this->language, 0);
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_menuItems')), $res);
+    }
+
+    public function getMenuSection()
+    {
+        $this->validateUser();
+        if (!isset($_GET['parentItemId']) || !is_numeric(($_GET['parentItemId']))) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_parentItemId')), null);
+        }
+        $parentItemId = $_GET['parentItemId'];
+
+        $res = Utils::getMenuById($this->db, $this->objUser->menuId, $this->language, $parentItemId);
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_menuItems')), $res);
+    }
 }

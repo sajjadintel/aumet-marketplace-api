@@ -3,6 +3,8 @@
 ###################
 ## General Endpoints
 $f3->route('GET /v1/app/settings', 'AppController->getAppDetails');
+$f3->route('GET /v1/app/menu', 'AppController->getMenu');
+$f3->route('GET /v1/app/menu/section', 'AppController->getMenuSection');
 
 ###################
 ## User Endpoints
@@ -15,10 +17,6 @@ $f3->route('GET /v1/users/profile', 'UserController->getProfile');
 
 ##################################################
 ## PHARMACY ACCESS
-
-###################
-## Display Endpoints
-$f3->route('GET /v1/pharmacy/display/menu', '');
 
 ###################
 ## Products Endpoints
