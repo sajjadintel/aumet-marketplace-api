@@ -204,6 +204,6 @@ class MainController
         $data = !empty($data) ? $data : $requestData;
         $ip = Utils::getClientIP();
 
-        ApiRequestsLog::logRequest($this->f3, $this->db, $userId, $data, $type, $ip);
+        ApiRequestsLog::logRequest($this->f3, $this->db, $userId, $this->sessionId, $data, $type, $ip);
     }
 }
