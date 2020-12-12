@@ -59,10 +59,37 @@ class GenericModel extends DB\SQL\Mapper
         return (array) ($this->fields + $this->adhoc);
     }
 
-    public function all()
+    public function all($order = false, $limit = 0, $offset = 0)
     {
-        $this->load();
+        if (!$order && $limit == 0) {
+            $this->load();
+        } else if ($order && $limit == 0) {
+            $this->load(array(), array('order' => $order, 'offset' => $offset));
+        } else if (!$order && $limit >= 0) {
+            $this->load(array(), array('limit' => $limit, 'offset' => $offset));
+        } else {
+            $this->load(array(), array('order' => $order, 'limit' => $limit, 'offset' => $offset));
+        }
+
         return $this->query;
+    }
+
+    public function findAll($order = false, $limit = 0, $offset = 0)
+    {
+        $result = null;
+
+        if (!$order && $limit == 0) {
+            $result = $this->find();
+        } else if ($order && $limit == 0) {
+            $result = $this->find(array(), array('order' => $order, 'offset' => $offset));
+        } else if (!$order && $limit >= 0) {
+            $result = $this->find(array(), array('limit' => $limit, 'offset' => $offset));
+        } else {
+            $result = $this->find(array(), array('order' => $order, 'limit' => $limit, 'offset' => $offset));
+        }
+        $result = array_map(array($this, 'cast'), $result);
+
+        return $result;
     }
 
     public function getByField($name, $value, $order = false)
@@ -96,6 +123,21 @@ class GenericModel extends DB\SQL\Mapper
             $this->exception = $ex->getMessage() . " - " . $ex->getTraceAsString();
             return false;
         }
+    }
+
+    public function findWhere($where, $order = "", $limit = 0, $offset = 0)
+    {
+        $result = null;
+        if ($order == "") {
+            $result = $this->find(array($where));
+        } else if ($limit == 0) {
+            $result = $this->find(array($where), array('order' => $order, 'offset' => $offset));
+        } else {
+            $result = $this->find(array($where), array('order' => $order, 'limit' => $limit, 'offset' => $offset));
+        }
+        $result = array_map(array($this, 'cast'), $result);
+
+        return $result;
     }
 
     public function allCursor()
@@ -218,8 +260,12 @@ class GenericModel extends DB\SQL\Mapper
     public function delete()
     {
         try {
-            if (isset($this->is_active)) {
-                $this->is_active = 0;
+            if (isset($this->isActive)) {
+                if ($this->isActive == 0) {
+                    $this->exception = "Already deleted";
+                    return false;
+                }
+                $this->isActive = 0;
                 $this->update();
             } else {
                 $this->erase();
