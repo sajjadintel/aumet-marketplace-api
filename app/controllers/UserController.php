@@ -10,32 +10,6 @@ class UserController extends MainController
         $this->beforeRouteFunction();
     }
 
-    public function postForceNewPasswordProtocol()
-    {
-        $user = new GenericModel($this->db, "customers");
-        $userCredential = new GenericModel($this->db, "customer_credentials");
-        $user->load();
-
-        while (!$user->dry()) {
-            $userCredential->reset();
-            if (Utils::isValidMd5($user->password)) {
-                $password = $user->password;
-            } else {
-                $password = password_hash($user->password, PASSWORD_DEFAULT);
-            }
-            $userCredential->credential = $password;
-            $userCredential->created_at = date('Y-m-d H:i:s');
-            $userCredential->customer_id = $user->id;
-
-            if (!$userCredential->add()) {
-                $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_queryError', $userCredential->exception), null);
-            }
-            $user->next();
-        }
-
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_users')), null);
-    }
-
     public function postSignUp()
     {
         $user = new GenericModel($this->db, "customers");
@@ -100,9 +74,6 @@ class UserController extends MainController
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_queryError', $activationToken->exception), null);
         }
 
-        // Add user to userDevice
-        $userDevice = $this->updateDeviceUser($user->id);
-
         //send verification email
         $userFullName = ucfirst($user->first_name) . " " . ucfirst($user->last_name);
 
@@ -133,50 +104,18 @@ class UserController extends MainController
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_emailFailed', $email->exception), null);
         }
 
-        if ($userDevice[0]) {
-            $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_userCreated'), null);
-        }
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_userCreated'), null);
     }
 
     public function postSignIn()
     {
-        $userCredential = new GenericModel($this->db, 'vw_customer_credentials');
-        $userCredential->load(array('email=? AND is_active=1', $this->requestData->email));
+        //TODO: Fix login function
+        $tempUser = new GenericModel($this->db, 'user');
+        $tempUser->load(array('id = ?', $this->requestData->id));
 
         // if User doesn't exist
-        if ($userCredential->dry()) {
+        if ($tempUser->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
-        }
-
-        // If password is not valid
-        $passwordFound = false;
-        $passwordOld = false;
-        while (!$userCredential->dry()) {
-
-            // passwords match
-            if (password_verify($this->requestData->password, $userCredential->credential) || (md5($this->requestData->password) == $userCredential->credential)) {
-                $passwordFound = true;
-
-                // using an old password, continue loop incase the password is re-used
-                // if not, then break
-                if ($userCredential->credential_is_active == 0) {
-                    $passwordOld = true;
-                } else {
-                    $passwordOld = false;
-                    break;
-                }
-            }
-            $userCredential->next();
-        }
-
-        if (!$passwordFound) {
-            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInInvalidCredential'), null);
-        }
-
-        // If user is using an old credential
-        if ($passwordOld) {
-            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInOldCredential'), null);
         }
 
         if (isset($this->deviceType)) {
@@ -185,8 +124,72 @@ class UserController extends MainController
             $deviceType = 'undefined';
         }
 
-        $dbUser = new GenericModel($this->db, "customers");
-        $dbUser->getByField("id", $userCredential->customer_id);
+        $payload = array(
+            'userId' => $tempUser->id,
+            'userEmail' => $tempUser->email,
+            'fullName' => $tempUser->fullname
+        );
+
+
+        $jwt = new JWT(MainController::JWTSecretKey, 'HS256', (86400 * 30), 10);
+        $jwtSignedKey = $jwt->encode($payload);
+
+        $userSession = new GenericModel($this->db, 'userSession');
+
+        $userSession->userId = $tempUser->id;
+        $userSession->token = $jwtSignedKey;
+        $userSession->deviceType = $deviceType;
+
+        $userSession->add();
+
+        $res = new stdClass();
+        $res->id = $tempUser->id;
+        $res->fullName = $tempUser->fullname;
+        $res->email = $tempUser->email;
+        $res->accessToken = $jwtSignedKey;
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
+
+        // $userCredential = new GenericModel($this->db, 'vw_customer_credentials');
+        // $userCredential->load(array('email=? AND is_active=1', $this->requestData->email));
+
+        // // if User doesn't exist
+        // if ($userCredential->dry()) {
+        //     $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
+        // }
+
+        // // If password is not valid
+        // $passwordFound = false;
+        // $passwordOld = false;
+        // while (!$userCredential->dry()) {
+
+        //     // passwords match
+        //     if (password_verify($this->requestData->password, $userCredential->credential) || (md5($this->requestData->password) == $userCredential->credential)) {
+        //         $passwordFound = true;
+
+        //         // using an old password, continue loop incase the password is re-used
+        //         // if not, then break
+        //         if ($userCredential->credential_is_active == 0) {
+        //             $passwordOld = true;
+        //         } else {
+        //             $passwordOld = false;
+        //             break;
+        //         }
+        //     }
+        //     $userCredential->next();
+        // }
+
+        // if (!$passwordFound) {
+        //     $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInInvalidCredential'), null);
+        // }
+
+        // // If user is using an old credential
+        // if ($passwordOld) {
+        //     $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInOldCredential'), null);
+        // }
+
+        // $dbUser = new GenericModel($this->db, "customers");
+        // $dbUser->getByField("id", $userCredential->customer_id);
 
         // NOTE: Add Customer validation here
         // if ($dbUser->stateId === Constants::USER_STATE_SIGNED_UP) {
@@ -196,35 +199,6 @@ class UserController extends MainController
         // if ($dbUser->stateId === Constants::USER_STATE_VERIFIED) {
         //     $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotReviewed'), null);
         // }
-
-        $payload = array(
-            'userId' => $dbUser->id,
-            'userEmail' => $dbUser->email,
-            'firstName' => $dbUser->first_name,
-            'lastName' => $dbUser->last_name
-        );
-
-        $jwt = new JWT(MainController::JWTSecretKey, 'HS256', (86400 * 30), 10);
-        $jwtSignedKey = $jwt->encode($payload);
-
-        $userSession = new GenericModel($this->db, 'customer_sessions');
-
-        $userSession->customer_id = $dbUser->id;
-        $userSession->token = $jwtSignedKey;
-        $userSession->created_at = date('Y-m-d H:i:s');
-        $userSession->device_type = $deviceType;
-
-        $userSession->save();
-        $userSession->reset();
-
-        $res = new stdClass();
-        $res->id = $dbUser->id;
-        $res->firstName = $dbUser->first_name;
-        $res->lastName = $dbUser->last_name;
-        $res->email = $dbUser->email;
-        $res->accessToken = $jwtSignedKey;
-
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
     }
 
     public function getProfile()
@@ -233,10 +207,10 @@ class UserController extends MainController
 
         $res = new stdClass();
         $res->id = $this->objUser->id;
-        $res->firstName = $this->objUser->first_name;
-        $res->lastName = $this->objUser->last_name;
+        $res->fullName = $this->objUser->fullname;
         $res->email = $this->objUser->email;
-        $res->defaultAddress = $this->objUser->default_address;
+        $res->roleName = $this->objUser['roleName'];
+        $res->cartCount = $this->objUser->cartCount;
         $res->accessToken = $this->accessToken;
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
@@ -246,29 +220,16 @@ class UserController extends MainController
     {
         $this->validateUser();
 
-        $userSession = new GenericModel($this->db, 'customer_sessions');
-        $userSession->load(array('customer_id=? and token = ?', $this->objUser->id, $this->accessToken));
+        $userSession = new GenericModel($this->db, 'userSession');
+        $userSession->load(array('userId=? and token = ?', $this->objUser->id, $this->accessToken));
 
-        $userSession->is_active = 0;
+        $userSession->isActive = 0;
 
-        if (!$userSession->edit()) {
+        if (!$userSession->update()) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_queryError', $userSession->exception), null);
         }
 
         $this->accessToken = "";
-
-        $hwId = isset($this->deviceId) ? $this->deviceId : null;
-
-        if ($hwId != null) {
-            $userDevice = new GenericModel($this->db, 'customer_devices');
-            $userDevice->load(array('hw_id=?', $hwId));
-            if (!$userDevice->dry()) {
-                $userDevice->customer_id = null;
-                if (!$userDevice->edit()) {
-                    $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_queryError', $userDevice->exception), null);
-                }
-            }
-        }
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_signOut'), null);
     }
@@ -321,7 +282,6 @@ class UserController extends MainController
         filter_var($emailAddress, FILTER_VALIDATE_EMAIL) ? "" :
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_invalidEmailFormat'), null);
 
-        $userDevice = new GenericModel($this->db, 'customer_devices');
         $user = new GenericModel($this->db, 'customers');
         $user->load(array('email=? AND is_active = 1', $emailAddress));
 
@@ -540,37 +500,5 @@ class UserController extends MainController
         }
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_password')), null);
-    }
-
-    public function updateDeviceUser($userId)
-    {
-        if (!isset($this->deviceId)) {
-            return [false, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_hardwareId'))];
-        }
-        $hwId = $this->deviceId;
-
-        $userDevice = new GenericModel($this->db, 'userDevice');
-        $userDevice->load(array('hwId=?', $hwId));
-
-        $userDevice->userId = $userId;
-        $userDevice->hwId = $hwId;
-        $userDevice->deviceType = $this->deviceType;
-        $userDevice->updatedAt = date('Y-m-d H:i:s');
-        $userDevice->mnc = $this->mnc;
-        $userDevice->mcc = $this->mcc;
-
-        if (!$userDevice->dry()) {
-            if (!$userDevice->edit()) {
-                return [false, $this->f3->get('RESPONSE.403_queryError', $userDevice->exception)];
-            }
-            return [true, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_userDevice'))];
-        }
-
-        $userDevice->createdAt = date('Y-m-d H:i:s');
-
-        if (!$userDevice->add()) {
-            return [false, $this->f3->get('RESPONSE.403_queryError', $userDevice->exception)];
-        }
-        return [true, $this->f3->get('RESPONSE.201_created', $this->f3->get('RESPONSE.entity_userDevice'))];
     }
 }

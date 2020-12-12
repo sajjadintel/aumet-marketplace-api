@@ -49,8 +49,6 @@ class MainController
 
     public function validateUser()
     {
-        // TODO: Add user authentication
-        return;
         if (!$this->isAuth) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.401_invalidCredentials'), null);
         }
@@ -131,8 +129,6 @@ class MainController
     function verifyUser()
     {
         $this->isAuth = false;
-        // TODO: Add user authentication
-        return;
         try {
             $jwt = new JWT(MainController::JWTSecretKey, 'HS256', 3600, 10);
             if (isset($this->accessToken) && !is_null($this->accessToken) && $this->accessToken != "") {
@@ -140,10 +136,11 @@ class MainController
                 if (is_array($this->accessTokenPayload)) {
                     $userId = $this->accessTokenPayload["userId"];
                     if (is_numeric($userId)) {
-                        $userCredential = new GenericModel($this->db, 'customer_sessions');
-                        $userCredential->load(array('customer_id = ? AND token = ? and is_active = 1', $userId, $this->accessToken));
+                        $userCredential = new GenericModel($this->db, 'userSession');
+                        $userCredential->load(array('userId = ? AND token = ? and isActive = 1', $userId, $this->accessToken));
                         if (!$userCredential->dry()) {
-                            $dbUser = new GenericModel($this->db, 'customers');
+                            $dbUser = new GenericModel($this->db, 'vwUser');
+                            $dbUser->roleName = "roleName_" . $this->language;
                             $dbUser->getWhere("id={$userId}");
                             if (!$dbUser->dry()) {
                                 $this->isAuth = true;

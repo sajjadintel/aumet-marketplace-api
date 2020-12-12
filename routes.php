@@ -2,9 +2,12 @@
 
 ###################
 ## User Endpoints
-$f3->route('POST /v1/users/signin', '');
-$f3->route('POST /v1/users/signout', '');
-$f3->route('GET /v1/user/profile', '');
+$f3->route('POST /v1/users/signin', 'UserController->postSignIn');
+$f3->route('POST /v1/users/signup', '');
+$f3->route('POST /v1/users/password/forgot', '');
+$f3->route('POST /v1/users/password/reset', '');
+$f3->route('POST /v1/users/signout', 'UserController->postSignUp');
+$f3->route('GET /v1/users/profile', 'UserController->getProfile');
 
 ##################################################
 ## PHARMACY ACCESS
