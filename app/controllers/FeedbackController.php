@@ -163,16 +163,16 @@ class FeedbackController extends MainController {
 
     public function postFeedback()
     {
-        if (!$this->f3->get('POST.id'))
+        if (!$this->requestData->id)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
-        if (!$this->f3->get('POST.rating'))
+        if (!$this->requestData->rating)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_feedbackRating')), null);
-        if (!$this->f3->get('POST.comment'))
+        if (!$this->requestData->comment)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_feedbackMessage')), null);
 
-        $orderId = $this->f3->get('POST.id');
-        $rating = $this->f3->get('POST.rating');
-        $comment = $this->f3->get('POST.comment');
+        $orderId = $this->requestData->id;
+        $rating = $this->requestData->rating;
+        $comment = $this->requestData->comment;
         $userId = $this->objUser->id;
 
 
