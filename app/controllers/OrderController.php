@@ -138,7 +138,7 @@ class OrderController extends MainController {
 
         $dbOrder = new GenericModel($this->db, "vwOrderEntityUser");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $dbOrder = $dbOrder->findWhere("id = '$orderId' entityBuyerId IN ($arrEntityId)");
+        $dbOrder = $dbOrder->findWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
 
         if (sizeof($dbOrder) == 0) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_permissionDenied', $this->f3->get('RESPONSE.entity_feedback')), null);

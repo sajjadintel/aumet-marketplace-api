@@ -102,7 +102,7 @@ class FeedbackController extends MainController {
 
         $order = new GenericModel($this->db, "vwOrderEntityUser");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $order = $order->findWhere("id = '$orderId' entityBuyerId IN ($arrEntityId)");
+        $order = $order->findWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
 
         if ($order == null) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_permissionDenied', $this->f3->get('RESPONSE.entity_feedback')), null);
