@@ -119,14 +119,13 @@ class OrderController extends MainController {
 
     public function postReportMissing()
     {
-        if (!$this->f3->get('POST.id'))
+        if (!$this->requestData->orderId)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
-        if (!$this->f3->get('POST.missingProducts'))
+        if (!$this->requestData->items)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_missingProducts')), null);
 
-        $orderId = $this->f3->get('POST.id');
-        $missingProducts = $this->f3->get('POST.missingProducts');
-        $userId = $this->objUser->id;
+        $orderId = $this->requestData->orderId;
+        $missingProducts = $this->requestData->items;
 
         if ($this->checkForProductsDuplication($missingProducts)) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_missingProducts')), null);
@@ -134,34 +133,36 @@ class OrderController extends MainController {
 
         $dbOrder = new GenericModel($this->db, "vwOrderEntityUser");
         $arrEntityId = key($this->objEntityList);
-        $dbOrder = $dbOrder->findWhere("id = '$orderId' entityBuyerId IN ($arrEntityId)");
+        $dbOrder = $dbOrder->getWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
 
-        if ($dbOrder == null) {
+        if (sizeof($dbOrder) == 0) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_permissionDenied', $this->f3->get('RESPONSE.entity_feedback')), null);
         }
+        $dbOrder = $dbOrder[0];
 
-
-        $dbOrderDetail = new BaseModel($this->db, "vwOrderDetail");
+        $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
         $arrOrderDetail = $dbOrderDetail->findWhere("id = '$orderId'");
 
 
         foreach ($missingProducts as $missingProduct) {
-            if (!(is_numeric($missingProduct['productId']) && $missingProduct['productId'] > 0)) {
+            if (!(is_numeric($missingProduct->itemId) && $missingProduct->itemId > 0)) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_productId')), null);
             }
-            $serverProduct = $this->getProductFromArrayById($missingProduct['productId'], $arrOrderDetail);
-            if ($missingProduct['quantity'] > $serverProduct['quantity'] || $missingProduct['quantity'] <= 0) {
+            $serverProduct = $this->getProductFromArrayById($missingProduct->itemId, $arrOrderDetail);
+            if ($serverProduct == null)
+                $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_item')), null);
+            if ($missingProduct->quantity > $serverProduct['quantity'] || $missingProduct->quantity <= 0) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_quantity')), null);
             }
         }
 
         foreach ($missingProducts as $missingProduct) {
-            $dbMissingProduct = new BaseModel($this->db, "orderMissingProduct");
+            $dbMissingProduct = new GenericModel($this->db, "orderMissingProduct");
             $dbMissingProduct->orderId = $orderId;
             $dbMissingProduct->statusId = 1;
             $dbMissingProduct->buyerUserId = $this->objUser->id;
-            $dbMissingProduct->productId = $missingProduct['productId'];
-            $dbMissingProduct->quantity = $missingProduct['quantity'];
+            $dbMissingProduct->productId = $missingProduct->itemId;
+            $dbMissingProduct->quantity = $missingProduct->quantity;
             $dbMissingProduct->add();
         }
 
@@ -188,7 +189,11 @@ class OrderController extends MainController {
     {
         $dupe_array = array();
         foreach ($missingProducts as $val) {
-            if (++$dupe_array[$val['productId']] > 1) {
+            if (!isset($dupe_array[$val->itemId])) {
+                $dupe_array[$val->itemId] = 1;
+                continue;
+            }
+            if (++$dupe_array[$val->itemId] > 1) {
                 return true;
             }
         }
