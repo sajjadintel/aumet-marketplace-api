@@ -24,8 +24,6 @@ class FeedbackController extends MainController {
         if (isset($_GET['sort']))
             $sortBy = $_GET['sort'];
         $order['order'] = $sortBy;
-        if (!is_numeric($sortBy))
-            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Sort')), null);
 
 
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
