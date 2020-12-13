@@ -10,3 +10,4 @@ composer.pharsendgrid.env
 "sendgrid.env" 
 
 .env
+.idea/
