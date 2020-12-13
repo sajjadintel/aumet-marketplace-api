@@ -6,20 +6,20 @@ class ProductController extends MainController {
     public function getProducts()
     {
         $limit = 10;
-        if ($this->f3->get('GET.limit') && $this->f3->get('GET.limit') != 'none') {
-            $limit = (int)$this->f3->get('GET.limit');
+        if ($_GET['limit']) {
+            $limit = (int)$_GET['limit'];
         }
         $order['limit'] = $limit;
 
         $offset = 0;
-        if ($this->f3->get('GET.offset') && $this->f3->get('GET.offset') != 'none') {
-            $offset = (int)$this->f3->get('GET.offset');
+        if ($_GET['offset']) {
+            $offset = (int)$_GET['offset'];
         }
         $order['offset'] = $offset;
 
         $sortBy = 'idDesc';
-        if ($this->f3->get('GET.sort') && $this->f3->get('GET.sort') != 'none') {
-            $sortBy = $this->f3->get('GET.sort');
+        if ($_GET['sort']) {
+            $sortBy = $_GET['sort'];
         }
         $order['order'] = $sortBy;
 

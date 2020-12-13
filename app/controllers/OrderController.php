@@ -28,7 +28,7 @@ class OrderController extends MainController {
         $order['order'] = $sortBy;
 
 
-        $arrEntityId = key($this->objEntityList);
+        $arrEntityId = Helper::idListFromArray($this->objEntityList);
         $filter = "entityBuyerId IN ($arrEntityId)";
 
         switch ($type) {
@@ -133,7 +133,7 @@ class OrderController extends MainController {
         }
 
         $dbOrder = new GenericModel($this->db, "vwOrderEntityUser");
-        $arrEntityId = key($this->objEntityList);
+        $arrEntityId = Helper::idListFromArray($this->objEntityList);
         $dbOrder = $dbOrder->findWhere("id = '$orderId' entityBuyerId IN ($arrEntityId)");
 
         if ($dbOrder == null) {

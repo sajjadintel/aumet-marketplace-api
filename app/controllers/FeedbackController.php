@@ -25,7 +25,7 @@ class FeedbackController extends MainController {
         $order['order'] = $sortBy;
 
 
-        $arrEntityId = key($this->objEntityList);
+        $arrEntityId = Helper::idListFromArray($this->objEntityList);
 
         $filter = "entityBuyerId IN ($arrEntityId)";
 
@@ -103,7 +103,7 @@ class FeedbackController extends MainController {
         $order['order'] = $sortBy;
 
 
-        $arrEntityId = key($this->objEntityList);
+        $arrEntityId = Helper::idListFromArray($this->objEntityList);
 
         $filter = "entityBuyerId IN ($arrEntityId)";
         $filter .= " AND statusId IN (6,7)";
@@ -177,7 +177,7 @@ class FeedbackController extends MainController {
 
 
         $order = new GenericModel($this->db, "vwOrderEntityUser");
-        $arrEntityId = key($this->objEntityList);
+        $arrEntityId = Helper::idListFromArray($this->objEntityList);
         $order = $order->findWhere("id = '$orderId' entityBuyerId IN ($arrEntityId)");
 
         if ($order == null) {
