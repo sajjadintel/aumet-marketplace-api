@@ -26,11 +26,10 @@ $f3->route('GET /v1/pharmacy/products/@id', '');
 
 #################
 ## Cart Endpoints
-$f3->route('GET /v1/pharmacy/cart', '');
-$f3->route('POST /v1/pharmacy/cart/product', '');
-$f3->route('POST /v1/pharmacy/cart/bonus', '');
-$f3->route('POST /v1/pharmacy/cart/update', '');
-$f3->route('POST /v1/pharmacy/cart/delete', '');
+$f3->route('GET /v1/pharmacy/cart', 'CartController->getCartItems');
+$f3->route('POST /v1/pharmacy/cart/product', 'CartController->postAddProduct');
+$f3->route('POST /v1/pharmacy/cart/bonus', 'CartController->postAddBonus');
+$f3->route('POST /v1/pharmacy/cart/delete', 'CartController->postDeleteItem');
 
 ###################
 ## Orders Endpoints
