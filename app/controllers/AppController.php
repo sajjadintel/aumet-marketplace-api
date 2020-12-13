@@ -21,7 +21,7 @@ class AppController extends MainController
     public function getMenu()
     {
         $this->validateUser();
-        $res = Utils::getMenuById($this->db, $this->objUser->menuId, $this->language, 0);
+        $res = Utils::getMenuById($this->f3, $this->db, $this->objUser->menuId, $this->language, 0);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_menuItems')), $res);
     }
@@ -34,7 +34,7 @@ class AppController extends MainController
         }
         $parentItemId = $_GET['parentItemId'];
 
-        $res = Utils::getMenuById($this->db, $this->objUser->menuId, $this->language, $parentItemId);
+        $res = Utils::getMenuById($this->f3, $this->db, $this->objUser->menuId, $this->language, $parentItemId);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_menuItems')), $res);
     }
