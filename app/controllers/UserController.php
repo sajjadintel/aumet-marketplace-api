@@ -205,14 +205,7 @@ class UserController extends MainController
     {
         $this->validateUser();
 
-        $res = new stdClass();
-        $res->id = $this->objUser->id;
-        $res->fullName = $this->objUser->fullname;
-        $res->email = $this->objUser->email;
-        $res->roleName = $this->objUser['roleName'];
-        $res->cartCount = $this->objUser->cartCount;
-        $res->entityList = $this->objEntityList;
-        $res->accessToken = $this->accessToken;
+        $res = new UserProfile($this->objUser, $this->objEntityList, $this->accessToken);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
     }
