@@ -34,7 +34,7 @@ $f3->route('POST /v1/pharmacy/cart/delete', 'CartController->postDeleteItem');
 ###################
 ## Orders Endpoints
 $f3->route('GET /v1/pharmacy/orders', 'OrderController->getOrders');
-# note for ORDERS -- it can have a GET parameter for type (new, pending, unpaid, history). if no type is found, get ALL orders 
+# note for ORDERS -- it can have a GET parameter for type (new, pending, unpaid, history, pendingFeedback). if no type is found, get ALL orders
 $f3->route('POST /v1/pharmacy/orders', 'OrderController->postOrder');
 $f3->route('POST /v1/pharmacy/orders/reportmissing', 'OrderController->postReportMissing');
 
