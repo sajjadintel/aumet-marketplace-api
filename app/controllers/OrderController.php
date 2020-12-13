@@ -5,27 +5,29 @@ class OrderController extends MainController {
     public function getOrders()
     {
         $type = 'all';
-        if ($this->f3->get('GET.type') && $this->f3->get('GET.type') != 'none') {
-            $type = $this->f3->get('GET.type');
-        }
+        if ($_GET['type'])
+            $type = $_GET['type'];
 
         $limit = 10;
-        if ($this->f3->get('GET.limit') && $this->f3->get('GET.limit') != 'none') {
-            $limit = (int)$this->f3->get('GET.limit');
-        }
+        if ($_GET['limit'])
+            $limit = $_GET['limit'];
         $order['limit'] = $limit;
+        if (!is_numeric($limit))
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Limit')), null);
 
         $offset = 0;
-        if ($this->f3->get('GET.offset') && $this->f3->get('GET.offset') != 'none') {
-            $offset = (int)$this->f3->get('GET.offset');
-        }
+        if ($_GET['offset'])
+            $offset = $_GET['offset'];
         $order['offset'] = $offset;
+        if (!is_numeric($offset))
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Offset')), null);
 
         $sortBy = 'idDesc';
-        if ($this->f3->get('GET.sort') && $this->f3->get('GET.sort') != 'none') {
-            $sortBy = $this->f3->get('GET.sort');
-        }
+        if ($_GET['sort'])
+            $sortBy = $_GET['sort'];
         $order['order'] = $sortBy;
+        if (!is_numeric($sortBy))
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Sort')), null);
 
 
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
