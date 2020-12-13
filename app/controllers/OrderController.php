@@ -117,10 +117,133 @@ class OrderController extends MainController {
 
     public function postOrder()
     {
+        // Get user account
+        $dbAccount = new GenericModel($this->db, "account");
+        $account = $dbAccount->getByField('id', $this->objUser->id)[0];
 
+        // TODO: Adjust buyerBranchId logic
+        $entityBranch = null;
+        $dbEntityBranch = new GenericModel($this->db, "entityBranch");
+        $branches = $dbEntityBranch->getByField("entityId", $account->entityId);
+        if (sizeof($branches) > 0)
+            $entityBranch = $branches[0];
+
+
+        // Add to orderGrand
+        $dbOrderGrand = new GenericModel($this->db, "orderGrand");
+        $dbOrderGrand->buyerEntityId = $account->entityId;
+        $dbOrderGrand->buyerBranchId = $entityBranch->id;
+        $dbOrderGrand->buyerUserId = $this->objUser->id;
+        $dbOrderGrand->addReturnID();
+
+        $dbCartDetail = new GenericModel($this->db, "vwCartDetail");
+        $nameField = "productName_" . $this->objUser->language;
+        $dbCartDetail->name = $nameField;
+        $arrCartDetail = $dbCartDetail->getByField("accountId", $this->objUser->accountId);
+
+        // Get all currencies
+        $dbCurrencies = new GenericModel($this->db, "currency");
+        $allCurrencies = $dbCurrencies->all();
+
+        $mapCurrencyIdCurrency = [];
+        foreach ($allCurrencies as $currency) {
+            $mapCurrencyIdCurrency[$currency->id] = $currency;
+        }
+
+        // Get currency by entity
+        $dbEntities = new GenericModel($this->db, "entity");
+        $allEntities = $dbEntities->all();
+
+        $mapSellerIdCurrency = [];
+        foreach ($allEntities as $entity) {
+            $mapSellerIdCurrency[$entity->id] = $mapCurrencyIdCurrency[$entity->currencyId];
+        }
+
+        // Get buyer currency
+        $dbAccount = new GenericModel($this->db, "account");
+        $account = $dbAccount->getByField('id', $this->objUser->accountId)[0];
+        $buyerCurrency = $mapSellerIdCurrency[$account->entityId];
+
+        // Group cart items by seller id
+        $allCartItems = [];
+        $allSellers = [];
+        foreach ($arrCartDetail as $cartDetail) {
+            $sellerId = $cartDetail->entityId;
+
+            $cartItemsBySeller = [];
+            if (array_key_exists($sellerId, $allCartItems)) {
+                $cartItemsBySeller = $allCartItems[$sellerId];
+            } else {
+                $nameField = "entityName_" . $this->objUser->language;
+
+                $seller = new stdClass();
+                $seller->sellerId = $sellerId;
+                array_push($allSellers, $seller);
+            }
+
+            array_push($cartItemsBySeller, $cartDetail);
+            $allCartItems[$sellerId] = $cartItemsBySeller;
+        }
+
+        $mapSellerIdOrderId = [];
+        foreach ($allSellers as $seller) {
+            $sellerId = $seller->sellerId;
+            $cartItemsBySeller = $allCartItems[$sellerId];
+
+            $total = 0;
+            foreach ($cartItemsBySeller as $cartItem) {
+                $total += $cartItem->quantity * $cartItem->unitPrice;
+            }
+
+            // TODO: Adjust sellerBranchId logic
+            $sellerEntityBranch = null;
+            $branches = $dbEntityBranch->getByField("entityId", $sellerId);
+            if (sizeof($branches) > 0)
+                $sellerEntityBranch = $branches[0];
+
+            // Add to order
+            $dbOrder = new GenericModel($this->db, "order");
+            $dbOrder->orderGrandId = $dbOrderGrand->id;
+            $dbOrder->entityBuyerId = $account->entityId;
+            $dbOrder->entitySellerId = $sellerId;
+            $dbOrder->branchBuyerId = $entityBranch->id;
+            $dbOrder->branchSellerId = $sellerEntityBranch != null ? $sellerEntityBranch->id : null;
+            $dbOrder->userBuyerId = $this->objUser->id;
+            $dbOrder->userSellerId = null;
+            $dbOrder->statusId = 1;
+            $dbOrder->paymentMethodId = 1;
+
+            // TODO: Adjust serial logic
+            $dbOrder->serial = mt_rand(100000, 999999);
+
+            $dbOrder->currencyId = $mapSellerIdCurrency[$sellerId]->id;
+            $dbOrder->subtotal = $total;
+            $dbOrder->total = $total;
+            $dbOrder->addReturnID();
+
+            $mapSellerIdOrderId[$sellerId] = $dbOrder->id;
+        }
+
+        $commands = [];
+        foreach ($arrCartDetail as $cartDetail) {
+            $orderId = $mapSellerIdOrderId[$cartDetail->entityId];
+            $entityProductId = $cartDetail->entityProductId;
+            $quantity = $cartDetail->quantity;
+            $quantityFree = $cartDetail->quantityFree;
+            $unitPrice = $cartDetail->unitPrice;
+
+            $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `quantityFree`, `unitPrice`) VALUES ('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $quantityFree . "', '" . $unitPrice . "');";
+            array_push($commands, $query);
+        }
+
+        $this->db->exec($commands);
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_order')), null);
     }
 
-    public function postReportMissing()
+
+    public
+    function postReportMissing()
     {
         if (!$this->requestData->orderId)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
