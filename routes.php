@@ -40,8 +40,7 @@ $f3->route('POST /v1/pharmacy/orders/reportmissing', 'OrderController->postRepor
 
 ###################
 ## Feedback Endpoints
-$f3->route('GET /v1/pharmacy/feedback/history', 'FeedbackController->getFeedbacksHistory');
-$f3->route('GET /v1/pharmacy/feedback/pending', 'FeedbackController->getFeedbacksPending');
+$f3->route('GET /v1/pharmacy/feedback', 'FeedbackController->getFeedbacks');
 $f3->route('POST /v1/pharmacy/feedback', 'FeedbackController->postFeedback');
 
 #####################################################
