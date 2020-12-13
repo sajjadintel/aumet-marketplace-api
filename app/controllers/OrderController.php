@@ -5,25 +5,25 @@ class OrderController extends MainController {
     public function getOrders()
     {
         $type = 'all';
-        if ($_GET['type'])
+        if (isset($_GET['type']))
             $type = $_GET['type'];
 
         $limit = 10;
-        if ($_GET['limit'])
+        if (isset($_GET['limit']))
             $limit = $_GET['limit'];
         $order['limit'] = $limit;
         if (!is_numeric($limit))
             $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Limit')), null);
 
         $offset = 0;
-        if ($_GET['offset'])
+        if (isset($_GET['offset']))
             $offset = $_GET['offset'];
         $order['offset'] = $offset;
         if (!is_numeric($offset))
             $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Offset')), null);
 
         $sortBy = 'idDesc';
-        if ($_GET['sort'])
+        if (isset($_GET['sort']))
             $sortBy = $_GET['sort'];
         $order['order'] = $sortBy;
         if (!is_numeric($sortBy))
@@ -181,7 +181,8 @@ class OrderController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_feedback')), null);
     }
 
-    private function getProductFromArrayById($productId, $products)
+    private
+    function getProductFromArrayById($productId, $products)
     {
         foreach ($products as $product) {
             if ($product['productCode'] == $productId)
@@ -190,7 +191,8 @@ class OrderController extends MainController {
         return null;
     }
 
-    private function checkForProductsDuplication($missingProducts)
+    private
+    function checkForProductsDuplication($missingProducts)
     {
         $dupe_array = array();
         foreach ($missingProducts as $val) {
