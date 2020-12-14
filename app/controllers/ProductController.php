@@ -6,21 +6,18 @@ class ProductController extends MainController {
     public function getProducts()
     {
         $limit = 10;
-        if ($this->f3->get('GET.limit') && $this->f3->get('GET.limit') != 'none') {
-            $limit = (int)$this->f3->get('GET.limit');
-        }
+        if (isset($_GET['limit']))
+            $limit = (int)$_GET['limit'];
         $order['limit'] = $limit;
 
         $offset = 0;
-        if ($this->f3->get('GET.offset') && $this->f3->get('GET.offset') != 'none') {
-            $offset = (int)$this->f3->get('GET.offset');
-        }
+        if (isset($_GET['offset']))
+            $offset = (int)$_GET['offset'];
         $order['offset'] = $offset;
 
         $sortBy = 'idDesc';
-        if ($this->f3->get('GET.sort') && $this->f3->get('GET.sort') != 'none') {
-            $sortBy = $this->f3->get('GET.sort');
-        }
+        if (isset($_GET['sort']))
+            $sortBy = $_GET['sort'];
         $order['order'] = $sortBy;
 
 
@@ -130,6 +127,23 @@ class ProductController extends MainController {
         $response['data'] = $order->findWhere("id = '$productId' ")[0];
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_product')), $response);
+    }
+
+    public function getProductBonus()
+    {
+        $productId = $this->f3->get('PARAMS.productId');
+
+        $dbProduct = new GenericModel($this->db, "vwEntityProductSell");
+        $arrProduct = $dbProduct->findWhere("productId = '$productId'");
+
+        $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
+        $dbBonus->bonusId = 'id';
+        $arrBonus = $dbBonus->findWhere("entityProductId = '$productId' AND isActive = 1");
+
+        $data['product'] = $arrProduct[0];
+        $data['bonus'] = $arrBonus;
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_bonus')), $data);
     }
 
 }
