@@ -96,7 +96,7 @@ class Utils
     }
 
 
-    public static function getMenuById($db, $menuId, $lang, $parentItemId = 0)
+    public static function getMenuById($f3, $db, $menuId, $lang, $parentItemId = 0)
     {
 
         if (!is_numeric($menuId)) {
@@ -113,7 +113,7 @@ class Utils
                 case "menu":
                     $menu = [
                         "title" => $dbItem->title,
-                        "icon" => $dbItem->icon,
+                        "icon" => $f3->get('API_URL') . $dbItem->icon,
                         "callbackUrl" => $dbItem->callbackUrl
                     ];
                     $menuList[] = $menu;
@@ -123,7 +123,7 @@ class Utils
                         "title" => $dbItem->title,
                         "subtitle" => $dbItem->subtitle,
                         "layout" => $dbItem->layout,
-                        "sectionData" => Utils::getMenuById($db, $menuId, $lang, $dbItem->id)
+                        "sectionData" => Utils::getMenuById($f3, $db, $menuId, $lang, $dbItem->id)
                     ];
                     $menuList[] = $section;
                     break;
