@@ -1,0 +1,260 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+	<title></title>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+		* {
+			font-family: 'Roboto', sans-serif;
+		}
+
+		.logo-main {
+			block-size: 7.5%;
+			padding: 2%;
+		}
+
+		.icons {
+			padding: 1%;
+		}
+
+		.box {
+			width: 80%;
+		}
+
+		.main01 {
+			width: 33.33%;
+		}
+
+		h3 {
+			font-weight: 100;
+		}
+
+		.col01,
+		.col02,
+		.col03,
+		.foot01,
+		.foot02,
+		.foot03 {
+			width: 33.33%;
+		}
+
+		.col02 {
+			border: 5px solid #c31924;
+			border-collapse: collapse;
+		}
+
+		.btn {
+			width: 100%;
+		}
+
+		h1.welcome {
+			text-align-last: center;
+		}
+
+		.btn {
+			background-color: #c31924;
+			border: none;
+			color: white;
+			padding: 7.5px 16px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			margin: 4px 2px;
+			cursor: pointer;
+		}
+
+		a:link {
+			color: black;
+			text-decoration: none;
+		}
+
+		a:visited {
+			color: black;
+			text-decoration: none;
+		}
+
+		a:hover {
+			color: black;
+			text-decoration: none;
+		}
+
+		a:active {
+			color: black;
+			text-decoration: none;
+		}
+
+		@media only screen and (min-width: 375px) and (max-width: 1024px) {
+
+			.col01,
+			.col03 {
+				display: none;
+			}
+
+			.col02 {
+				width: 100%;
+				border: 5px solid #c31924;
+			}
+
+			h1.welcome {
+				white-space: pre-line;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="es-wrapper-color">
+		<table width="100%" height="100%">
+			<tr>
+				<td class="col02">
+					<table cellpadding="0" cellspacing="0" width="100%">
+						<tbody>
+							<tr>
+								<td align="left">
+									<img class="logo-main" src="<?php echo $apiUrl; ?>/assets/img/logo_final_landscape.jpg" alt="" />
+								</td>
+							</tr>
+							<tr>
+								<td align="center">
+									<hr style="background-color: #c31924; height: 3px; width: 95%; margin: 0" />
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<table width="100%" cellpadding="15%" cellspacing="0" align="left" style="margin-top: -2%">
+										<tbody>
+											<tr>
+												<td align="left">
+													<table width="100%" class="body-table" style="background-color: #ffffff" cellspacing="0" cellpadding="0" bgcolor="#fff" align="center">
+														<tbody>
+															<tr>
+																<td align="left">
+																	<table width="100%" cellspacing="0" cellpadding="0">
+																		<tbody>
+																			<tr>
+																				<td valign="top" align="left">
+																					<table width="100%" cellspacing="0" cellpadding="0">
+																						<tbody>
+																							<tr>
+																								<td align="left">
+																									<h2 class="welcome">E-Poets Society / Order Confirmation</h2>
+																								</td>
+																							</tr>
+																							<tr>
+																								<td align="left">
+																									<h3 style="margin: 0">
+																										Dear
+																										<?php echo  $userFullName; ?>,
+																									</h3>
+																								</td>
+																							</tr>
+																							<tr>
+																								<td align="left">
+																									<h3>
+																										Thank you for ordering via E-Poets Society
+																										<br />
+																										Your order reference is:
+																										<?php echo $orderId; ?>
+																									</h3>
+																								</td>
+																							</tr>
+																							<tr>
+																								<td align="left">
+																									<h2 style="margin: 0px; margin-top: 20px">Your Order</h2>
+																								</td>
+																							</tr>
+																						</tbody>
+																					</table>
+																				</td>
+																			</tr>
+																		</tbody>
+																	</table>
+																</td>
+															</tr>
+														</tbody>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+							<tr>
+								<td align="center">
+									<hr style="background-color: #c31924; height: 5px; width: 95%; margin: 0" />
+									<table width="100%" style="padding-left: 2%; padding-right: 2%">
+										<?php foreach ($cartItems as $cartItem) { ?>
+											<tr>
+												<td class="item">
+													<table>
+														<tr>
+															<td width="20%">
+																<a href="">
+																	<img src="<?php echo $dataUrl . $cartItem['icons']; ?>" width="100%" alt="" srcset="" />
+																</a>
+															</td>
+															<td valign="top" align="left">
+																<a href="">
+																	<h2 style="margin: 0; padding: 0"><?php echo $cartItem['name']; ?></h2>
+																</a>
+																<br />
+																<p style="margin: 0">
+																	by
+																	<?php echo $cartItem['authorName']; ?>
+																	<br />
+																	Book Type:
+																	<?php echo $cartItem['type']; ?>
+																</p>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+											<tr>
+												<td colspan="2" align="center">
+													<hr style="background-color: #c31924; height: 2px; width: 95%; margin: 0" />
+												</td>
+											</tr>
+										<?php } ?>
+
+										<tr>
+											<td colspan="2">
+												<table style="color: #c31924; margin-top: -1%" width="100%">
+													<tr>
+														<td>
+															<h2>Total Price</h2>
+														</td>
+														<td align="right">
+															<h1>$<?php echo $orderTotal; ?></h1>
+														</td>
+													</tr>
+												</table>
+											</td>
+										</tr>
+									</table>
+									<table width="100%" style="padding-left: 2%; padding-right: 2%; margin-top: -4%">
+										<tr>
+											<td width="80%">
+												<h3 style="font-weight: bold">Don't forget to follow our social media pages</h3>
+											</td>
+											<td align="right" valign="center">
+												<img src="<?php echo $apiUrl; ?>/assets/img/iconmonstr-facebook-3-240.png" width="20%" alt="" />
+												<img src="<?php echo $apiUrl; ?>/assets/img/iconmonstr-instagram-11-240.png" width="20%" alt="" />
+												<img src="<?php echo $apiUrl; ?>/assets/img/iconmonstr-twitter-3-240.png" width="20%" alt="" />
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</div>
+</body>
+
+</html>

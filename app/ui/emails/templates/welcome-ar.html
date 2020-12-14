@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+	<head>
+		<title></title>
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+			* {
+				font-family: 'Roboto', sans-serif;
+			}
+
+			.logo-main {
+				block-size: 7.5%;
+				padding: 2%;
+			}
+
+			.icons {
+				padding: 1%;
+			}
+
+			.box {
+				width: 80%;
+			}
+
+			.main01 {
+				width: 33.33%;
+			}
+
+			h3 {
+				font-weight: 100;
+			}
+
+			.col01,
+			.col02,
+			.col03,
+			.foot01,
+			.foot02,
+			.foot03 {
+				width: 33.33%;
+			}
+
+			.inpt {
+				width: 80%;
+			}
+
+			.col02 {
+				border: 5px solid #c31924;
+				border-collapse: collapse;
+			}
+
+			.btn {
+				width: 100%;
+			}
+
+			h1.welcome {
+				text-align-last: center;
+			}
+
+			.btn {
+				background-color: #c31924;
+				border: none;
+				color: white;
+				padding: 7.5px 16px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				font-size: 16px;
+				cursor: pointer;
+			}
+
+			@media only screen and (min-width: 375px) and (max-width: 1024px) {
+				.col01,
+				.col03 {
+					display: none;
+				}
+
+				.col02 {
+					width: 100%;
+					border: 5px solid #c31924;
+				}
+
+				h1.welcome {
+					white-space: pre-line;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="es-wrapper-color">
+			<table width="100%" height="100%">
+				<tr>
+					<td></td>
+					<td class="col02">
+						<table cellpadding="0" cellspacing="0" width="100%">
+							<tbody>
+								<tr>
+									<td align="left">
+										<img class="logo-main" src="<?php echo $apiUrl; ?>/assets/img/logo_final_landscape.jpg" alt="" />
+									</td>
+								</tr>
+								<tr>
+									<td align="center">
+										<hr style="background-color: #c31924; height: 3px; width: 95%; margin: 0" />
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<table width="100%" cellpadding="15%" cellspacing="0" align="left" style="margin-top: -2%">
+											<tbody>
+												<tr>
+													<td align="left">
+														<table
+															width="100%"
+															class="body-table"
+															style="background-color: #ffffff"
+															cellspacing="0"
+															cellpadding="0"
+															bgcolor="#fff"
+															align="center"
+														>
+															<tbody>
+																<tr>
+																	<td align="left">
+																		<table width="100%" cellspacing="0" cellpadding="0">
+																			<tbody>
+																				<tr>
+																					<td valign="top" align="left">
+																						<table width="100%" cellspacing="0" cellpadding="0">
+																							<tbody>
+																								<tr>
+																									<td align="left">
+																										<h2 class="welcome">E-Poets Society / Welcoming Email</h2>
+																									</td>
+																								</tr>
+																								<tr>
+																									<td align="left">
+																										<h3 style="margin: 0">
+																											Dear
+																											<?php echo  $userFullName ; ?>,
+																										</h3>
+																									</td>
+																								</tr>
+																								<tr>
+																									<td align="left">
+																										<h3>
+																											Thank you for joining the thousands of passionate booklovers reading our
+																											selected literature collection. We are glad to have you on this journey
+																											with us. Don't forget to subscribe to our newsletter so you don't miss
+																											interesting happenings, and to allow receiving our personalized
+																											recommendations in your inbox.
+																										</h3>
+																									</td>
+																								</tr>
+																								<tr>
+																									<td valign="top">
+																										<div style="display: flex">
+																											<a class="btn" href="<?php echo $rootUrl;?>">
+																												Click Here to Get Started
+																											</a>
+																										</div>
+																									</td>
+																								</tr>
+																							</tbody>
+																						</table>
+																					</td>
+																				</tr>
+																			</tbody>
+																		</table>
+																	</td>
+																</tr>
+															</tbody>
+														</table>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</td>
+								</tr>
+								<tr>
+									<td align="center">
+										<table width="100%" style="padding-left: 2%; padding-right: 2%; margin-top: -4%">
+											<tr>
+												<td width="80%">
+													<h3 style="font-weight: bold">Don't forget to follow our social media pages</h3>
+												</td>
+												<td align="right" valign="center">
+													<img src="<?php echo $apiUrl; ?>/assets/img/iconmonstr-facebook-3-240.png" width="20%" alt="" />
+													<img src="<?php echo $apiUrl; ?>/assets/img/iconmonstr-instagram-11-240.png" width="20%" alt="" />
+													<img src="<?php echo $apiUrl; ?>/assets/img/iconmonstr-twitter-3-240.png" width="20%" alt="" />
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+					<td></td>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>
