@@ -23,6 +23,7 @@ $f3->route('GET /v1/users/profile', 'UserController->getProfile');
 $f3->route('GET /v1/pharmacy/products', 'ProductController->getProducts');
 # note for PRODUCTS -- it can have a GET parameter for limit, offset, sort
 $f3->route('GET /v1/pharmacy/products/@id', 'ProductController->getProduct');
+$f3->route('GET /v1/pharmacy/products/bonus/@productId', 'ProductController->getProductBonus');
 
 #################
 ## Cart Endpoints
