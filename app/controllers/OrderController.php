@@ -134,6 +134,7 @@ class OrderController extends MainController {
         $dbOrderGrand->buyerEntityId = $account->entityId;
         $dbOrderGrand->buyerBranchId = $entityBranch->id;
         $dbOrderGrand->buyerUserId = $this->objUser->id;
+        $dbOrderGrand->paymentMethodId = 1;
         $dbOrderGrand->addReturnID();
 
         $dbCartDetail = new GenericModel($this->db, "vwCartDetail");
