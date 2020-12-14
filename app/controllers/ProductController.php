@@ -117,10 +117,10 @@ class ProductController extends MainController {
 
     public function getProduct()
     {
-        if (!isset($_GET['id']))
+        if (!$this->f3->get('PARAMS.id')) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
-
-        $productId = $_GET['id'];
+        }
+        $productId = $this->f3->get('PARAMS.id');
 
 
         $order = new GenericModel($this->db, "vwEntityProductSell");

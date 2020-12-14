@@ -109,9 +109,18 @@ class UserController extends MainController
 
     public function postSignIn()
     {
+        $hasUid = false;
+        if (isset($this->requestData->uid)) {
+            $hasUid = true;
+        }
+
         //TODO: Fix login function
         $tempUser = new GenericModel($this->db, 'user');
-        $tempUser->load(array('id = ?', $this->requestData->id));
+        if ($hasUid) {
+            $tempUser->load(array('uid = ?', $this->requestData->uid));
+        } else {
+            $tempUser->load(array('id = ?', $this->requestData->id));
+        }
 
         // if User doesn't exist
         if ($tempUser->dry()) {
