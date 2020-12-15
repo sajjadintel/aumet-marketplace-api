@@ -113,8 +113,8 @@ class OrderController extends MainController {
         $orders = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
 
         $ordersWithDetail = [];
+        $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
         foreach ($orders as $order) {
-            $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
             $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$order['id']}'");
             $order['items'] = $arrOrderDetail;
             $ordersWithDetail[] = $order;
