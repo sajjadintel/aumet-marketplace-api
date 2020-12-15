@@ -113,9 +113,11 @@ class CartController extends MainController {
     public function getCartItems()
     {
         $dbCartDetail = new GenericModel($this->db, "vwCartDetail");
+        $dbCartDetail->entityName = "entityName_" . $this->language;
+        $dbCartDetail->stockStatusName = "stockStatusName_" . $this->language;
+        $dbCartDetail->madeInCountryName = "madeInCountryName_" . $this->language;
+        $dbCartDetail->name = "productName_" . $this->language;
 
-        $nameField = "productName_" . $this->objUser->language;
-        $dbCartDetail->name = $nameField;
         $arrCartDetail = $dbCartDetail->findWhere("accountId = " . $this->objUser->accountId);
 
         // Group cart items by seller id
