@@ -1,12 +1,13 @@
 <?php
 
 
-class ProductController extends MainController {
+class ProductController extends MainController
+{
 
     public function getProducts()
     {
         $limit = 10;
-      
+
         if (isset($_GET['limit']))
             $limit = (int)$_GET['limit'];
         $order['limit'] = $limit;
@@ -19,7 +20,7 @@ class ProductController extends MainController {
         $sortBy = 'idDesc';
         if (isset($_GET['sort']))
             $sortBy = $_GET['sort'];
-      
+
         $order['order'] = $sortBy;
 
 
@@ -31,66 +32,66 @@ class ProductController extends MainController {
                 $orderString = "rand()";
                 break;
 
-            case "idAsc":
+            case "id_asc":
                 $orderString = "id ASC";
                 break;
-            case "idDesc":
+            case "id_desc":
                 $orderString = "id DESC";
                 break;
 
-            case "productNameAsc":
+            case "product_name_asc":
                 $orderString = "productName_en ASC, id ASC";
                 break;
-            case "productNameDesc":
+            case "product_name_desc":
                 $orderString = "productName_en DESC, id ASC";
                 break;
 
-            case "scientificNameAsc":
+            case "scientific_name_asc":
                 $orderString = "scientificName ASC, id ASC";
                 break;
-            case "scientificNameDesc":
+            case "scientific_name_desc":
                 $orderString = "scientificName DESC, id ASC";
                 break;
 
-            case "unitPriceAsc":
+            case "unit_price_asc":
                 $orderString = "unitPrice ASC, id ASC";
                 break;
-            case "unitPriceDesc":
+            case "unit_price_desc":
                 $orderString = "unitPrice DESC, id ASC";
                 break;
 
-            case "vatAsc":
+            case "vat_asc":
                 $orderString = "vat ASC, id ASC";
                 break;
-            case "vatDesc":
+            case "vat_desc":
                 $orderString = "vat DESC, id ASC";
                 break;
 
-            case "stockStatusNameAsc":
+            case "stock_status_name_asc":
                 $orderString = "stockStatusName_en ASC, id ASC";
                 break;
-            case "stockStatusNameDesc":
+            case "stock_status_name_desc":
                 $orderString = "stockStatusName_en DESC, id ASC";
                 break;
 
-            case "stockAsc":
+            case "stock_asc":
                 $orderString = "stock ASC, id ASC";
                 break;
-            case "stockDesc":
+            case "stock_desc":
                 $orderString = "stock DESC, id ASC";
                 break;
 
-            case "stockUpdatedAsc":
+            case "stock_updated_asc":
                 $orderString = "stockUpdateDateTime ASC, id ASC";
                 break;
-            case "stockUpdatedDesc":
+            case "stock_updated_desc":
                 $orderString = "stockUpdateDateTime DESC, id ASC";
                 break;
 
-            case "madeInCountryNameAsc":
+            case "made_in_country_name_asc":
                 $orderString = "madeInCountryName_en ASC, id ASC";
                 break;
-            case "madeInCountryNameDesc":
+            case "made_in_country_name_desc":
                 $orderString = "madeInCountryName_en DESC, id ASC";
                 break;
 
@@ -162,5 +163,4 @@ class ProductController extends MainController {
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_bonus')), $data);
     }
-
 }
