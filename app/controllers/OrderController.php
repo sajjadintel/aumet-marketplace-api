@@ -114,6 +114,8 @@ class OrderController extends MainController {
 
         $ordersWithDetail = [];
         $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
+        $dbOrderDetail->productName = "productName_" . $this->language;
+      
         foreach ($orders as $order) {
             $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$order['id']}'");
             $order['items'] = $arrOrderDetail;

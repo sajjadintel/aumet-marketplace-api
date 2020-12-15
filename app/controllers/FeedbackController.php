@@ -77,6 +77,9 @@ class FeedbackController extends MainController {
 
         $response['dataFilter'] = $dataFilter;
 
+        $genericModel->rateName = "rateName_" . $this->language;
+        $genericModel->entityName = "entityName_" . $this->language;
+
         $response['data'] = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_feedback')), $response);

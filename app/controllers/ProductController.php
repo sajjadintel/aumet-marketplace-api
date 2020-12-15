@@ -102,6 +102,11 @@ class ProductController extends MainController {
 
 
         $genericModel = new GenericModel($this->db, "vwEntityProductSell");
+        $genericModel->productName = "productName_" . $this->language;
+        $genericModel->entityName = "entityName_" . $this->language;
+        $genericModel->bonusTypeName = "bonusTypeName_" . $this->language;
+        $genericModel->madeInCountryName = "madeInCountryName_" . $this->language;
+
         $dataCount = $genericModel->count($filter);
         $genericModel->reset();
 
@@ -126,6 +131,11 @@ class ProductController extends MainController {
 
 
         $order = new GenericModel($this->db, "vwEntityProductSell");
+        $order->productName = "productName_" . $this->language;
+        $order->entityName = "entityName_" . $this->language;
+        $order->bonusTypeName = "bonusTypeName_" . $this->language;
+        $order->madeInCountryName = "madeInCountryName_" . $this->language;
+
         $response['data'] = $order->findWhere("id = '$productId' ")[0];
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_product')), $response);
@@ -136,6 +146,11 @@ class ProductController extends MainController {
         $productId = $this->f3->get('PARAMS.productId');
 
         $dbProduct = new GenericModel($this->db, "vwEntityProductSell");
+        $dbProduct->productName = "productName_" . $this->language;
+        $dbProduct->entityName = "entityName_" . $this->language;
+        $dbProduct->bonusTypeName = "bonusTypeName_" . $this->language;
+        $dbProduct->madeInCountryName = "madeInCountryName_" . $this->language;
+
         $arrProduct = $dbProduct->findWhere("productId = '$productId'");
 
         $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
