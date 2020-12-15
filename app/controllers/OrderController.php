@@ -110,8 +110,17 @@ class OrderController extends MainController {
 
         $response['dataFilter'] = $dataFilter;
 
-        $response['data'] = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
+        $orders = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
 
+        $ordersWithDetail = [];
+        foreach ($orders as $order) {
+            $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
+            $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$order['id']}'");
+            $order['items'] = $arrOrderDetail;
+            $ordersWithDetail[] = $order;
+        }
+
+        $response['data'] = $ordersWithDetail;
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_order')), $response);
     }
 
