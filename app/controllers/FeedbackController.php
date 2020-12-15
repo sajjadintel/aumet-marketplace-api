@@ -1,7 +1,8 @@
 <?php
 
 
-class FeedbackController extends MainController {
+class FeedbackController extends MainController
+{
 
 
     public function getFeedbacks()
@@ -131,6 +132,4 @@ class FeedbackController extends MainController {
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_feedback')), null);
     }
-
-
 }

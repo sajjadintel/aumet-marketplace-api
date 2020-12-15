@@ -1,6 +1,7 @@
 <?php
 
-class OrderController extends MainController {
+class OrderController extends MainController
+{
 
     public function getOrders()
     {
@@ -115,7 +116,7 @@ class OrderController extends MainController {
         $ordersWithDetail = [];
         $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
         $dbOrderDetail->productName = "productName_" . $this->language;
-      
+
         foreach ($orders as $order) {
             $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$order['id']}'");
             $order['items'] = $arrOrderDetail;
@@ -258,8 +259,7 @@ class OrderController extends MainController {
     }
 
 
-    public
-    function postReportMissing()
+    public function postReportMissing()
     {
         if (!$this->requestData->orderId)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
@@ -318,8 +318,7 @@ class OrderController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_feedback')), null);
     }
 
-    private
-    function getProductFromArrayById($productId, $products)
+    private function getProductFromArrayById($productId, $products)
     {
         foreach ($products as $product) {
             if ($product['productCode'] == $productId)
@@ -328,8 +327,7 @@ class OrderController extends MainController {
         return null;
     }
 
-    private
-    function checkForProductsDuplication($missingProducts)
+    private function checkForProductsDuplication($missingProducts)
     {
         $dupe_array = array();
         foreach ($missingProducts as $val) {
@@ -343,5 +341,4 @@ class OrderController extends MainController {
         }
         return false;
     }
-
 }

@@ -110,9 +110,10 @@ class Utils
         $menuList = [];
         while (!$dbItem->dry()) {
             switch ($dbItem->type) {
-                case "menu":
+                case "tabbar_screen":
                     $menu = [
                         "title" => $dbItem->title,
+                        "type" => strtolower($dbItem->title),
                         "icon" => $f3->get('API_URL') . $dbItem->icon,
                         "callbackUrl" => $dbItem->callbackUrl
                     ];
