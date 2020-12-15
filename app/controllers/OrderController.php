@@ -23,7 +23,7 @@ class OrderController extends MainController
         if (!is_numeric($offset))
             $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Offset')), null);
 
-        $sortBy = 'idDesc';
+        $sortBy = 'id_desc';
         if (isset($_GET['sort']))
             $sortBy = $_GET['sort'];
         $order['order'] = $sortBy;
@@ -57,40 +57,40 @@ class OrderController extends MainController
             case "rand":
                 $orderString = "rand()";
                 break;
-            case "idAsc":
+            case "id_aesc":
                 $orderString = "id ASC";
                 break;
-            case "idDesc":
+            case "id_desc":
                 $orderString = "id DESC";
                 break;
-            case "entitySellerAsc":
+            case "entity_seller_aesc":
                 $orderString = "entitySeller ASC, id ASC";
                 break;
-            case "entitySellerDesc":
+            case "entity_seller_desc":
                 $orderString = "entitySeller DESC, id ASC";
                 break;
-            case "statusAsc":
+            case "status_aesc":
                 $orderString = "status ASC, id ASC";
                 break;
-            case "statusDesc":
+            case "status_desc":
                 $orderString = "status DESC, id ASC";
                 break;
-            case "addedAsc":
+            case "added_aesc":
                 $orderString = "insertDateTime ASC, id ASC";
                 break;
-            case "addedDesc":
+            case "added_desc":
                 $orderString = "insertDateTime DESC, id ASC";
                 break;
-            case "totalAsc":
+            case "total_aesc":
                 $orderString = "total ASC, id ASC";
                 break;
-            case "totalDesc":
+            case "total_desc":
                 $orderString = "total DESC, id ASC";
                 break;
-            case "taxAsc":
+            case "tax_aesc":
                 $orderString = "tax ASC, id ASC";
                 break;
-            case "taxDesc":
+            case "tax_desc":
                 $orderString = "tax DESC, id ASC";
                 break;
             default:
