@@ -6,6 +6,7 @@ class ProductController extends MainController {
     public function getProducts()
     {
         $limit = 10;
+      
         if (isset($_GET['limit']))
             $limit = (int)$_GET['limit'];
         $order['limit'] = $limit;
@@ -18,6 +19,7 @@ class ProductController extends MainController {
         $sortBy = 'idDesc';
         if (isset($_GET['sort']))
             $sortBy = $_GET['sort'];
+      
         $order['order'] = $sortBy;
 
 
@@ -122,10 +124,10 @@ class ProductController extends MainController {
 
     public function getProduct()
     {
-        if (!isset($_GET['id']))
+        if (!$this->f3->get('PARAMS.id')) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
-
-        $productId = $_GET['id'];
+        }
+        $productId = $this->f3->get('PARAMS.id');
 
 
         $order = new GenericModel($this->db, "vwEntityProductSell");
