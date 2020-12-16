@@ -17,7 +17,7 @@ class ProductController extends MainController
             $offset = (int)$_GET['offset'];
         $order['offset'] = $offset;
 
-        $sortBy = 'idDesc';
+        $sortBy = 'id_desc';
         if (isset($_GET['sort']))
             $sortBy = $_GET['sort'];
 
@@ -102,14 +102,14 @@ class ProductController extends MainController
         $order['order'] = $orderString;
 
 
-        $genericModel = new GenericModel($this->db, "vwEntityProductSell");
-        $genericModel->productName = "productName_" . $this->language;
-        $genericModel->entityName = "entityName_" . $this->language;
-        $genericModel->bonusTypeName = "bonusTypeName_" . $this->language;
-        $genericModel->madeInCountryName = "madeInCountryName_" . $this->language;
+        $dbProducts = new GenericModel($this->db, "vwEntityProductSell");
+        $dbProducts->productName = "productName_" . $this->language;
+        $dbProducts->entityName = "entityName_" . $this->language;
+        $dbProducts->bonusTypeName = "bonusTypeName_" . $this->language;
+        $dbProducts->madeInCountryName = "madeInCountryName_" . $this->language;
 
-        $dataCount = $genericModel->count($filter);
-        $genericModel->reset();
+        $dataCount = $dbProducts->count($filter);
+        $dbProducts->reset();
 
         $dataFilter = new stdClass();
         $dataFilter->dataCount = $dataCount;
@@ -118,26 +118,26 @@ class ProductController extends MainController
 
         $response['dataFilter'] = $dataFilter;
 
-        $response['data'] = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
+        $response['data'] = array_map(array($dbProducts, 'cast'), $dbProducts->find($filter, $order));
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_product')), $response);
     }
 
     public function getProduct()
     {
-        if (!$this->f3->get('PARAMS.id')) {
+        if (!$this->f3->get('PARAMS.id'))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_productId')), null);
-        }
+
         $productId = $this->f3->get('PARAMS.id');
 
 
-        $order = new GenericModel($this->db, "vwEntityProductSell");
-        $order->productName = "productName_" . $this->language;
-        $order->entityName = "entityName_" . $this->language;
-        $order->bonusTypeName = "bonusTypeName_" . $this->language;
-        $order->madeInCountryName = "madeInCountryName_" . $this->language;
+        $dbProduct = new GenericModel($this->db, "vwEntityProductSell");
+        $dbProduct->productName = "productName_" . $this->language;
+        $dbProduct->entityName = "entityName_" . $this->language;
+        $dbProduct->bonusTypeName = "bonusTypeName_" . $this->language;
+        $dbProduct->madeInCountryName = "madeInCountryName_" . $this->language;
 
-        $response['data'] = $order->findWhere("id = '$productId' ")[0];
+        $response['data'] = $dbProduct->findWhere("id = '$productId' ")[0];
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_product')), $response);
     }
@@ -163,4 +163,5 @@ class ProductController extends MainController
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_bonus')), $data);
     }
+
 }
