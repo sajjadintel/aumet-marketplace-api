@@ -124,6 +124,33 @@ class OrderController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_order')), $response);
     }
 
+    public function getOrder()
+    {
+        if (!$this->f3->get('PARAMS.id') || !is_numeric($this->f3->get('PARAMS.id')))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
+
+        $orderId = $this->f3->get('PARAMS.id');
+
+        $arrEntityId = Helper::idListFromArray($this->objEntityList);
+
+        $dbOrder = new GenericModel($this->db, "vwOrderEntityUser");
+        $order = $dbOrder->findWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
+
+        if (count($order) == 0)
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_order')), null);
+
+        $order = $order[0];
+
+        $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
+        $dbOrderDetail->productName = "productName" . $this->language;
+
+        $arrOrderDetail = $dbOrderDetail->findWhere("id = '$orderId'");
+        $order['items'] = $arrOrderDetail;
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_order')), $order);
+    }
+
+
     public function postOrder()
     {
         // Get user account
