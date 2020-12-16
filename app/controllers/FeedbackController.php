@@ -1,8 +1,7 @@
 <?php
 
 
-class FeedbackController extends MainController
-{
+class FeedbackController extends MainController {
 
 
     public function getFeedbacks()
@@ -93,43 +92,41 @@ class FeedbackController extends MainController
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
         if (!$this->requestData->rating)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_feedbackRating')), null);
-        if (!$this->requestData->comment)
+        if (!$this->requestData->feedback)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_feedbackMessage')), null);
 
         $orderId = $this->requestData->id;
         $rating = $this->requestData->rating;
-        $comment = $this->requestData->comment;
+        $feedbackMessage = $this->requestData->feedback;
         $userId = $this->objUser->id;
 
-
-        $order = new GenericModel($this->db, "vwOrderEntityUser");
+        $dbOrder = new GenericModel($this->db, "vwOrderEntityUser");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $order = $order->findWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
+        $dbOrder->getWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
 
-        if ($order == null) {
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_permissionDenied', $this->f3->get('RESPONSE.entity_feedback')), null);
-        }
+        if ($dbOrder->dry())
+            $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_order')), null);
 
+        $dbOrderRating = new GenericModel($this->db, "orderRating");
+        $dbOrderRating->getWhere("orderId = '$orderId' AND userId= '$userId'");
 
-        $orderRating = new GenericModel($this->db, "orderRating");
-        $orderRating = $orderRating->findWhere("orderId = '$orderId' AND userId= '$userId'");
-
-        if ($orderRating != null) {
+        if (!$dbOrderRating->dry())
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_alreadyExists', $this->f3->get('RESPONSE.entity_feedback')), null);
-            return;
-        }
 
-        $dbProduct = new BaseModel($this->db, "orderRating");
-        $dbProduct->orderId = $orderId;
-        $dbProduct->userId = $userId;
-        $dbProduct->rateId = $rating;
-        $dbProduct->feedback = $comment;
+        $dbOrderRating->reset();
+        $dbOrderRating->orderId = $orderId;
+        $dbOrderRating->userId = $userId;
+        $dbOrderRating->rateId = $rating;
+        $dbOrderRating->feedback = $feedbackMessage;
+        if (!$dbOrderRating->add())
+            $this->sendError(Constants::HTTP_FORBIDDEN, $dbOrderRating->exception, null);
 
-        $dbProduct->add();
+        $dbOrder->feedbackSubmitted = 1;
 
-        $order->feedbackSubmitted = 1;
-        $order->edit();
-
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_feedback')), null);
+        if ($dbOrder->edit())
+            $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_feedback')), null);
+        else
+            $this->sendError(Constants::HTTP_FORBIDDEN, $dbOrder->exception, null);
     }
+
 }
