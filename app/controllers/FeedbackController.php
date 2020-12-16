@@ -20,7 +20,7 @@ class FeedbackController extends MainController {
         if (!is_numeric($offset))
             $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Offset')), null);
 
-        $sortBy = 'idDesc';
+        $sortBy = 'id_desc';
         if (isset($_GET['sort']))
             $sortBy = $_GET['sort'];
         $order['order'] = $sortBy;
@@ -35,28 +35,28 @@ class FeedbackController extends MainController {
             case "rand":
                 $orderString = "rand()";
                 break;
-            case "idAsc":
+            case "id_asc":
                 $orderString = "id ASC";
                 break;
-            case "idDesc":
+            case "id_desc":
                 $orderString = "id DESC";
                 break;
-            case "entitySellerAsc":
+            case "entity_seller_asc":
                 $orderString = "entitySeller ASC, id ASC";
                 break;
-            case "entitySellerDesc":
+            case "entity_seller_desc":
                 $orderString = "entitySeller DESC, id ASC";
                 break;
-            case "addedAsc":
+            case "added_asc":
                 $orderString = "createdAt ASC, id ASC";
                 break;
-            case "addedDesc":
+            case "added_desc":
                 $orderString = "createdAt DESC, id ASC";
                 break;
-            case "starsAsc":
+            case "stars_asc":
                 $orderString = "stars ASC, id ASC";
                 break;
-            case "starsDesc":
+            case "stars_desc":
                 $orderString = "stars DESC, id ASC";
                 break;
             default:
