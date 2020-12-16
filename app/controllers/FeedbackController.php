@@ -100,7 +100,7 @@ class FeedbackController extends MainController {
         $feedbackMessage = $this->requestData->feedback;
         $userId = $this->objUser->id;
 
-        $dbOrder = new GenericModel($this->db, "vwOrderEntityUser");
+        $dbOrder = new GenericModel($this->db, "order");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
         $dbOrder->getWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
 
