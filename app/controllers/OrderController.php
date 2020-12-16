@@ -1,7 +1,6 @@
 <?php
 
-class OrderController extends MainController
-{
+class OrderController extends MainController {
 
     public function getOrders()
     {
@@ -113,17 +112,15 @@ class OrderController extends MainController
 
         $orders = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
 
-        $ordersWithDetail = [];
         $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
-        $dbOrderDetail->productName = "productName_" . $this->language;
+        $dbOrderDetail->productName = "productName" . $this->language;
 
-        foreach ($orders as $order) {
-            $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$order['id']}'");
-            $order['items'] = $arrOrderDetail;
-            $ordersWithDetail[] = $order;
+        for ($i = 0; $i < count($orders); $i++) {
+            $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$orders[$i]['id']}'");
+            $orders[$i]['items'] = $arrOrderDetail;
         }
 
-        $response['data'] = $ordersWithDetail;
+        $response['data'] = $orders;
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_order')), $response);
     }
 
