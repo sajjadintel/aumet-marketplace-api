@@ -34,6 +34,7 @@ $f3->route('POST /v1/pharmacy/cart/delete', 'CartController->postDeleteItem');
 ###################
 ## Orders Endpoints
 $f3->route('GET /v1/pharmacy/orders', 'OrderController->getOrders');
+$f3->route('GET /v1/pharmacy/orders/@id', 'OrderController->getOrder');
 $f3->route('POST /v1/pharmacy/orders', 'OrderController->postOrder');
 $f3->route('POST /v1/pharmacy/orders/reportmissing', 'OrderController->postReportMissing');
 
