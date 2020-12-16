@@ -113,7 +113,7 @@ class OrderController extends MainController {
         $orders = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
 
         $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
-        $dbOrderDetail->productName = "productName" . $this->language;
+        $dbOrderDetail->productName = "productName" . ucfirst($this->language);
 
         for ($i = 0; $i < count($orders); $i++) {
             $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$orders[$i]['id']}'");
@@ -142,7 +142,7 @@ class OrderController extends MainController {
         $order = $order[0];
 
         $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
-        $dbOrderDetail->productName = "productName" . $this->language;
+        $dbOrderDetail->productName = "productName" . ucfirst($this->language);
 
         $arrOrderDetail = $dbOrderDetail->findWhere("id = '$orderId'");
         $order['items'] = $arrOrderDetail;
