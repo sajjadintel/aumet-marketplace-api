@@ -39,7 +39,7 @@ class OrderController extends MainController {
                 $filter .= " AND statusId IN (2,3)";
                 break;
             case 'history':
-                $filter .= " AND statusId IN (4,5,6,7,8)";
+                $filter .= " AND statusId IN (1,4,5,6,7,8)";
                 break;
             case 'pendingFeedback':
                 $filter .= " AND feedbackSubmitted = 1 AND statusId IN (6,7)";
