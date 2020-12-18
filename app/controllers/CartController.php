@@ -27,6 +27,9 @@ class CartController extends MainController {
         $dbCartDetail->quantity = $dbCartDetail->quantity + $quantity;
         $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
         if ($dbCartDetail->dry()) {
+            if ($this->requestData->note)
+                $dbCartDetail->note = $this->requestData->note;
+
             if (!$dbCartDetail->add()) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_queryError', $dbCartDetail->exception), null);
             }

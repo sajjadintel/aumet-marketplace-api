@@ -266,10 +266,11 @@ class OrderController extends MainController {
             $orderId = $mapSellerIdOrderId[$cartDetail->entityId];
             $entityProductId = $cartDetail->entityProductId;
             $quantity = $cartDetail->quantity;
+            $note = $cartDetail->note;
             $quantityFree = $cartDetail->quantityFree;
             $unitPrice = $cartDetail->unitPrice;
 
-            $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `quantityFree`, `unitPrice`) VALUES ('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $quantityFree . "', '" . $unitPrice . "');";
+            $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `note`, `quantityFree`, `unitPrice`) VALUES ('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $note . "', '" . $quantityFree . "', '" . $unitPrice . "');";
             array_push($commands, $query);
         }
 
