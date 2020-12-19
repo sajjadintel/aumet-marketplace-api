@@ -39,7 +39,7 @@ class OrderController extends MainController {
                 $filter .= " AND statusId IN (2,3)";
                 break;
             case 'history':
-                $filter .= " AND statusId IN (4,5,6,7,8)";
+                $filter .= " AND statusId IN (4,5,6,7,8,9)";
                 break;
             case 'pendingFeedback':
                 $filter .= " AND feedbackSubmitted = 1 AND statusId IN (6,7)";
@@ -113,7 +113,7 @@ class OrderController extends MainController {
         $orders = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
 
         $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
-        $dbOrderDetail->productName = "productName" . $this->language;
+        $dbOrderDetail->productName = "productName" . ucfirst($this->language);
 
         for ($i = 0; $i < count($orders); $i++) {
             $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$orders[$i]['id']}'");
@@ -142,7 +142,7 @@ class OrderController extends MainController {
         $order = $order[0];
 
         $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
-        $dbOrderDetail->productName = "productName" . $this->language;
+        $dbOrderDetail->productName = "productName" . ucfirst($this->language);
 
         $arrOrderDetail = $dbOrderDetail->findWhere("id = '$orderId'");
         $order['items'] = $arrOrderDetail;
@@ -282,6 +282,26 @@ class OrderController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_order')), null);
     }
 
+    public function postOrderCancel()
+    {
+        if (!$this->requestData->orderId || !is_numeric($this->requestData->orderId))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
+
+        $orderId = $this->requestData->orderId;
+
+        $dbOrder = new GenericModel($this->db, "order");
+        $dbOrder->getWhere("id = '$orderId'");
+
+        if ($dbOrder->dry())
+            $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_order')), null);
+
+        $dbOrder->statusId = 9;
+
+        if ($dbOrder->edit())
+            $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_order')), null);
+        else
+            $this->sendError(Constants::HTTP_FORBIDDEN, $dbOrder->exception, null);
+    }
 
     public function postReportMissing()
     {
