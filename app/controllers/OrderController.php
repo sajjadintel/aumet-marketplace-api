@@ -39,7 +39,7 @@ class OrderController extends MainController {
                 $filter .= " AND statusId IN (2,3)";
                 break;
             case 'history':
-                $filter .= " AND statusId IN (4,5,6,7,8,9)";
+                $filter .= " AND statusId IN (1,4,5,6,7,8,9)";
                 break;
             case 'pendingFeedback':
                 $filter .= " AND feedbackSubmitted = 1 AND statusId IN (6,7)";
@@ -266,10 +266,11 @@ class OrderController extends MainController {
             $orderId = $mapSellerIdOrderId[$cartDetail->entityId];
             $entityProductId = $cartDetail->entityProductId;
             $quantity = $cartDetail->quantity;
+            $note = $cartDetail->note;
             $quantityFree = $cartDetail->quantityFree;
             $unitPrice = $cartDetail->unitPrice;
 
-            $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `quantityFree`, `unitPrice`) VALUES ('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $quantityFree . "', '" . $unitPrice . "');";
+            $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `note`, `quantityFree`, `unitPrice`) VALUES ('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $note . "', '" . $quantityFree . "', '" . $unitPrice . "');";
             array_push($commands, $query);
         }
 
