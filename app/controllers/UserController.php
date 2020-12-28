@@ -2,9 +2,11 @@
 
 use Ahc\Jwt\JWT;
 use SendGrid\Mail\Content;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Auth;
+use Firebase\Auth\Token\Exception\InvalidToken;
 
-class UserController extends MainController
-{
+class UserController extends MainController {
     function beforeRoute()
     {
         $this->beforeRouteFunction();
@@ -109,21 +111,55 @@ class UserController extends MainController
 
     public function postSignIn()
     {
+        $secretHiddenId = null;
+        if (array_key_exists('Secrethiddenid', getallheaders())) {
+            $secretHiddenId = getallheaders()['Secrethiddenid'];
+        }
+
         $hasUid = false;
         if (isset($this->requestData->uid)) {
             $hasUid = true;
         }
 
-        //TODO: Fix login function
-        $tempUser = new GenericModel($this->db, 'user');
-        if ($hasUid) {
-            $tempUser->load(array('uid = ?', $this->requestData->uid));
-        } else {
-            $tempUser->load(array('id = ?', $this->requestData->id));
+        $idTokenString = null;
+        if (isset($this->requestData->token)) {
+            $idTokenString = $this->requestData->token;
         }
 
+        $user = null;
+
+        // use secret hidden id to login
+        if ($secretHiddenId !== null) {
+            $user = new GenericModel($this->db, 'user');
+            if ($hasUid)
+                $user->load(array('uid = ?', $this->requestData->uid));
+            else
+                $user->load(array('id = ?', $this->requestData->id));
+
+        } else {
+            if ($idTokenString == null)
+                $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_token')), null);
+
+            $factory = (new Factory)->withServiceAccount($this->getRootDirectory() . '/config/aumet-com-firebase-adminsdk-2nsnx-64efaf5c39.json');
+
+            $auth = $factory->createAuth();
+
+            try {
+                $verifiedIdToken = $auth->verifyIdToken($idTokenString);
+                $uid = $verifiedIdToken->getClaim('sub');
+
+                $user = new GenericModel($this->db, "user");
+                $user->getWhere("uid = '$uid' AND statusId = 3");
+            } catch (\InvalidArgumentException $e) {
+                $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
+            } catch (InvalidToken $e) {
+                $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
+            }
+        }
+
+
         // if User doesn't exist
-        if ($tempUser->dry()) {
+        if ($user->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
         }
 
@@ -134,9 +170,9 @@ class UserController extends MainController
         }
 
         $payload = array(
-            'userId' => $tempUser->id,
-            'userEmail' => $tempUser->email,
-            'fullName' => $tempUser->fullname
+            'userId' => $user->id,
+            'userEmail' => $user->email,
+            'fullName' => $user->fullname
         );
 
 
@@ -145,16 +181,16 @@ class UserController extends MainController
 
         $userSession = new GenericModel($this->db, 'userSession');
 
-        $userSession->userId = $tempUser->id;
+        $userSession->userId = $user->id;
         $userSession->token = $jwtSignedKey;
         $userSession->deviceType = $deviceType;
 
         $userSession->add();
 
         $res = new stdClass();
-        $res->id = $tempUser->id;
-        $res->fullName = $tempUser->fullname;
-        $res->email = $tempUser->email;
+        $res->id = $user->id;
+        $res->fullName = $user->fullname;
+        $res->email = $user->email;
         $res->accessToken = $jwtSignedKey;
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
@@ -208,6 +244,12 @@ class UserController extends MainController
         // if ($dbUser->stateId === Constants::USER_STATE_VERIFIED) {
         //     $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotReviewed'), null);
         // }
+    }
+
+
+    function getRootDirectory()
+    {
+        return $this->f3->get('rootDIR');
     }
 
     public function getProfile()
