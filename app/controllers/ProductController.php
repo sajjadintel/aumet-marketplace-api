@@ -43,9 +43,9 @@ class ProductController extends MainController {
         }
 
         if ($bonusType !== null) {
-            if ($bonusType === 1) {
+            if ($bonusType == 1) {
                 $filter .= " AND bonusConfig IS NULL";
-            } else if ($bonusType === 2) {
+            } else if ($bonusType == 2) {
                 $filter .= " AND bonusConfig IS NOT NULL";
             }
         }
