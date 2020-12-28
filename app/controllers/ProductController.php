@@ -36,7 +36,7 @@ class ProductController extends MainController {
         $filter = "1=1 ";
 
         if ($queryParam !== null) {
-            $filter = " AND ( scientificName LIKE '%{$queryParam}%'";
+            $filter .= " AND ( scientificName LIKE '%{$queryParam}%'";
             $filter .= " OR productName_ar LIKE '%{$queryParam}%'";
             $filter .= " OR productName_en LIKE '%{$queryParam}%'";
             $filter .= " OR productName_fr LIKE '%{$queryParam}%' ) ";
