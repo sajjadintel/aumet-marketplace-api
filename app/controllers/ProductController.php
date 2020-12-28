@@ -188,11 +188,31 @@ class ProductController extends MainController {
             $sortBy = $_GET['sort'];
         $order['order'] = $sortBy;
 
+        $categoryId = null;
+        if (isset($_GET['categoryId']) && is_numeric($_GET['categoryId']))
+            $categoryId = $_GET['categoryId'];
 
-        $filter = " scientificName LIKE '%{$queryParam}%'";
+        $subCategoryId = null;
+        if (isset($_GET['subCategoryId']) && is_numeric($_GET['subCategoryId']))
+            $subCategoryId = $_GET['subCategoryId'];
+
+
+        $filter = " (scientificName LIKE '%{$queryParam}%'";
         $filter .= " OR productName_ar LIKE '%{$queryParam}%'";
         $filter .= " OR productName_en LIKE '%{$queryParam}%'";
-        $filter .= " OR productName_fr LIKE '%{$queryParam}%'";
+        $filter .= " OR productName_fr LIKE '%{$queryParam}%' ";
+        $filter .= " OR category_name_en LIKE '%{$queryParam}%' ";
+        $filter .= " OR category_name_ar LIKE '%{$queryParam}%' ";
+        $filter .= " OR category_name_fr LIKE '%{$queryParam}%' ";
+        $filter .= " OR sub_category_name_en LIKE '%{$queryParam}%' ";
+        $filter .= " OR sub_category_name_ar LIKE '%{$queryParam}%' ";
+        $filter .= " OR sub_category_name_fr LIKE '%{$queryParam}%') ";
+
+        if ($categoryId != null)
+            $filter .= " AND categoryId = $categoryId ";
+
+        if ($subCategoryId != null)
+            $filter .= " AND subCategoryId = $subCategoryId ";
 
         switch ($sortBy) {
             case "rand":
