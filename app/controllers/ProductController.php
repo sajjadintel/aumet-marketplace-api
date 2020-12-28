@@ -21,17 +21,37 @@ class ProductController extends MainController {
         $order['order'] = $sortBy;
 
         $queryParam = null;
-        if (!isset($_GET['search']))
+        if (isset($_GET['search']))
             $queryParam = $_GET['search'];
 
+        $bonusType = null;
+        if (isset($_GET['bonus_type']))
+            $bonusType = $_GET['bonus_type'];
 
-        $filter = "";
+        $stockStatus = null;
+        if (isset($_GET['stock_status']) && is_numeric($_GET['stock_status']))
+            $stockStatus = $_GET['stock_status'];
+
+
+        $filter = "1=1 ";
 
         if ($queryParam !== null) {
-            $filter = " scientificName LIKE '%{$queryParam}%'";
+            $filter = " AND ( scientificName LIKE '%{$queryParam}%'";
             $filter .= " OR productName_ar LIKE '%{$queryParam}%'";
             $filter .= " OR productName_en LIKE '%{$queryParam}%'";
-            $filter .= " OR productName_fr LIKE '%{$queryParam}%'";
+            $filter .= " OR productName_fr LIKE '%{$queryParam}%' ) ";
+        }
+
+        if ($bonusType !== null) {
+            if ($bonusType === 1) {
+                $filter .= " AND bonusConfig IS NULL";
+            } else if ($bonusType === 2) {
+                $filter .= " AND bonusConfig IS NOT NULL";
+            }
+        }
+
+        if ($stockStatus !== null) {
+            $filter .= " AND stockStatusId = $stockStatus";
         }
 
         switch ($sortBy) {

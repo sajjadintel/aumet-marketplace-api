@@ -23,7 +23,6 @@ $f3->route('GET /v1/users/profile', 'UserController->getProfile');
 $f3->route('GET /v1/pharmacy/products', 'ProductController->getProducts');
 $f3->route('GET /v1/pharmacy/products/@id', 'ProductController->getProduct');
 $f3->route('GET /v1/pharmacy/products/bonus/@productId', 'ProductController->getProductBonus');
-$f3->route('GET /v1/pharmacy/search', 'ProductController->getSearchResults');
 
 #################
 ## Cart Endpoints
