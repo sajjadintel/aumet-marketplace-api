@@ -43,3 +43,7 @@ $f3->route('POST /v1/pharmacy/orders/reportmissing', 'OrderController->postRepor
 ## Feedback Endpoints
 $f3->route('GET /v1/pharmacy/feedback', 'FeedbackController->getFeedbacks');
 $f3->route('POST /v1/pharmacy/feedback', 'FeedbackController->postFeedback');
+
+###################
+## Search Endpoints
+$f3->route('GET /v1/pharmacy/sellers', 'SearchController->getSellerList');
