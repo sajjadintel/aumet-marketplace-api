@@ -47,3 +47,8 @@ $f3->route('POST /v1/pharmacy/feedback', 'FeedbackController->postFeedback');
 ###################
 ## Search Endpoints
 $f3->route('GET /v1/pharmacy/sellers', 'SearchController->getSellerList');
+
+###################
+## News Endpoints
+$f3->route('GET /v1/pharmacy/news', 'NewsController->getNewsList');
+$f3->route('GET /v1/pharmacy/news/@id', 'NewsController->getNews');

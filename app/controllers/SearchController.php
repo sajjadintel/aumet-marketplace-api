@@ -42,8 +42,7 @@ class SearchController extends MainController {
 
         $response['data'] = array_map(array($dbProducts, 'cast'), $dbProducts->find($filter, $order));
 
-        //todo fix entity name
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_product')), $response);
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_seller')), $response);
     }
 
 }
