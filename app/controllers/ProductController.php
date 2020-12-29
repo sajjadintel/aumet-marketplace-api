@@ -33,25 +33,58 @@ class ProductController extends MainController {
             $stockStatus = $_GET['stock_status'];
 
 
+        $sellerId = null;
+        if (isset($_GET['seller_id']) && preg_match('/^[0-9,]+$/', $_GET['seller_id']))
+            $sellerId = $_GET['seller_id'];
+
+        $categoryId = null;
+        if (isset($_GET['category_id']) && preg_match('/^[0-9,]+$/', $_GET['category_id']))
+            $categoryId = $_GET['category_id'];
+
+        $subcategoryId = null;
+        if (isset($_GET['subcategory_id']) && preg_match('/^[0-9,]+$/', $_GET['subcategory_id']))
+            $subcategoryId = $_GET['subcategory_id'];
+
+        $countryId = null;
+        if (isset($_GET['country_id']) && preg_match('/^[0-9,]+$/', $_GET['country_id']))
+            $countryId = $_GET['country_id'];
+
+
         $filter = "1=1 ";
 
         if ($queryParam !== null) {
-            $filter = " AND ( scientificName LIKE '%{$queryParam}%'";
+            $filter .= " AND ( scientificName LIKE '%{$queryParam}%'";
             $filter .= " OR productName_ar LIKE '%{$queryParam}%'";
             $filter .= " OR productName_en LIKE '%{$queryParam}%'";
             $filter .= " OR productName_fr LIKE '%{$queryParam}%' ) ";
         }
 
         if ($bonusType !== null) {
-            if ($bonusType === 1) {
+            if ($bonusType == 1) {
                 $filter .= " AND bonusConfig IS NULL";
-            } else if ($bonusType === 2) {
+            } else if ($bonusType == 2) {
                 $filter .= " AND bonusConfig IS NOT NULL";
             }
         }
 
         if ($stockStatus !== null) {
             $filter .= " AND stockStatusId = $stockStatus";
+        }
+
+        if ($sellerId !== null) {
+            $filter .= " AND entityId IN ($sellerId)";
+        }
+
+        if ($categoryId !== null) {
+            $filter .= " AND categoryId IN ($categoryId)";
+        }
+
+        if ($subcategoryId !== null) {
+            $filter .= " AND subCategoryId IN ($subcategoryId)";
+        }
+
+        if ($countryId !== null) {
+            $filter .= " AND madeInCountryId IN ($subcategoryId)";
         }
 
         switch ($sortBy) {
