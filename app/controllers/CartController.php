@@ -27,7 +27,7 @@ class CartController extends MainController {
         $dbCartDetail->quantity = $dbCartDetail->quantity + $quantity;
         $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
         if ($dbCartDetail->dry()) {
-            if ($this->requestData->note)
+            if (isset($this->requestData->note))
                 $dbCartDetail->note = $this->requestData->note;
 
             if (!$dbCartDetail->add()) {
@@ -119,7 +119,7 @@ class CartController extends MainController {
         $dbCartDetail->entityName = "entityName_" . $this->language;
         $dbCartDetail->stockStatusName = "stockStatusName_" . $this->language;
         $dbCartDetail->madeInCountryName = "madeInCountryName_" . $this->language;
-        $dbCartDetail->name = "productName_" . $this->language;
+        $dbCartDetail->productName = "productName_" . $this->language;
 
         $arrCartDetail = $dbCartDetail->findWhere("accountId = " . $this->objUser->accountId);
 
