@@ -277,8 +277,7 @@ class OrderController extends MainController {
         $this->db->exec($commands);
 
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
-        $dbCartDetail->getByField("accountId", $this->objUser->accountId);
-        $dbCartDetail->delete();
+        $dbCartDetail->erase("accountId=". $this->objUser->accountId);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_order')), null);
     }
