@@ -27,6 +27,9 @@ class CartController extends MainController {
         $dbCartDetail->quantity = $dbCartDetail->quantity + $quantity;
         $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
         if ($dbCartDetail->dry()) {
+            if (isset($this->requestData->note))
+                $dbCartDetail->note = $this->requestData->note;
+
             if (!$dbCartDetail->add()) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_queryError', $dbCartDetail->exception), null);
             }
@@ -113,9 +116,11 @@ class CartController extends MainController {
     public function getCartItems()
     {
         $dbCartDetail = new GenericModel($this->db, "vwCartDetail");
+        $dbCartDetail->entityName = "entityName_" . $this->language;
+        $dbCartDetail->stockStatusName = "stockStatusName_" . $this->language;
+        $dbCartDetail->madeInCountryName = "madeInCountryName_" . $this->language;
+        $dbCartDetail->productName = "productName_" . $this->language;
 
-        $nameField = "productName_" . $this->objUser->language;
-        $dbCartDetail->name = $nameField;
         $arrCartDetail = $dbCartDetail->findWhere("accountId = " . $this->objUser->accountId);
 
         // Group cart items by seller id

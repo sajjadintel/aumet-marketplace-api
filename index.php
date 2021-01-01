@@ -37,6 +37,8 @@ $f3->set('FALLBACK', 'ar');
 
 $f3->set('ENCODING', 'UTF-8');
 
+$f3->set('rootDIR', dirname(__FILE__));
+
 $uploadsDir = dirname(__FILE__) . '/files/uploads/';
 if (is_dir($uploadsDir)) {
     $f3->set('uploadDIR', $uploadsDir);

@@ -22,7 +22,7 @@ class OrderController extends MainController {
         if (!is_numeric($offset))
             $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Offset')), null);
 
-        $sortBy = 'idDesc';
+        $sortBy = 'id_desc';
         if (isset($_GET['sort']))
             $sortBy = $_GET['sort'];
         $order['order'] = $sortBy;
@@ -39,7 +39,7 @@ class OrderController extends MainController {
                 $filter .= " AND statusId IN (2,3)";
                 break;
             case 'history':
-                $filter .= " AND statusId IN (4,5,6,7,8)";
+                $filter .= " AND statusId IN (1,4,5,6,7,8,9)";
                 break;
             case 'pendingFeedback':
                 $filter .= " AND feedbackSubmitted = 1 AND statusId IN (6,7)";
@@ -56,40 +56,40 @@ class OrderController extends MainController {
             case "rand":
                 $orderString = "rand()";
                 break;
-            case "idAsc":
+            case "id_aesc":
                 $orderString = "id ASC";
                 break;
-            case "idDesc":
+            case "id_desc":
                 $orderString = "id DESC";
                 break;
-            case "entitySellerAsc":
+            case "entity_seller_aesc":
                 $orderString = "entitySeller ASC, id ASC";
                 break;
-            case "entitySellerDesc":
+            case "entity_seller_desc":
                 $orderString = "entitySeller DESC, id ASC";
                 break;
-            case "statusAsc":
+            case "status_aesc":
                 $orderString = "status ASC, id ASC";
                 break;
-            case "statusDesc":
+            case "status_desc":
                 $orderString = "status DESC, id ASC";
                 break;
-            case "addedAsc":
+            case "added_aesc":
                 $orderString = "insertDateTime ASC, id ASC";
                 break;
-            case "addedDesc":
+            case "added_desc":
                 $orderString = "insertDateTime DESC, id ASC";
                 break;
-            case "totalAsc":
+            case "total_aesc":
                 $orderString = "total ASC, id ASC";
                 break;
-            case "totalDesc":
+            case "total_desc":
                 $orderString = "total DESC, id ASC";
                 break;
-            case "taxAsc":
+            case "tax_aesc":
                 $orderString = "tax ASC, id ASC";
                 break;
-            case "taxDesc":
+            case "tax_desc":
                 $orderString = "tax DESC, id ASC";
                 break;
             default:
@@ -110,10 +110,46 @@ class OrderController extends MainController {
 
         $response['dataFilter'] = $dataFilter;
 
-        $response['data'] = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
+        $orders = array_map(array($genericModel, 'cast'), $genericModel->find($filter, $order));
 
+        $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
+        $dbOrderDetail->productName = "productName" . ucfirst($this->language);
+
+        for ($i = 0; $i < count($orders); $i++) {
+            $arrOrderDetail = $dbOrderDetail->findWhere("id = '{$orders[$i]['id']}'");
+            $orders[$i]['items'] = $arrOrderDetail;
+        }
+
+        $response['data'] = $orders;
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_order')), $response);
     }
+
+    public function getOrder()
+    {
+        if (!$this->f3->get('PARAMS.id') || !is_numeric($this->f3->get('PARAMS.id')))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
+
+        $orderId = $this->f3->get('PARAMS.id');
+
+        $arrEntityId = Helper::idListFromArray($this->objEntityList);
+
+        $dbOrder = new GenericModel($this->db, "vwOrderEntityUser");
+        $order = $dbOrder->findWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
+
+        if (count($order) == 0)
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_order')), null);
+
+        $order = $order[0];
+
+        $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
+        $dbOrderDetail->productName = "productName" . ucfirst($this->language);
+
+        $arrOrderDetail = $dbOrderDetail->findWhere("id = '$orderId'");
+        $order['items'] = $arrOrderDetail;
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_order')), $order);
+    }
+
 
     public function postOrder()
     {
@@ -230,25 +266,44 @@ class OrderController extends MainController {
             $orderId = $mapSellerIdOrderId[$cartDetail->entityId];
             $entityProductId = $cartDetail->entityProductId;
             $quantity = $cartDetail->quantity;
+            $note = $cartDetail->note;
             $quantityFree = $cartDetail->quantityFree;
             $unitPrice = $cartDetail->unitPrice;
 
-            $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `quantityFree`, `unitPrice`) VALUES ('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $quantityFree . "', '" . $unitPrice . "');";
+            $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `note`, `quantityFree`, `unitPrice`) VALUES ('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $note . "', '" . $quantityFree . "', '" . $unitPrice . "');";
             array_push($commands, $query);
         }
 
         $this->db->exec($commands);
 
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
-        $dbCartDetail->getByField("accountId", $this->objUser->accountId);
-        $dbCartDetail->delete();
+        $dbCartDetail->erase("accountId=". $this->objUser->accountId);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_order')), null);
     }
 
+    public function postOrderCancel()
+    {
+        if (!$this->requestData->orderId || !is_numeric($this->requestData->orderId))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
 
-    public
-    function postReportMissing()
+        $orderId = $this->requestData->orderId;
+
+        $dbOrder = new GenericModel($this->db, "order");
+        $dbOrder->getWhere("id = '$orderId'");
+
+        if ($dbOrder->dry())
+            $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_order')), null);
+
+        $dbOrder->statusId = 9;
+
+        if ($dbOrder->edit())
+            $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_order')), null);
+        else
+            $this->sendError(Constants::HTTP_FORBIDDEN, $dbOrder->exception, null);
+    }
+
+    public function postReportMissing()
     {
         if (!$this->requestData->orderId)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
@@ -307,8 +362,7 @@ class OrderController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_feedback')), null);
     }
 
-    private
-    function getProductFromArrayById($productId, $products)
+    private function getProductFromArrayById($productId, $products)
     {
         foreach ($products as $product) {
             if ($product['productCode'] == $productId)
@@ -317,8 +371,7 @@ class OrderController extends MainController {
         return null;
     }
 
-    private
-    function checkForProductsDuplication($missingProducts)
+    private function checkForProductsDuplication($missingProducts)
     {
         $dupe_array = array();
         foreach ($missingProducts as $val) {
@@ -332,5 +385,4 @@ class OrderController extends MainController {
         }
         return false;
     }
-
 }
