@@ -15,9 +15,6 @@ class CartController extends MainController {
         $dbEntityProduct = new GenericModel($this->db, "entityProductSell");
         $dbEntityProduct->getWhere("productId=$productId");
 
-        $dbVwEntityProduct = new GenericModel($this->db, "vwEntityProductSell");
-        $dbVwEntityProduct->getWhere("productId=$productId");
-
         if ($dbEntityProduct->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_product')), null);
         }
@@ -28,11 +25,26 @@ class CartController extends MainController {
         $dbCartDetail->accountId = $this->objUser->accountId;
         $dbCartDetail->entityProductId = $dbEntityProduct->id;
         $dbCartDetail->userId = $this->objUser->id;
-        $dbCartDetail->quantity = $dbCartDetail->quantity + $quantity;
         $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
 
-        if ($dbVwEntityProduct->bonusTypeId == 2) {
-            $dbCartDetail->quantityFree = $this->calculateBonus($dbCartDetail->quantity, json_decode($dbVwEntityProduct->bonusConfig));
+
+        $newQuantity = $dbCartDetail->quantity + $quantity;
+        $dbCartDetail->quantity = $newQuantity;
+
+        if ($dbEntityProduct->bonusTypeId == 2) {
+            $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
+            $arrBonus = $dbBonus->findWhere("entityProductId = '$dbEntityProduct->id' AND isActive = 1", 'minOrder DESC');
+
+            $entityProductBonusType = new GenericModel($this->db, "entityProductBonusType");
+            $entityProductBonusType->getWhere("id = '$dbEntityProduct->bonusTypeId'");
+
+            $quantityFree = $this->calculateBonus($dbCartDetail->quantity, $arrBonus, $entityProductBonusType->formula);
+            $dbCartDetail->quantityFree = $quantityFree;
+        }
+
+        $total = $quantityFree + $newQuantity;
+        if ($total > $dbEntityProduct->stock) {
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_lowStock', $dbEntityProduct->stock), null);
         }
 
         if ($dbCartDetail->dry()) {
@@ -57,15 +69,14 @@ class CartController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_cartItem')), $user);
     }
 
-    private function calculateBonus($quantity, $bonuses)
+
+    private function calculateBonus($quantity, $bonuses, $formula)
     {
-        usort($bonuses, fn($a, $b) => $a->minOrder < $b->minOrder);
         foreach ($bonuses as $bonus) {
-            if ($quantity >= $bonus->minOrder) {
-                $formula = $bonus->formula;
+            if ($quantity >= $bonus['minOrder']) {
                 $formula = str_replace('quantity', $quantity, $formula);
-                $formula = str_replace('minOrder', $bonus->minOrder, $formula);
-                $formula = str_replace('bonus', $bonus->bonus, $formula);
+                $formula = str_replace('minOrder', $bonus['minOrder'], $formula);
+                $formula = str_replace('bonus', $bonus['bonus'], $formula);
                 if (strpos($formula, ';') === false) {
                     $formula .= ';';
                 }
