@@ -26,10 +26,7 @@ class CartController extends MainController {
         $dbCartDetail->entityProductId = $dbEntityProduct->id;
         $dbCartDetail->userId = $this->objUser->id;
         $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
-
-
-        $newQuantity = $dbCartDetail->quantity + $quantity;
-        $dbCartDetail->quantity = $newQuantity;
+        $dbCartDetail->quantity = $quantity;
 
         if ($dbEntityProduct->bonusTypeId == 2) {
             $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
@@ -42,7 +39,7 @@ class CartController extends MainController {
             $dbCartDetail->quantityFree = $quantityFree;
         }
 
-        $total = $quantityFree + $newQuantity;
+        $total = $quantityFree + $quantity;
         if ($total > $dbEntityProduct->stock) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_lowStock', $dbEntityProduct->stock), null);
         }
