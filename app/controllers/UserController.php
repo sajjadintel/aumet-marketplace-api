@@ -6,7 +6,8 @@ use Kreait\Firebase\Factory;
 use Kreait\Firebase\Auth;
 use Firebase\Auth\Token\Exception\InvalidToken;
 
-class UserController extends MainController {
+class UserController extends MainController
+{
     function beforeRoute()
     {
         $this->beforeRouteFunction();
@@ -135,7 +136,6 @@ class UserController extends MainController {
                 $user->load(array('uid = ?', $this->requestData->uid));
             else
                 $user->load(array('id = ?', $this->requestData->id));
-
         } else {
             if ($idTokenString == null)
                 $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_token')), null);
@@ -147,8 +147,35 @@ class UserController extends MainController {
             try {
                 $verifiedIdToken = $auth->verifyIdToken($idTokenString);
                 $uid = $verifiedIdToken->getClaim('sub');
+                $user = $auth->getUser($uid);
 
-                $user = new GenericModel($this->db, "user");
+                $dbUser = new GenericModel($this->db, "user");
+
+                ////////////
+
+                $dbUser->getWhere("uid = '$uid'");
+                if ($dbUser->dry()) {
+                    $dbUser->getWhere("email = '$user->email'");
+                    if ($dbUser->dry()) {
+                        $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), $user);
+                    }
+                    $dbUser->uid = $uid;
+                    $dbUser->update();
+                }
+
+                if ($dbUser->statusId == Constants::USER_STATUS_WAITING_VERIFICATION) {
+                    $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotActivated'), $user);
+                    return;
+                } else if ($dbUser->statusId == Constants::USER_STATUS_PENDING_APPROVAL) {
+                    $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotVerified'), $user);
+                    return;
+                } else if ($dbUser->statusId !== Constants::USER_STATUS_ACCOUNT_ACTIVE) {
+                    $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), $user);
+                }
+
+                ///////////
+
+
                 $user->getWhere("uid = '$uid' AND statusId = 3");
             } catch (\InvalidArgumentException $e) {
                 $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
