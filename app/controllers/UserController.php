@@ -6,7 +6,8 @@ use Kreait\Firebase\Factory;
 use Kreait\Firebase\Auth;
 use Firebase\Auth\Token\Exception\InvalidToken;
 
-class UserController extends MainController {
+class UserController extends MainController
+{
     function beforeRoute()
     {
         $this->beforeRouteFunction();
@@ -112,8 +113,8 @@ class UserController extends MainController {
     public function postSignIn()
     {
         $secretHiddenId = null;
-        if (array_key_exists('Secrethiddenid', getallheaders())) {
-            $secretHiddenId = getallheaders()['Secrethiddenid'];
+        if (array_key_exists('secretHiddenId', getallheaders())) {
+            $secretHiddenId = getallheaders()['secretHiddenId'];
         }
 
         $hasUid = false;
@@ -135,7 +136,6 @@ class UserController extends MainController {
                 $user->load(array('uid = ?', $this->requestData->uid));
             else
                 $user->load(array('id = ?', $this->requestData->id));
-
         } else {
             if ($idTokenString == null)
                 $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_token')), null);
@@ -147,9 +147,36 @@ class UserController extends MainController {
             try {
                 $verifiedIdToken = $auth->verifyIdToken($idTokenString);
                 $uid = $verifiedIdToken->getClaim('sub');
+                $user = $auth->getUser($uid);
 
-                $user = new GenericModel($this->db, "user");
-                $user->getWhere("uid = '$uid' AND statusId = 3");
+                $dbUser = new GenericModel($this->db, "user");
+
+                ////////////
+
+                $dbUser->getWhere("uid = '$uid'");
+                if ($dbUser->dry()) {
+                    $dbUser->getWhere("email = '$user->email'");
+                    if ($dbUser->dry()) {
+                        $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), $user);
+                    }
+                    $dbUser->uid = $uid;
+                    $dbUser->update();
+                }
+
+                if ($dbUser->statusId == Constants::USER_STATUS_WAITING_VERIFICATION) {
+                    $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotActivated'), $user);
+                    return;
+                } else if ($dbUser->statusId == Constants::USER_STATUS_PENDING_APPROVAL) {
+                    $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotVerified'), $user);
+                    return;
+                } else if ($dbUser->statusId !== Constants::USER_STATUS_ACCOUNT_ACTIVE) {
+                    $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), $user);
+                }
+
+                ///////////
+
+
+                $dbUser->getWhere("uid = '$uid' AND statusId = 3");
             } catch (\InvalidArgumentException $e) {
                 $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
             } catch (InvalidToken $e) {
@@ -159,7 +186,7 @@ class UserController extends MainController {
 
 
         // if User doesn't exist
-        if ($user->dry()) {
+        if ($dbUser->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
         }
 
@@ -170,9 +197,9 @@ class UserController extends MainController {
         }
 
         $payload = array(
-            'userId' => $user->id,
-            'userEmail' => $user->email,
-            'fullName' => $user->fullname
+            'userId' => $dbUser->id,
+            'userEmail' => $dbUser->email,
+            'fullName' => $dbUser->fullname
         );
 
 
@@ -181,16 +208,16 @@ class UserController extends MainController {
 
         $userSession = new GenericModel($this->db, 'userSession');
 
-        $userSession->userId = $user->id;
+        $userSession->userId = $dbUser->id;
         $userSession->token = $jwtSignedKey;
         $userSession->deviceType = $deviceType;
 
         $userSession->add();
 
         $res = new stdClass();
-        $res->id = $user->id;
-        $res->fullName = $user->fullname;
-        $res->email = $user->email;
+        $res->id = $dbUser->id;
+        $res->fullName = $dbUser->fullname;
+        $res->email = $dbUser->email;
         $res->accessToken = $jwtSignedKey;
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
