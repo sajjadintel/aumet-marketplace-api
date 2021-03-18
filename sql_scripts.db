@@ -1,0 +1,40 @@
+################################
+## 18/03/2021 -- Sajad Abbasi
+
+# fix date fields
+
+ALTER TABLE `marketplace`.`chatroom`
+ADD COLUMN `archivedAt` DATETIME NULL AFTER `updatedAt` ,
+CHANGE COLUMN `createdAt` `createdAt` DATETIME NULL DEFAULT NULL ,
+CHANGE COLUMN `updatedAt` `updatedAt` DATETIME NULL DEFAULT NULL ,
+CHANGE COLUMN `createdAt` `createdAt` DATETIME NULL DEFAULT CURRENT_TIMESTAMP ;
+
+################################
+## 18/03/2021 -- Sajad Abbasi
+
+# Create vwChatroom
+
+CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
+	SELECT
+	chatroom.*,
+	entity.name_en,
+	entity.name_ar,
+	entity.name_fr,
+	entity.image,
+	chatroomDetail.isRead,
+	chatroomDetail.createdAt AS messageCreatedAt,
+	chatroomDetail.content,
+	chatroomDetail.`type`,
+	chatroomDetail.senderUserId,
+	chatroomDetail.senderEntityId
+
+	FROM marketplace.chatroom
+	LEFT JOIN marketplace.entity ON chatroom.sellerPendingRead=entity.id
+	LEFT JOIN (Select * from marketplace.chatroomDetail ORDER BY createdAt DESC ) chatroomDetail ON chatroomDetail.chatroomId=chatroom.id
+	GROUP BY chatroom.id
+	ORDER BY chatroom.updatedAt DESC;
+
+################################
+
+
+

@@ -53,3 +53,13 @@ $f3->route('GET /v1/pharmacy/sellers', 'SearchController->getSellerList');
 $f3->route('GET /v1/pharmacy/news', 'NewsController->getNewsList');
 $f3->route('GET /v1/pharmacy/news/@id', 'NewsController->getNews');
 $f3->route('GET /v1/pharmacy/newsType', 'NewsController->getNewsTypeList');
+
+###################
+## Message Endpoint
+$f3->route('GET /v1/pharmacy/messages', 'MessageController->getChatRooms');
+$f3->route('GET /v1/pharmacy/messages/@id', 'MessageController->getMessages');
+$f3->route('POST /v1/pharmacy/messages/unread', 'MessageController->unreadMessages');
+$f3->route('POST /v1/pharmacy/messages/read', 'MessageController->readMessages');
+$f3->route('POST /v1/pharmacy/messages/archive', 'MessageController->archiveChatRoom');
+$f3->route('POST /v1/pharmacy/messages', 'MessageController->newMessage');
+$f3->route('POST /v1/pharmacy/messages/chatroom', 'MessageController->newChatRoom');
