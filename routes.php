@@ -1,7 +1,5 @@
 <?php
 
-$f3->route('POST /', '');
-
 ###################
 ## General Endpoints
 $f3->route('GET /v1/app/settings', 'AppController->getAppDetails');
@@ -16,6 +14,7 @@ $f3->route('POST /v1/users/password/forgot', '');
 $f3->route('POST /v1/users/password/reset', '');
 $f3->route('POST /v1/users/signout', 'UserController->postSignOut');
 $f3->route('GET /v1/users/profile', 'UserController->getProfile');
+$f3->route('GET /v1/user/pharmacy', 'UserPharmacyController->index');
 
 ##################################################
 ## PHARMACY ACCESS
