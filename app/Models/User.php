@@ -17,10 +17,8 @@ class User extends Model
 
     public function pharmacies()
     {
-        $entityIds = $this->pluck($this->accounts, 'entityId.id');
-        $entity = new Entity;
-                
-        $pharmacies = $entity->find(['id IN ? AND typeId = ?', $entityIds, EntityType::TYPE_PHARMACY]);
+        $pharmacies = $this->pluck($this->accounts, 'entityId', 'typeId', EntityType::TYPE_PHARMACY);
+
         return $pharmacies ? $pharmacies : [];
     }
 }
