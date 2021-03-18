@@ -1,20 +1,7 @@
 <?php
 
 $f3->route('POST /', '');
-$f3->route('GET /test', function () {
-    $user = new \App\Models\User;
-    $user->load(['_id = ?', 1]);
-    echo '<pre>';
-    foreach ($user->userAccounts as $userAccount) {
-        echo $userAccount->userId->id . ' ';
-        echo $userAccount->accountId . ' ';
-        echo $userAccount->statusId;
-        echo '<br>--------------------------------------------------<br>';
-    }
-    $client = new App\Libraries\WebService('https://jsonplaceholder.typicode.com/todos/1');
-    echo $client->get()->getResponse();
-    echo '</pre>';
-});
+
 ###################
 ## General Endpoints
 $f3->route('GET /v1/app/settings', 'AppController->getAppDetails');
