@@ -14,24 +14,28 @@ abstract class Model extends Cortex
         parent::__construct($this->db, $this->table);
     }
 
+    /**
+     * Retrieve value of column in collection, dot notation is supported
+     *
+     * @param CortexCollection $collection
+     * @param string $column
+     * @return array
+     */
     public function pluck(CortexCollection $collection, $column)
     {
         $pluckedValues = [];
-        if (strstr($column, '.')) {
-            $column = explode('.', $column);
-        }
+        $parameters = explode('.', $column);
+        $parameters = $parameters === false ? $column : $parameters;
 
         foreach ($collection as $item) {
-            $value = null;
-            if (is_array($column)) {
-                foreach ($column as $field) {
-                    $value = $item->$field;
-                }
-            } else {
-                $value = $item->$column;
-            }
-
-            $pluckedValues[] = $value;
+            // get dot notation value
+            $pluckedValues[] = array_reduce(
+                $parameters, 
+                function ($object, $parameter) { 
+                        return $object->$parameter; 
+                    }, 
+                $item
+            );
         }
 
         return $pluckedValues;
