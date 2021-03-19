@@ -141,6 +141,19 @@ class CartController extends MainController {
                 array_push($allSellers, $seller);
             }
 
+            $availableQuantity = ProductHelper::getAvailableQuantity($cartDetail['stock'], $cartDetail['maximumOrderQuantity']);
+            $bonusInfo = ProductHelper::getBonusInfo(
+                $this->db,
+                $this->language,
+                $this->objEntityList,
+                $cartDetail['entityProductId'],
+                $cartDetail['entityId'],
+                $availableQuantity,
+                $cartDetail['quantity']
+            );
+            $cartDetail['arrBonus'] = $bonusInfo->arrBonus;
+            $cartDetail['activeBonus'] = $bonusInfo->activeBonus;
+
             array_push($cartItemsBySeller, $cartDetail);
             $allCartItems[$sellerId] = $cartItemsBySeller;
         }
