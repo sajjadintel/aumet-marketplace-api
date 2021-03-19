@@ -10,7 +10,7 @@ use DB\CortexCollection;
 abstract class Model extends Cortex
 {
     use \Validate;
-    public $reponse = ['statusCode' => Constants::HTTP_OK, 'message' => 'success'];
+    public $response = ['statusCode' => Constants::HTTP_OK, 'message' => 'success'];
     protected $hasErrors = false;
     public function __construct()
     {
@@ -23,6 +23,25 @@ abstract class Model extends Cortex
         return [];
     }
 
+    /**
+     * Due to a bug in the validation package, we are required to not have
+     * Any missing keys in the input
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function initializeMissingKeys($data)
+    {
+        $differences = array_diff_key($this->getRules(), $data);
+        if (!empty($differences)) {
+            foreach ($differences as $key => $difference) {
+                $data[$key] = null;
+            }
+        }
+
+        return $data;
+    }
+
     public function hasErrors()
     {
         $this->hasErrors = count($this->errors) > 0;
@@ -31,7 +50,10 @@ abstract class Model extends Cortex
 
     public function create($data)
     {
+        $data = $this->initializeMissingKeys($data);
         if ($this->check($data) !== true) {
+            $this->response['statusCode'] = Constants::HTTP_BAD_REQUEST;
+            $this->response['message'] = 'Validation Failed';
             return $this;
         }
 

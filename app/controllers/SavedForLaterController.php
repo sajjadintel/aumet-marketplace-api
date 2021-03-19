@@ -8,17 +8,6 @@ use App\Resources\CartDetailResource;
 
 class SavedForLaterController extends MainController
 {
-    protected $accountId;
-    function beforeRoute()
-    {
-        $this->objUser = new stdClass;
-        $this->objUser->id = 12;
-        $user = new User;
-        $user->id = $this->objUser->id;
-        $this->accountId = $user->accounts[0]->id;
-        $this->parseJson();
-        #parent::beforeRoute();
-    }
     public function index()
     {
         $user = new User;
@@ -35,8 +24,8 @@ class SavedForLaterController extends MainController
 
     public function create()
     {
-        $data = $this->f3->get('JSON');
-        $data = array_merge($data, ['account_id' => $this->accountId]);
+        $data = (array) $this->requestData;
+        $data = array_merge($data, ['account_id' => $this->objUser->accountId]);
         $savedForLater = new SavedForLater;
         $savedForLater = $savedForLater->create($data);
         if ($savedForLater->hasErrors()) {
@@ -54,7 +43,7 @@ class SavedForLaterController extends MainController
     {
         $savedForLater = new SavedForLater;
         $savedForLater->id = $this->f3->get('PARAMS.id');
-        $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->accountId);
+        $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->objUser->accountId);
         if ($savedForLater->hasErrors()) {
             return $this->sendError($savedForLater->response['statusCode'], $savedForLater->response['message'], $savedForLater->errors);
         }
@@ -70,19 +59,19 @@ class SavedForLaterController extends MainController
     {
         $savedForLater = new SavedForLater;
         $savedForLater->id = $this->f3->get('PARAMS.id');
-        $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->accountId);
+        $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->objUser->accountId);
         if ($savedForLater->hasErrors()) {
             return $this->sendError($savedForLater->response['statusCode'], $savedForLater->response['message'], $savedForLater->errors);
         }
         $cartDetail = new CartDetail;
         $cartDetail->create([
             'userId' => $this->objUser->id,
-            #'accountId' => $this->accountId,
+            'accountId' => $this->objUser->accountId,
             'entityProductId' => $savedForLater->entityProductId->id,
             'quantity' => $savedForLater->quantity,
         ]);
         if ($cartDetail->hasErrors()) {
-            return $this->sendError($cartDetail->response['statusCode'], $cartDetail->response['message'], $savedForLater->errors);
+            return $this->sendError($cartDetail->response['statusCode'], $cartDetail->response['message'], $cartDetail->errors);
         }
 
         $savedForLater->erase();

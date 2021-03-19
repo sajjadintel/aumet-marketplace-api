@@ -64,4 +64,9 @@ class Constants
 
     ## Notification Type
     const NOTIFICATION_TYPE_ALL = 1;
+
+    ### Bonus type
+    const BONUS_TYPE_FIXED = 1;
+    const BONUS_TYPE_PERCENTAGE = 2;
+    const BONUS_TYPE_DYNAMIC = 3;
 }

@@ -11,6 +11,9 @@ class EntityProductSell extends Model
         ],
         'savedForLater' => [
             'has-many' => [SavedForLater::class, 'entityProductId'],
+        ],
+        'productId' => [
+            'belongs-to-one' => Product::class,
         ]
     ];
 }

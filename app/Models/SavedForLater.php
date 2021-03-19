@@ -31,6 +31,7 @@ class SavedForLater extends Model
 
     public function create($data)
     {
+        $data = $this->initializeMissingKeys($data);
         if (array_key_exists('cart_detail_id', $data)) {
             $cartDetail = new CartDetail;
             $cartDetail->load(['id = ? AND accountId = ?', $data['cart_detail_id'], $data['account_id']]);
