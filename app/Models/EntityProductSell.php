@@ -14,6 +14,12 @@ class EntityProductSell extends Model
         ],
         'productId' => [
             'belongs-to-one' => Product::class,
-        ]
+        ],
+        'bonusDetails' => [
+            'has-many' => [EntityProductSellBonusDetail::class, 'entityProductId']
+        ],
+        'stockStatusId' => [
+            'belongs-to-one' => StockStatus::class,
+        ],
     ];
 }

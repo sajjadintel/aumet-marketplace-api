@@ -147,6 +147,7 @@ class MainController
                             if (!$dbUser->dry()) {
                                 $this->isAuth = true;
                                 $this->objUser = $dbUser;
+                                $this->f3->set('locale', $dbUser->language);
 
 
                                 $dbEntityList = new GenericModel($this->db, 'vwAccountEntities');

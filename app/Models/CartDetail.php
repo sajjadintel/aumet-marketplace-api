@@ -47,7 +47,7 @@ class CartDetail extends Model
         $total = $bonusDetail->total;
 
         $total = $this->quantityFree + $this->quantity;
-        if ($total > $bonusDetail->maxOrder) {
+        if ($total > max($bonusDetail->maxOrder, $this->$this->entityProductId->stock)) {
             $this->errors[] = ['stock' => $this->f3->get('RESPONSE.400_lowStock', $this->entityProductId->stock)];
             $this->response['statusCode'] = Constants::HTTP_BAD_REQUEST;
             $this->response['message'] = $this->f3->get('RESPONSE.400_lowStock', $this->entityProductId->stock);
@@ -55,24 +55,6 @@ class CartDetail extends Model
         }
 
         return $this->save();
-    }
-
-    private function calculateBonus($quantity, $bonuses, $formula)
-    {
-        foreach ($bonuses as $bonus) {
-            if ($quantity >= $bonus['minOrder']) {
-                $formula = str_replace('quantity', $quantity, $formula);
-                $formula = str_replace('minOrder', $bonus['minOrder'], $formula);
-                $formula = str_replace('bonus', $bonus['bonus'], $formula);
-                if (strpos($formula, ';') === false) {
-                    $formula .= ';';
-                }
-                $formula = '$response = ' . $formula;
-                eval($formula);
-                return $response;
-            }
-        }
-        return 0;
     }
 
     public function getRules()
