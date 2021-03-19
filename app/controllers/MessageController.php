@@ -175,15 +175,15 @@ class MessageController extends MainController {
 
     public function postNewChatRoom()
     {
-        if (!$this->requestData->chatroomId || !is_numeric($this->requestData->chatroomId))
+        if (!$this->requestData->sellerEntityId || !is_numeric($this->requestData->sellerEntityId))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_sellerId')), null);
 
-        $chatRoomId = $this->requestData->chatroomId;
+        $sellerEntityId = $this->requestData->sellerEntityId;
 
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
-        $dbChatRoom->sellerEntityId = $chatRoomId;
+        $dbChatRoom->sellerEntityId = $sellerEntityId;
         $dbChatRoom->buyerEntityId = $arrEntityId[0];
         $dbChatRoom->sellerPendingRead = 0;
         $dbChatRoom->buyerPendingRead = 0;
