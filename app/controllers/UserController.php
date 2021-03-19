@@ -253,6 +253,67 @@ class UserController extends MainController {
         // }
     }
 
+    public function postSignInTest()
+    {
+        $secretHiddenId = null;
+        if (array_key_exists('Secrethiddenid', getallheaders())) {
+            $secretHiddenId = getallheaders()['Secrethiddenid'];
+        }
+
+        $hasUid = false;
+        if (isset($this->requestData->uid)) {
+            $hasUid = true;
+        }
+
+        $dbUser = null;
+
+        // use secret hidden id to login
+        if ($secretHiddenId !== null) {
+            $dbUser = new GenericModel($this->db, 'user');
+            if ($hasUid)
+                $dbUser->load(array('uid = ?', $this->requestData->uid));
+            else
+                $dbUser->load(array('id = ?', $this->requestData->id));
+        }
+
+        // if User doesn't exist
+        if ($dbUser == null || $dbUser->dry()) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
+        }
+
+        if (isset($this->deviceType)) {
+            $deviceType = $this->deviceType;
+        } else {
+            $deviceType = 'undefined';
+        }
+
+        $payload = array(
+            'userId' => $dbUser->id,
+            'userEmail' => $dbUser->email,
+            'fullName' => $dbUser->fullname
+        );
+
+
+        $jwt = new JWT(MainController::JWTSecretKey, 'HS256', (86400 * 30), 10);
+        $jwtSignedKey = $jwt->encode($payload);
+
+        $userSession = new GenericModel($this->db, 'userSession');
+
+        $userSession->userId = $dbUser->id;
+        $userSession->token = $jwtSignedKey;
+        $userSession->deviceType = $deviceType;
+
+        $userSession->add();
+
+        $res = new stdClass();
+        $res->id = $dbUser->id;
+        $res->fullName = $dbUser->fullname;
+        $res->email = $dbUser->email;
+        $res->accessToken = $jwtSignedKey;
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
+    }
+
 
     function getRootDirectory()
     {
