@@ -1,7 +1,5 @@
 <?php
 
-use Ahc\Jwt\JWT;
-
 class AppController extends MainController
 {
     function beforeRoute()
@@ -11,29 +9,11 @@ class AppController extends MainController
 
     public function getAppDetails()
     {
-        $payload = array(
-            'userId' => '9',
-            'userEmail' => "antoineaboucherfane@gmail.com",
-            'fullName' => "Antoine Abou Cherfane"
-        );
-
-        $jwt = new JWT(MainController::JWTSecretKey, 'HS256', (86400 * 30), 10);
-        $jwtSignedKey = $jwt->encode($payload);
-
-        $userSession = new GenericModel($this->db, 'userSession');
-
-        $userSession->userId = '9';
-        $userSession->token = $jwtSignedKey;
-        $userSession->deviceType = "undefined";
-
-        // $userSession->add();
-
         $res = new stdClass();
         $res->primaryColor = getenv('APP_PRIMARY_COLOR');
         $res->secondaryColor = getenv('APP_SECONDARY_COLOR');
         $res->appName = getenv("APP_NAME");
         $res->appVersion = getenv("APP_VERSION");
-        $res->jwtSignedKey = $jwtSignedKey;
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_appSettings')), $res);
     }
