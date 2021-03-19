@@ -56,10 +56,10 @@ $f3->route('GET /v1/pharmacy/newsType', 'NewsController->getNewsTypeList');
 
 ###################
 ## Message Endpoint
-$f3->route('GET /v1/pharmacy/messages', 'MessageController->getChatRooms');
-$f3->route('GET /v1/pharmacy/messages/@id', 'MessageController->getMessages');
-$f3->route('POST /v1/pharmacy/messages/unread', 'MessageController->unreadMessages');
-$f3->route('POST /v1/pharmacy/messages/read', 'MessageController->readMessages');
-$f3->route('POST /v1/pharmacy/messages/archive', 'MessageController->archiveChatRoom');
-$f3->route('POST /v1/pharmacy/messages', 'MessageController->newMessage');
-$f3->route('POST /v1/pharmacy/messages/chatroom', 'MessageController->newChatRoom');
+$f3->route('GET /v1/pharmacy/messages', 'MessageController->getChatRoomList');
+$f3->route('GET /v1/pharmacy/messages/@id', 'MessageController->getMessageList');
+$f3->route('POST /v1/pharmacy/messages/unread', 'MessageController->postSetMessagesUnread');
+$f3->route('POST /v1/pharmacy/messages/read', 'MessageController->postSetMessagesRead');
+$f3->route('POST /v1/pharmacy/messages/archive', 'MessageController->postSetChatRoomArchive');
+$f3->route('POST /v1/pharmacy/messages', 'MessageController->postNewMessage');
+$f3->route('POST /v1/pharmacy/messages/chatroom', 'MessageController->postNewChatRoom');

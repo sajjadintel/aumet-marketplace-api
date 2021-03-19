@@ -2,7 +2,7 @@
 
 class MessageController extends MainController {
 
-    public function getChatRooms()
+    public function getChatRoomList()
     {
         $limit = 10;
         if (isset($_GET['limit']))
@@ -37,7 +37,7 @@ class MessageController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_order')), $response);
     }
 
-    public function getMessages()
+    public function getMessageList()
     {
         if (!$this->f3->get('PARAMS.id') || !is_numeric($this->f3->get('PARAMS.id')))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_chatRoomId')), null);
@@ -59,15 +59,15 @@ class MessageController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_message')), $chats);
     }
 
-    public function unreadMessages()
+    public function postSetMessagesUnread()
     {
-        if (!$this->requestData->id || !is_numeric($this->requestData->id))
+        if (!$this->requestData->chatroomId || !is_numeric($this->requestData->chatroomId))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_chatRoomId')), null);
-        if (!$this->requestData->ids || !preg_match('/^[0-9,]+$/', $this->requestData->ids))
+        if (!$this->requestData->messageIds || !preg_match('/^[0-9,]+$/', $this->requestData->messageIds))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_messageIds')), null);
 
-        $chatRoomId = $this->requestData->id;
-        $messageIds = $this->requestData->ids;
+        $chatRoomId = $this->requestData->chatroomId;
+        $messageIds = $this->requestData->messageIds;
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
@@ -86,15 +86,15 @@ class MessageController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_message')), null);
     }
 
-    public function readMessages()
+    public function postSetMessagesRead()
     {
-        if (!$this->requestData->id || !is_numeric($this->requestData->id))
+        if (!$this->requestData->chatroomId || !is_numeric($this->requestData->chatroomId))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_chatRoomId')), null);
-        if (!$this->requestData->ids || !preg_match('/^[0-9,]+$/', $this->requestData->ids))
+        if (!$this->requestData->messageIds || !preg_match('/^[0-9,]+$/', $this->requestData->messageIds))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_messageIds')), null);
 
-        $chatRoomId = $this->requestData->id;
-        $messageIds = $this->requestData->ids;
+        $chatRoomId = $this->requestData->chatroomId;
+        $messageIds = $this->requestData->messageIds;
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
@@ -113,12 +113,12 @@ class MessageController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_message')), null);
     }
 
-    public function archiveChatRoom()
+    public function postSetChatRoomArchive()
     {
-        if (!$this->requestData->id || !is_numeric($this->requestData->id))
+        if (!$this->requestData->chatroomId || !is_numeric($this->requestData->chatroomId))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_chatRoomId')), null);
 
-        $chatRoomId = $this->requestData->id;
+        $chatRoomId = $this->requestData->chatroomId;
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
@@ -135,14 +135,14 @@ class MessageController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_chatRoom')), null);
     }
 
-    public function newMessage()
+    public function postNewMessage()
     {
-        if (!$this->requestData->id || !is_numeric($this->requestData->id))
+        if (!$this->requestData->chatroomId || !is_numeric($this->requestData->chatroomId))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_chatRoomId')), null);
         if (!$this->requestData->message)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_message')), null);
 
-        $chatRoomId = $this->requestData->id;
+        $chatRoomId = $this->requestData->chatroomId;
         $message = $this->requestData->message;
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
@@ -173,12 +173,12 @@ class MessageController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_message')), null);
     }
 
-    public function newChatRoom()
+    public function postNewChatRoom()
     {
-        if (!$this->requestData->id || !is_numeric($this->requestData->id))
+        if (!$this->requestData->chatroomId || !is_numeric($this->requestData->chatroomId))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_sellerId')), null);
 
-        $chatRoomId = $this->requestData->id;
+        $chatRoomId = $this->requestData->chatroomId;
 
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
 
