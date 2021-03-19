@@ -145,12 +145,11 @@ class UserController extends MainController {
             $auth = $factory->createAuth();
 
             try {
-                // $verifiedIdToken = $auth->verifyIdToken($idTokenString);
-                // $uid = $verifiedIdToken->getClaim('sub');
+                $verifiedIdToken = $auth->verifyIdToken($idTokenString);
+                $uid = $verifiedIdToken->getClaim('sub');
 
                 $user = new GenericModel($this->db, "user");
-                // $user->getWhere("uid = '$uid' AND statusId = 3");
-                $user->getWhere("uid = 'byYoIsM2rycJ3IOjTgX7YfziZez1' AND statusId = 3");
+                $user->getWhere("uid = '$uid' AND statusId = 3");
             } catch (\InvalidArgumentException $e) {
                 $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
             } catch (InvalidToken $e) {
