@@ -35,6 +35,7 @@ class MainController
     {
         $this->beforeRouteFunction();
         $this->validateUser();
+        $this->parseJson();
     }
 
     public function beforeRouteFunction()
@@ -46,6 +47,22 @@ class MainController
         $this->prepareRequestData();
         $this->verifyUser();
         $this->logRequest(Constants::LOG_TYPE_INIT);
+    }
+
+    public function parseJson()
+    {
+        if (
+            $this->f3->VERB != 'GET'
+            && preg_match('/json/', $this->f3->get('HEADERS[Content-Type]'))
+        ) {
+            $this->f3->set('JSON', file_get_contents('php://input'));
+            if (strlen($this->f3->get('JSON'))) {
+                $data = json_decode($this->f3->get('JSON'), true);
+                if (json_last_error() == JSON_ERROR_NONE) {
+                    $this->f3->set('JSON', $data);
+                }
+            }
+        }
     }
 
     public function validateUser()
@@ -176,7 +193,8 @@ class MainController
         // set the header to make sure cache is forced and treat this as json
         header("Cache-Control: no-transform,public,max-age=300,s-maxage=900");
         header('Content-Type: application/json');
-        header('Status: 200 OK');
+        header("Status: 200 OK");
+        http_response_code($statusCode);
 
         return json_encode(array(
             'statusCode' => $statusCode,

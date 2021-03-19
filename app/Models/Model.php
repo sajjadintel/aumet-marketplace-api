@@ -3,15 +3,43 @@
 namespace App\Models;
 
 use Base;
+use Constants;
 use DB\Cortex;
 use DB\CortexCollection;
 
 abstract class Model extends Cortex
 {
+    use \Validate;
+    public $reponse = ['statusCode' => Constants::HTTP_OK, 'message' => 'success'];
+    protected $hasErrors = false;
     public function __construct()
     {
         $this->db = $this->db ?? Base::instance()->get('dbConnectionMain');
         parent::__construct($this->db, $this->table);
+    }
+
+    public function getRules()
+    {
+        return [];
+    }
+
+    public function hasErrors()
+    {
+        $this->hasErrors = count($this->errors) > 0;
+        return $this->hasErrors;
+    }
+
+    public function create($data)
+    {
+        if ($this->check($data) !== true) {
+            return $this;
+        }
+
+        foreach ($data as $parameter => $value) {
+            $this->$parameter = $value;
+        }
+
+        return $this->save();
     }
 
     /**

@@ -4,15 +4,19 @@ namespace App\Resources;
 
 abstract class JsonResource implements Interfaces\Resource
 {
-    public abstract static function format($data);
+    public abstract static function format($model);
 
-    public static function collection($data)
+    public static function collection($models)
     {
+        if (!$models instanceof \DB\CortexCollection) {
+            return [];
+        }
+        
         $responseData = [];
-        foreach ($data as $datum) {
-            $responseData[] = static::format($datum);
+        foreach ($models as $model) {
+            $responseData[] = static::format($model);
         }
 
-        return empty($responseData) ? null : $responseData;
+        return $responseData;
     }
 }
