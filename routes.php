@@ -9,6 +9,7 @@ $f3->route('GET /v1/app/menu/section', 'AppController->getMenuSection');
 ###################
 ## User Endpoints
 $f3->route('POST /v1/users/signin', 'UserController->postSignIn');
+$f3->route('POST /v1/users/signinTest', 'UserController->postSignInTest');
 $f3->route('POST /v1/users/signup', '');
 $f3->route('POST /v1/users/password/forgot', '');
 $f3->route('POST /v1/users/password/reset', '');
@@ -22,7 +23,6 @@ $f3->route('GET /v1/users/profile', 'UserController->getProfile');
 ## Products Endpoints
 $f3->route('GET /v1/pharmacy/products', 'ProductController->getProducts');
 $f3->route('GET /v1/pharmacy/products/@id', 'ProductController->getProduct');
-$f3->route('GET /v1/pharmacy/products/bonus/@productId', 'ProductController->getProductBonus');
 
 #################
 ## Cart Endpoints
