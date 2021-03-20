@@ -38,10 +38,10 @@ class Constants
         "patrick.younes.1.py@gmail.com"
     ];
 
-    ## User States
-    const USER_STATE_SIGNED_UP = 1;
-    const USER_STATE_VERIFIED = 2;
-    const USER_STATE_APPROVED = 3;
+    ### User status
+    const USER_STATUS_WAITING_VERIFICATION = 1;
+    const USER_STATUS_PENDING_APPROVAL = 2;
+    const USER_STATUS_ACCOUNT_ACTIVE = 3;
 
     ## Verification Token
     const VERIFICATION_TOKEN_CREATED = 1;
@@ -64,4 +64,9 @@ class Constants
 
     ## Notification Type
     const NOTIFICATION_TYPE_ALL = 1;
+
+    ## Bonus type
+    const BONUS_TYPE_FIXED = 1;
+    const BONUS_TYPE_PERCENTAGE = 2;
+    const BONUS_TYPE_DYNAMIC = 3;
 }

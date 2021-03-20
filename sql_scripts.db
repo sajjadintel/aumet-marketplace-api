@@ -1,0 +1,11 @@
+################################
+## 20/03/2021 -- Sajad Abbasi
+# add settings table
+
+CREATE TABLE `marketplace`.`setting` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `key` VARCHAR(100) NULL,
+  `value` TEXT NULL,
+  PRIMARY KEY (`id`));
+
+################################

@@ -1,6 +1,7 @@
 <?php
 
 class CartController extends MainController {
+
     function postAddProduct()
     {
         if(!isset($this->requestData->productId) || !$this->requestData->productId)
@@ -44,8 +45,25 @@ class CartController extends MainController {
         $dbCartDetail->accountId = $dbAccount->id;
         $dbCartDetail->entityProductId = $dbEntityProduct->id;
         $dbCartDetail->userId = $this->objUser->id;
-        $dbCartDetail->quantity = $dbCartDetail->quantity + $quantity;
         $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
+        $dbCartDetail->quantity = $quantity;
+
+        if ($dbEntityProduct->bonusTypeId == 2) {
+            $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
+            $arrBonus = $dbBonus->findWhere("entityProductId = '$dbEntityProduct->id' AND isActive = 1", 'minOrder DESC');
+
+            $entityProductBonusType = new GenericModel($this->db, "entityProductBonusType");
+            $entityProductBonusType->getWhere("id = '$dbEntityProduct->bonusTypeId'");
+
+            $quantityFree = $this->calculateBonus($dbCartDetail->quantity, $arrBonus, $entityProductBonusType->formula);
+            $dbCartDetail->quantityFree = $quantityFree;
+        }
+
+        $total = $quantityFree + $quantity;
+        if ($total > $dbEntityProduct->stock) {
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_lowStock', $dbEntityProduct->stock), null);
+        }
+
         if ($dbCartDetail->dry()) {
             if (isset($this->requestData->note))
                 $dbCartDetail->note = $this->requestData->note;
@@ -68,53 +86,32 @@ class CartController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_cartItem')), $user);
     }
 
-    function postAddBonus()
+    private function calculateBonus($quantity, $bonuses, $formula)
     {
-        $bonusId = $this->requestData->bonusId ? $this->requestData->bonusId :
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_bonusId')), null);
-
-
-        $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
-        $dbBonus->getWhere("id = $bonusId AND isActive = 1");
-
-        if ($dbBonus->dry()) {
-            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_bonus')), null);
+        foreach ($bonuses as $bonus) {
+            if ($quantity >= $bonus['minOrder']) {
+                $formula = str_replace('quantity', $quantity, $formula);
+                $formula = str_replace('minOrder', $bonus['minOrder'], $formula);
+                $formula = str_replace('bonus', $bonus['bonus'], $formula);
+                if (strpos($formula, ';') === false) {
+                    $formula .= ';';
+                }
+                $formula = '$response = ' . $formula;
+                eval($formula);
+                return $response;
+            }
         }
-
-        $dbEntityProduct = new GenericModel($this->db, "entityProductSell");
-        $dbEntityProduct->getWhere("productId=$dbBonus->entityProductId");
-
-        if ($dbEntityProduct->dry()) {
-            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_product')), null);
-        }
-
-        $dbCartDetail = new GenericModel($this->db, "cartDetail");
-        $dbCartDetail->accountId = $this->objUser->accountId;
-        $dbCartDetail->entityProductId = $dbEntityProduct->id;
-        $dbCartDetail->userId = $this->objUser->id;
-        $dbCartDetail->quantity = $dbBonus->minOrder;
-        $dbCartDetail->quantityFree = $dbBonus->bonus;
-        $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
-        if (!$dbCartDetail->add()) {
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_queryError', $dbCartDetail->exception), null);
-        }
-
-        // Get cart count
-        $arrCartDetail = $dbCartDetail->getByField("accountId", $this->objUser->accountId);
-        $this->objUser->cartCount = count($arrCartDetail);
-
-        $user = new UserProfile($this->objUser, $this->objEntityList, $this->accessToken);
-
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_cartItem')), $user);
+        return 0;
     }
 
     function postDeleteItem()
     {
-        $itemId = $this->requestData->itemId ? $this->requestData->itemId :
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_itemId')), null);
+        if (!$this->requestData->cartItemId)
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_cartItemId')), null);
+        $cartItemId = $this->requestData->cartItemId;
 
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
-        $dbCartDetail->getWhere("id = '{$itemId}' AND accountId = '{$this->objUser->accountId}'");
+        $dbCartDetail->getWhere("id = '{$cartItemId}' AND accountId = '{$this->objUser->accountId}'");
 
         if ($dbCartDetail->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_item')), null);
@@ -130,7 +127,7 @@ class CartController extends MainController {
 
         $user = new UserProfile($this->objUser, $this->objEntityList, $this->accessToken);
 
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_cartItem')), $user);
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_deleted', $this->f3->get('RESPONSE.entity_cartItem')), $user);
     }
 
     public function getCartItems()
@@ -160,6 +157,19 @@ class CartController extends MainController {
                 $seller->name = $cartDetail[$nameField];
                 array_push($allSellers, $seller);
             }
+
+            $availableQuantity = ProductHelper::getAvailableQuantity($cartDetail['stock'], $cartDetail['maximumOrderQuantity']);
+            $bonusInfo = ProductHelper::getBonusInfo(
+                $this->db,
+                $this->language,
+                $this->objEntityList,
+                $cartDetail['entityProductId'],
+                $cartDetail['entityId'],
+                $availableQuantity,
+                $cartDetail['quantity']
+            );
+            $cartDetail['arrBonus'] = $bonusInfo->arrBonus;
+            $cartDetail['activeBonus'] = $bonusInfo->activeBonus;
 
             array_push($cartItemsBySeller, $cartDetail);
             $allCartItems[$sellerId] = $cartItemsBySeller;
