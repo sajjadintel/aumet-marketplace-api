@@ -1,18 +1,19 @@
 <?php
 
-class CartController extends MainController {
+class CartController extends MainController
+{
 
     function postAddProduct()
     {
-        if(!isset($this->requestData->productId) || !$this->requestData->productId)
+        if (!isset($this->requestData->productId) || !$this->requestData->productId)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_productId')), null);
         $productId = $this->requestData->productId;
-            
-        if(!isset($this->requestData->quantity) || !$this->requestData->quantity)
+
+        if (!isset($this->requestData->quantity) || !$this->requestData->quantity)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_quantity')), null);
         $quantity = $this->requestData->quantity;
-        
-        if(!isset($this->requestData->entityId) || !$this->requestData->entityId)
+
+        if (!isset($this->requestData->entityId) || !$this->requestData->entityId)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_id')), null);
         $entityId = $this->requestData->entityId;
 
@@ -21,8 +22,8 @@ class CartController extends MainController {
         }
         $quantity = (int) $quantity;
 
-        if (!is_numeric($entityId) || $entityId < 1 || array_key_exists($entityId, $this->objEntityList)) {
-            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_id')), null);
+        if (!is_numeric($entityId) || !array_key_exists($entityId, $this->objEntityList)) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_entityId')), null);
         }
         $entityId = (int) $entityId;
 
@@ -47,19 +48,22 @@ class CartController extends MainController {
         $dbCartDetail->userId = $this->objUser->id;
         $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
         $dbCartDetail->quantity = $quantity;
+        $total = $quantity;
 
-        if ($dbEntityProduct->bonusTypeId == 2) {
-            $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
-            $arrBonus = $dbBonus->findWhere("entityProductId = '$dbEntityProduct->id' AND isActive = 1", 'minOrder DESC');
+        ## TODO: Fix Bonus logic
+        // if ($dbEntityProduct->bonusTypeId == 2) {
+        //     $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
+        //     $arrBonus = $dbBonus->findWhere("entityProductId = '$dbEntityProduct->id' AND isActive = 1", 'minOrder DESC');
 
-            $entityProductBonusType = new GenericModel($this->db, "entityProductBonusType");
-            $entityProductBonusType->getWhere("id = '$dbEntityProduct->bonusTypeId'");
+        //     $entityProductBonusType = new GenericModel($this->db, "entityProductBonusType");
+        //     $entityProductBonusType->getWhere("id = '$dbEntityProduct->bonusTypeId'");
 
-            $quantityFree = $this->calculateBonus($dbCartDetail->quantity, $arrBonus, $entityProductBonusType->formula);
-            $dbCartDetail->quantityFree = $quantityFree;
-        }
+        //     $quantityFree = $this->calculateBonus($dbCartDetail->quantity, $arrBonus, $entityProductBonusType->formula);
+        //     $dbCartDetail->quantityFree = $quantityFree;
+        //     $total = $quantityFree + $quantity;
+        // }
 
-        $total = $quantityFree + $quantity;
+        ## TODO: To check stock and maxOrderQuantity (as per Marketplace Web logic)
         if ($total > $dbEntityProduct->stock) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_lowStock', $dbEntityProduct->stock), null);
         }
@@ -239,5 +243,4 @@ class CartController extends MainController {
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_cartItems')), $data);
     }
-
 }

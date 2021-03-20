@@ -1,6 +1,7 @@
 <?php
 
-class OrderController extends MainController {
+class OrderController extends MainController
+{
 
     public function getOrders()
     {
@@ -129,41 +130,15 @@ class OrderController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_order')), $response);
     }
 
-    public function getOrder()
-    {
-        if (!$this->f3->get('PARAMS.id') || !is_numeric($this->f3->get('PARAMS.id')))
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
-
-        $orderId = $this->f3->get('PARAMS.id');
-
-        $arrEntityId = Helper::idListFromArray($this->objEntityList);
-
-        $dbOrder = new GenericModel($this->db, "vwOrderEntityUser");
-        $order = $dbOrder->findWhere("id = '$orderId' AND entityBuyerId IN ($arrEntityId)");
-
-        if (count($order) == 0)
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_order')), null);
-
-        $order = $order[0];
-
-        $dbOrderDetail = new GenericModel($this->db, "vwOrderDetail");
-        $dbOrderDetail->productName = "productName" . ucfirst($this->language);
-
-        $arrOrderDetail = $dbOrderDetail->findWhere("id = '$orderId'");
-        $order['items'] = $arrOrderDetail;
-
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_order')), $order);
-    }
-
 
     public function postOrder()
     {
-##<<<<<<< feature/MPA-67
+        ##<<<<<<< feature/MPA-67
         $sellers = [];
         if ($this->requestData->sellers)
             $sellers = $this->requestData->sellers;
-##=======
-        if(!isset($this->requestData->mapSellerIdPaymentMethodId)) {
+        ##=======
+        if (!isset($this->requestData->mapSellerIdPaymentMethodId)) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_mapSellerIdPaymentMethodId')), null);
         }
 
@@ -214,10 +189,10 @@ class OrderController extends MainController {
         }
 
         $validPaymentMethod = true;
-        foreach($mapSellerIdArrPaymentMethod as $sellerId => $arrPaymentMethod) {
-            if(array_key_exists($sellerId, $mapSellerIdPaymentMethodId)) {
+        foreach ($mapSellerIdArrPaymentMethod as $sellerId => $arrPaymentMethod) {
+            if (array_key_exists($sellerId, $mapSellerIdPaymentMethodId)) {
                 $paymentMethodId = $mapSellerIdPaymentMethodId[$sellerId];
-                if(!in_array($paymentMethodId, $arrPaymentMethod)) {
+                if (!in_array($paymentMethodId, $arrPaymentMethod)) {
                     $validPaymentMethod = false;
                     break;
                 }
@@ -227,10 +202,10 @@ class OrderController extends MainController {
             }
         }
 
-        if(!$validPaymentMethod) {
+        if (!$validPaymentMethod) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_mapSellerIdPaymentMethodId')), null);
         }
-##>>>>>>> dev
+        ##>>>>>>> dev
 
         // Get user account
         $dbAccount = new GenericModel($this->db, "account");
@@ -340,11 +315,11 @@ class OrderController extends MainController {
             $dbOrder->userBuyerId = $this->objUser->id;
             $dbOrder->userSellerId = null;
             $dbOrder->statusId = 1;
-##<<<<<<< feature/MPA-67
-##=======
+            ##<<<<<<< feature/MPA-67
+            ##=======
 
             $paymentMethodId = $mapSellerIdPaymentMethodId[$sellerId];
-##>>>>>>> dev
+            ##>>>>>>> dev
             $dbOrder->paymentMethodId = $paymentMethodId;
 
             // TODO: Adjust serial logic
