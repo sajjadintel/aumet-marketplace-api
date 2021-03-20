@@ -3,14 +3,27 @@
 class CartController extends MainController {
     function postAddProduct()
     {
-        $productId = $this->requestData->productId ? $this->requestData->productId :
+        if(!isset($this->requestData->productId) || !$this->requestData->productId)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_productId')), null);
-        $quantity = $this->requestData->quantity ? (int)$this->requestData->quantity :
+        $productId = $this->requestData->productId;
+            
+        if(!isset($this->requestData->quantity) || !$this->requestData->quantity)
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_quantity')), null);
+        $quantity = $this->requestData->quantity;
+        
+        if(!isset($this->requestData->entityId) || !$this->requestData->entityId)
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_id')), null);
+        $entityId = $this->requestData->entityId;
 
         if (!is_numeric($quantity) || $quantity < 1) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_quantity')), null);
         }
+        $quantity = (int) $quantity;
+
+        if (!is_numeric($entityId) || $entityId < 1 || array_key_exists($entityId, $this->objEntityList)) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_id')), null);
+        }
+        $entityId = (int) $entityId;
 
         $dbEntityProduct = new GenericModel($this->db, "entityProductSell");
         $dbEntityProduct->getWhere("productId=$productId");
@@ -19,9 +32,16 @@ class CartController extends MainController {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_product')), null);
         }
 
+        $dbAccount = new GenericModel($this->db, "account");
+        $dbAccount->getWhere("entityId=$entityId");
+
+        if ($dbAccount->dry()) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_id')), null);
+        }
+
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
         $dbCartDetail->getWhere("entityProductId = $dbEntityProduct->id and accountId=" . $this->objUser->accountId);
-        $dbCartDetail->accountId = $this->objUser->accountId;
+        $dbCartDetail->accountId = $dbAccount->id;
         $dbCartDetail->entityProductId = $dbEntityProduct->id;
         $dbCartDetail->userId = $this->objUser->id;
         $dbCartDetail->quantity = $dbCartDetail->quantity + $quantity;
