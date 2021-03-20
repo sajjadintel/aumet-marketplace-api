@@ -155,6 +155,11 @@ class OrderController extends MainController {
 
     public function postOrder()
     {
+##<<<<<<< feature/MPA-67
+        $sellers = [];
+        if ($this->requestData->sellers)
+            $sellers = $this->requestData->sellers;
+##=======
         if(!isset($this->requestData->mapSellerIdPaymentMethodId)) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_mapSellerIdPaymentMethodId')), null);
         }
@@ -222,6 +227,7 @@ class OrderController extends MainController {
         if(!$validPaymentMethod) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_mapSellerIdPaymentMethodId')), null);
         }
+##>>>>>>> dev
 
         // Get user account
         $dbAccount = new GenericModel($this->db, "account");
@@ -270,6 +276,44 @@ class OrderController extends MainController {
         $mapSellerIdOrderId = [];
         foreach ($allSellers as $seller) {
             $sellerId = $seller->sellerId;
+            $sellerParameters = $sellers->{$sellerId}->note ?? null;
+            $note = $sellerParameters != null ? $sellers->{$sellerId}->note : null;
+            $paymentMethodId = $sellerParameters != null ? $sellers->{$sellerId}->paymentMethodId : null;
+
+            if ($note != null && $note != '') {
+                $arrEntityId = Helper::idListFromArray($this->objEntityList);
+
+                $dbChatRoom = new GenericModel($this->db, "chatroom");
+                $dbChatRoom->getWhere("sellerEntityId={$sellerId} AND buyerEntityId IN ({$arrEntityId})");
+                if ($dbChatRoom->dry()) {
+                    $dbChatRoom->sellerEntityId = $sellerId;
+                    $dbChatRoom->buyerEntityId = $arrEntityId[0];
+                    $dbChatRoom->sellerPendingRead = 0;
+                    $dbChatRoom->buyerPendingRead = 0;
+                    $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
+                    if (!$dbChatRoom->add())
+                        $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
+                }
+
+                $dbChatRoom->sellerPendingRead++;
+                $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
+                $dbChatRoom->archivedAt = null;
+
+                if (!$dbChatRoom->update())
+                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
+
+                $dbChatMessage = new GenericModel($this->db, "chatroomDetail");
+                $dbChatMessage->chatroomId = $dbChatRoom->id;
+                $dbChatMessage->senderUserId = $this->objUser->id;
+                $dbChatMessage->senderEntityId = $dbChatRoom->buyerEntityId;
+                $dbChatMessage->receiverEntityId = $dbChatRoom->sellerEntityId;
+                $dbChatMessage->type = 1;
+                $dbChatMessage->content = $note;
+                $dbChatMessage->isRead = 0;
+                if (!$dbChatMessage->add())
+                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatMessage->exception, null);
+            }
+
             $cartItemsBySeller = $allCartItems[$sellerId];
 
             $total = 0;
@@ -293,8 +337,11 @@ class OrderController extends MainController {
             $dbOrder->userBuyerId = $this->objUser->id;
             $dbOrder->userSellerId = null;
             $dbOrder->statusId = 1;
+##<<<<<<< feature/MPA-67
+##=======
 
             $paymentMethodId = $mapSellerIdPaymentMethodId[$sellerId];
+##>>>>>>> dev
             $dbOrder->paymentMethodId = $paymentMethodId;
 
             // TODO: Adjust serial logic
@@ -329,7 +376,7 @@ class OrderController extends MainController {
         $this->db->exec($commands);
 
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
-        $dbCartDetail->erase("accountId=". $this->objUser->accountId);
+        $dbCartDetail->erase("accountId=" . $this->objUser->accountId);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_order')), null);
     }
