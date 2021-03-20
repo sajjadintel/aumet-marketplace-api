@@ -1,6 +1,7 @@
 <?php
 
 class CartController extends MainController {
+
     function postAddProduct()
     {
         $productId = $this->requestData->productId ? $this->requestData->productId :
@@ -66,7 +67,6 @@ class CartController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_cartItem')), $user);
     }
 
-
     private function calculateBonus($quantity, $bonuses, $formula)
     {
         foreach ($bonuses as $bonus) {
@@ -85,14 +85,14 @@ class CartController extends MainController {
         return 0;
     }
 
-
     function postDeleteItem()
     {
-        $itemId = $this->requestData->itemId ? $this->requestData->itemId :
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_itemId')), null);
+        if (!$this->requestData->productId)
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_productId')), null);
+        $productId = $this->requestData->productId;
 
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
-        $dbCartDetail->getWhere("id = '{$itemId}' AND accountId = '{$this->objUser->accountId}'");
+        $dbCartDetail->getWhere("entityProductId = '{$productId}' AND accountId = '{$this->objUser->accountId}'");
 
         if ($dbCartDetail->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_item')), null);
@@ -108,7 +108,7 @@ class CartController extends MainController {
 
         $user = new UserProfile($this->objUser, $this->objEntityList, $this->accessToken);
 
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_cartItem')), $user);
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_deleted', $this->f3->get('RESPONSE.entity_cartItem')), $user);
     }
 
     public function getCartItems()
