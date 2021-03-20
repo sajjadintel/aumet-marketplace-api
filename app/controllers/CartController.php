@@ -87,12 +87,12 @@ class CartController extends MainController {
 
     function postDeleteItem()
     {
-        if (!$this->requestData->productId)
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_productId')), null);
-        $productId = $this->requestData->productId;
+        if (!$this->requestData->cartItemId)
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_cartItemId')), null);
+        $cartItemId = $this->requestData->cartItemId;
 
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
-        $dbCartDetail->getWhere("entityProductId = '{$productId}' AND accountId = '{$this->objUser->accountId}'");
+        $dbCartDetail->getWhere("id = '{$cartItemId}' AND accountId = '{$this->objUser->accountId}'");
 
         if ($dbCartDetail->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_item')), null);
