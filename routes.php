@@ -53,3 +53,7 @@ $f3->route('GET /v1/pharmacy/sellers', 'SearchController->getSellerList');
 $f3->route('GET /v1/pharmacy/news', 'NewsController->getNewsList');
 $f3->route('GET /v1/pharmacy/news/@id', 'NewsController->getNews');
 $f3->route('GET /v1/pharmacy/newsType', 'NewsController->getNewsTypeList');
+
+###################
+## Setting Endpoints
+$f3->route('GET /v1/app/settings', 'SettingController->getSetting');
