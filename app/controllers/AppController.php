@@ -15,6 +15,10 @@ class AppController extends MainController
         $res->appName = getenv("APP_NAME");
         $res->appVersion = getenv("APP_VERSION");
 
+        $dbSetting = new GenericModel($this->db, "setting");
+        $settings = $dbSetting->findWhere("language = '{$this->language}'");
+        $res->settings = $settings;
+
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_appSettings')), $res);
     }
 

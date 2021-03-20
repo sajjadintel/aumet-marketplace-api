@@ -9,3 +9,16 @@ CREATE TABLE `marketplace`.`setting` (
   PRIMARY KEY (`id`));
 
 ################################
+
+#############################
+
+# 21/03/2021 - Patrick Younes
+# Adjust Settings table
+
+ALTER TABLE `marketplace`.`setting` 
+ADD COLUMN `language` VARCHAR(5) NOT NULL DEFAULT 'en' AFTER `value`;
+ALTER TABLE `marketplace`.`setting` 
+CHANGE COLUMN `key` `title` VARCHAR(100) NULL DEFAULT NULL ;
+
+
+#############################
