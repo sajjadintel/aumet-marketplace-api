@@ -178,6 +178,34 @@ class CartController extends MainController {
         $buyerCurrency = $mapSellerIdCurrency[$account->entityId];
         $data['buyerCurrency'] = $buyerCurrency;
 
+        // Set payment methods
+        $dbPaymentMethod = new GenericModel($this->db, "paymentMethod");
+        $nameField = "name_" . $this->objUser->language;
+        $dbPaymentMethod->name = $nameField;
+        $arrPaymentMethod = $dbPaymentMethod->findAll();
+        $mapPaymentMethodIdName = [];
+        foreach ($arrPaymentMethod as $paymentMethod) {
+            $mapPaymentMethodIdName[$paymentMethod['id']] = $paymentMethod['name'];
+        }
+
+        $dbEntityPaymentMethod = new GenericModel($this->db, "entityPaymentMethod");
+        $mapSellerIdArrPaymentMethod = [];
+        foreach ($allSellers as $seller) {
+            $dbEntityPaymentMethod->getWhere("entityId=" . $seller->sellerId);
+            $arrEntityPaymentMethod = [];
+            while (!$dbEntityPaymentMethod->dry()) {
+                $paymentMethod = new stdClass();
+                $paymentMethod->id = $dbEntityPaymentMethod['paymentMethodId'];
+                $paymentMethod->name = $mapPaymentMethodIdName[$dbEntityPaymentMethod['paymentMethodId']];
+
+                array_push($arrEntityPaymentMethod, $paymentMethod);
+                $dbEntityPaymentMethod->next();
+            }
+
+            $mapSellerIdArrPaymentMethod[$seller->sellerId] = $arrEntityPaymentMethod;
+        }
+        $data['mapSellerIdArrPaymentMethod'] = $mapSellerIdArrPaymentMethod;
+
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_cartItems')), $data);
     }
