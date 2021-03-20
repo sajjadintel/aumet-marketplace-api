@@ -120,6 +120,9 @@ class OrderController extends MainController {
             $orders[$i]['items'] = $arrOrderDetail;
         }
 
+        $orders = Helper::addEditableOrders($orders);
+        $orders = Helper::addCancellableOrders($orders);
+
         $response['data'] = $orders;
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_order')), $response);
     }
@@ -277,7 +280,7 @@ class OrderController extends MainController {
         $this->db->exec($commands);
 
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
-        $dbCartDetail->erase("accountId=". $this->objUser->accountId);
+        $dbCartDetail->erase("accountId=" . $this->objUser->accountId);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_order')), null);
     }
