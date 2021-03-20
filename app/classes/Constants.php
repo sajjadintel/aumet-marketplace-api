@@ -69,4 +69,18 @@ class Constants
     const BONUS_TYPE_FIXED = 1;
     const BONUS_TYPE_PERCENTAGE = 2;
     const BONUS_TYPE_DYNAMIC = 3;
+
+    ## Order status
+    const ORDER_STATUS_PENDING = 1;
+    const ORDER_STATUS_ONHOLD = 2;
+    const ORDER_STATUS_PROCESSING = 3;
+    const ORDER_STATUS_COMPLETED = 4;
+    const ORDER_STATUS_CANCELED = 5;
+    const ORDER_STATUS_RECEIVED = 6;
+    const ORDER_STATUS_PAID = 7;
+    const ORDER_STATUS_MISSING_PRODUCTS = 8;
+    const ORDER_STATUS_CANCELED_PHARMACY = 9;
+
+    ## Email Types
+    const EMAIL_ORDER_UPDATE = 'Order Update';
 }

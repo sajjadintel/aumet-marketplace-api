@@ -288,4 +288,9 @@ class GenericModel extends DB\SQL\Mapper
 
         return $inp;
     }
+
+    public function getCurrentDateTime()
+    {
+        return date('Y-m-d H:i:s');
+    }
 }
