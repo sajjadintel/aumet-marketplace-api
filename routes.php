@@ -27,6 +27,7 @@ $f3->route('GET /v1/pharmacy/products/@id', 'ProductController->getProduct');
 #################
 ## Cart Endpoints
 $f3->route('GET /v1/pharmacy/cart', 'CartController->getCartItems');
+$f3->route('GET /v1/pharmacy/cart-v2', 'CartController->getCartItemsV2');
 $f3->route('POST /v1/pharmacy/cart/product', 'CartController->postAddProduct');
 $f3->route('POST /v1/pharmacy/cart/bonus', 'CartController->postAddBonus');
 $f3->route('POST /v1/pharmacy/cart/delete', 'CartController->postDeleteItem');

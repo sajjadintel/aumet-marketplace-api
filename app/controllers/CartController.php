@@ -38,7 +38,7 @@ class CartController extends MainController
         $dbAccount->getWhere("entityId=$entityId");
 
         if ($dbAccount->dry()) {
-            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_id')), null);
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
         }
 
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
@@ -135,6 +135,116 @@ class CartController extends MainController
     }
 
     public function getCartItems()
+    {
+        $dbCartDetail = new GenericModel($this->db, "vwCartDetail");
+        $dbCartDetail->entityName = "entityName_" . $this->language;
+        $dbCartDetail->stockStatusName = "stockStatusName_" . $this->language;
+        $dbCartDetail->madeInCountryName = "madeInCountryName_" . $this->language;
+        $dbCartDetail->productName = "productName_" . $this->language;
+
+        $arrCartDetail = $dbCartDetail->findWhere("accountId = " . $this->objUser->accountId);
+
+        // Group cart items by seller id
+        $allCartItems = [];
+        $allSellers = [];
+        foreach ($arrCartDetail as $cartDetail) {
+            $sellerId = $cartDetail['entityId'];
+
+            $cartItemsBySeller = [];
+            if (array_key_exists($sellerId, $allCartItems)) {
+                $cartItemsBySeller = $allCartItems[$sellerId];
+            } else {
+                $nameField = "entityName_" . $this->objUser->language;
+
+                $seller = new stdClass();
+                $seller->sellerId = $sellerId;
+                $seller->name = $cartDetail[$nameField];
+                array_push($allSellers, $seller);
+            }
+
+            $availableQuantity = ProductHelper::getAvailableQuantity($cartDetail['stock'], $cartDetail['maximumOrderQuantity']);
+            $bonusInfo = ProductHelper::getBonusInfo(
+                $this->db,
+                $this->language,
+                $this->objEntityList,
+                $cartDetail['entityProductId'],
+                $cartDetail['entityId'],
+                $availableQuantity,
+                $cartDetail['quantity']
+            );
+            $cartDetail['arrBonus'] = $bonusInfo->arrBonus;
+            $cartDetail['activeBonus'] = $bonusInfo->activeBonus;
+
+            array_push($cartItemsBySeller, $cartDetail);
+            $allCartItems[$sellerId] = $cartItemsBySeller;
+        }
+        $data['allCartItems'] = $allCartItems;
+        $data['allSellers'] = $allSellers;
+
+        // Get all currencies
+        $dbCurrencies = new GenericModel($this->db, "currency");
+        $allCurrencies = $dbCurrencies->all();
+
+        $mapCurrencyIdCurrency = [];
+        foreach ($allCurrencies as $currency) {
+            $currencyObj = new stdClass();
+            $currencyObj->id = $currency->id;
+            $currencyObj->symbol = $currency->symbol;
+            $currencyObj->conversionToUSD = $currency->conversionToUSD;
+
+            $mapCurrencyIdCurrency[$currency->id] = $currencyObj;
+        }
+        $data['mapCurrencyIdCurrency'] = $mapCurrencyIdCurrency;
+
+        // Get currency by entity
+        $dbEntities = new GenericModel($this->db, "entity");
+        $allEntities = $dbEntities->all();
+
+        $mapSellerIdCurrency = [];
+        foreach ($allEntities as $entity) {
+            $mapSellerIdCurrency[$entity->id] = $mapCurrencyIdCurrency[$entity->currencyId];
+        }
+        $data['mapSellerIdCurrency'] = $mapSellerIdCurrency;
+
+        // Set buyer currency
+        $dbAccount = new GenericModel($this->db, "account");
+        $account = $dbAccount->getByField('id', $this->objUser->accountId)[0];
+        $buyerCurrency = $mapSellerIdCurrency[$account->entityId];
+        $data['buyerCurrency'] = $buyerCurrency;
+
+        // Set payment methods
+        $dbPaymentMethod = new GenericModel($this->db, "paymentMethod");
+        $nameField = "name_" . $this->objUser->language;
+        $dbPaymentMethod->name = $nameField;
+        $arrPaymentMethod = $dbPaymentMethod->findAll();
+        $mapPaymentMethodIdName = [];
+        foreach ($arrPaymentMethod as $paymentMethod) {
+            $mapPaymentMethodIdName[$paymentMethod['id']] = $paymentMethod['name'];
+        }
+
+        $dbEntityPaymentMethod = new GenericModel($this->db, "entityPaymentMethod");
+        $mapSellerIdArrPaymentMethod = [];
+        foreach ($allSellers as $seller) {
+            $dbEntityPaymentMethod->getWhere("entityId=" . $seller->sellerId);
+            $arrEntityPaymentMethod = [];
+            while (!$dbEntityPaymentMethod->dry()) {
+                $paymentMethod = new stdClass();
+                $paymentMethod->id = $dbEntityPaymentMethod['paymentMethodId'];
+                $paymentMethod->name = $mapPaymentMethodIdName[$dbEntityPaymentMethod['paymentMethodId']];
+
+                array_push($arrEntityPaymentMethod, $paymentMethod);
+                $dbEntityPaymentMethod->next();
+            }
+
+            $mapSellerIdArrPaymentMethod[$seller->sellerId] = $arrEntityPaymentMethod;
+        }
+        $data['mapSellerIdArrPaymentMethod'] = $mapSellerIdArrPaymentMethod;
+
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_cartItems')), $data);
+    }
+
+    public function getCartItemsV2()
     {
         $dbCartDetail = new GenericModel($this->db, "vwCartDetail");
         $dbCartDetail->entityName = "entityName_" . $this->language;
