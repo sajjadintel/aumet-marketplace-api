@@ -172,7 +172,7 @@ class CartController extends MainController
                 $availableQuantity,
                 $cartDetail['quantity']
             );
-            $cartDetail['arrBonus'] = $bonusInfo->arrBonus;
+            $cartDetail['bonuses'] = $bonusInfo->arrBonus;
             $cartDetail['activeBonus'] = $bonusInfo->activeBonus;
 
             array_push($cartItemsBySeller, $cartDetail);
@@ -282,7 +282,7 @@ class CartController extends MainController
                 $availableQuantity,
                 $cartDetail['quantity']
             );
-            $cartDetail['arrBonus'] = $bonusInfo->arrBonus;
+            $cartDetail['bonuses'] = $bonusInfo->arrBonus;
             $cartDetail['activeBonus'] = $bonusInfo->activeBonus;
 
             array_push($cartItemsBySeller, $cartDetail);

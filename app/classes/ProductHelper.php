@@ -1,6 +1,7 @@
 <?php
 
-class ProductHelper {
+class ProductHelper
+{
 
     public static function getAvailableQuantity($stock, $maximumOrderQuantity)
     {
@@ -53,6 +54,8 @@ class ProductHelper {
         $arrProductBonus = [];
         $activeBonus = new stdClass();
         $activeBonus->totalBonus = 0;
+
+
         foreach ($arrBonus as $bonus) {
             $bonusId = $bonus['id'];
 
@@ -112,32 +115,26 @@ class ProductHelper {
                 $activeBonus->totalBonus = $totalBonus;
             }
 
+
             $found = false;
             for ($j = 0; $j < count($arrProductBonus); $j++) {
                 $productBonus = $arrProductBonus[$j];
                 if ($productBonus->bonusType == $bonusType) {
-                    $arrMinQty = $productBonus->arrMinQty;
-                    array_push($arrMinQty, $bonusMinOrder);
-                    $productBonus->arrMinQty = $arrMinQty;
-
-                    $arrBonuses = $productBonus->arrBonuses;
-                    array_push($arrBonuses, $bonusBonus);
-                    $productBonus->arrBonuses = $arrBonuses;
-
+                    array_push($productBonus->bonusList, array('minQty' => $bonusMinOrder, 'bonus' => $bonusBonus));
                     $arrProductBonus[$j] = $productBonus;
                     $found = true;
                     break;
                 }
             }
-
             if (!$found) {
                 $productBonus = new stdClass();
                 $productBonus->bonusType = $bonusType;
-                $productBonus->arrMinQty = [$bonusMinOrder];
-                $productBonus->arrBonuses = [$bonusBonus];
+                $productBonus->bonusList = array();
+                array_push($productBonus->bonusList, array('minQty' => $bonusMinOrder, 'bonus' => $bonusBonus));
                 array_push($arrProductBonus, $productBonus);
             }
         }
+
 
         $bonusInfo = new stdClass();
         $bonusInfo->arrBonus = $arrProductBonus;
