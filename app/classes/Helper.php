@@ -1,6 +1,7 @@
 <?php
 
-class Helper {
+class Helper
+{
 
     public static function idListFromArray($array)
     {
@@ -19,7 +20,7 @@ class Helper {
     public static function addEditableOrders($orders)
     {
         for ($i = 0; $i < count($orders); $i++) {
-            echo $orders[$i]['isEditable'] = $orders[$i]['statusId'] == 1 ? 1 : 0;
+            $orders[$i]['isEditable'] = $orders[$i]['statusId'] == 1 ? 1 : 0;
         }
         return $orders;
     }
@@ -27,9 +28,8 @@ class Helper {
     public static function addCancellableOrders($orders)
     {
         for ($i = 0; $i < count($orders); $i++) {
-            echo $orders[$i]['isCancellable'] = $orders[$i]['statusId'] == 1 ? 1 : 0;
+            $orders[$i]['isCancellable'] = $orders[$i]['statusId'] == 1 ? 1 : 0;
         }
         return $orders;
     }
-
 }

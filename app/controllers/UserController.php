@@ -6,7 +6,8 @@ use Kreait\Firebase\Factory;
 use Kreait\Firebase\Auth;
 use Firebase\Auth\Token\Exception\InvalidToken;
 
-class UserController extends MainController {
+class UserController extends MainController
+{
     function beforeRoute()
     {
         $this->beforeRouteFunction();
@@ -255,29 +256,15 @@ class UserController extends MainController {
 
     public function postSignInTest()
     {
-        $secretHiddenId = null;
-        if (array_key_exists('Secrethiddenid', getallheaders())) {
-            $secretHiddenId = getallheaders()['Secrethiddenid'];
-        }
-
-        $hasUid = false;
-        if (isset($this->requestData->uid)) {
-            $hasUid = true;
-        }
-
-        $dbUser = null;
+        $dbUser = new GenericModel($this->db, 'user');
 
         // use secret hidden id to login
-        if ($secretHiddenId !== null) {
-            $dbUser = new GenericModel($this->db, 'user');
-            if ($hasUid)
-                $dbUser->load(array('uid = ?', $this->requestData->uid));
-            else
-                $dbUser->load(array('id = ?', $this->requestData->id));
+        if (getenv('ENV') != Constants::ENV_PROD) {
+            $dbUser->load(array('id = ?', $this->requestData->id));
         }
 
         // if User doesn't exist
-        if ($dbUser == null || $dbUser->dry()) {
+        if ($dbUser->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
         }
 
