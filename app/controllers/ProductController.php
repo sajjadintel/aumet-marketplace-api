@@ -3,7 +3,6 @@
 
 class ProductController extends MainController
 {
-
     public function getProducts()
     {
         $limit = 10;
