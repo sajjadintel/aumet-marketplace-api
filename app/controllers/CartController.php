@@ -14,7 +14,7 @@ class CartController extends MainController
         $quantity = $this->requestData->quantity;
 
         if (!isset($this->requestData->entityId) || !$this->requestData->entityId)
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_id')), null);
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_entityId')), null);
         $entityId = $this->requestData->entityId;
 
         if (!is_numeric($quantity) || $quantity < 1) {
