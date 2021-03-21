@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Notification;
-use App\Models\User;
 use App\Resources\NotificationResource;
 
 class NotificationsController extends MainController
@@ -17,6 +16,25 @@ class NotificationsController extends MainController
             NotificationResource::collection(
                 $notifications->paginateByUser($page, $pageSize, $this->objUser->id)
             )
+        );
+    }
+
+    public function markAsRead()
+    {
+        $notification = new Notification;
+        $notification = $notification->markAsRead($this->f3->get('PARAMS.id'), $this->objUser->id);
+        if ($notification->hasErrors()) {
+            return $this->sendError(
+                $notification->response['statusCode'],
+                $notification->response['message'],
+                $notification->errors
+            );
+        }
+
+        return $this->sendSuccess(
+            $notification->response['statusCode'],
+            $notification->response['message'],
+            NotificationResource::format($notification)
         );
     }
 }
