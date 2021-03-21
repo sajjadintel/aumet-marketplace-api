@@ -4,5 +4,5 @@ namespace App\Models;
 
 class Faq extends Model
 {
-    protected $table = 'faq';
+    protected $table = 'appFAQ';
 }
