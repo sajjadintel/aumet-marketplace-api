@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB\CortexCollection;
+
 class User extends Model
 {
     protected $table = 'user';
@@ -18,7 +20,8 @@ class User extends Model
     public function pharmacies()
     {
         $pharmacies = $this->pluck($this->accounts, 'entityId', 'typeId', EntityType::TYPE_PHARMACY);
-
-        return $pharmacies ? $pharmacies : [];
+        $pharmaciesCollection = new CortexCollection;
+        $pharmaciesCollection->setModels($pharmacies);
+        return $pharmaciesCollection;
     }
 }
