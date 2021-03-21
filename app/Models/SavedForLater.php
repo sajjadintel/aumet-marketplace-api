@@ -44,7 +44,6 @@ class SavedForLater extends Model
             
             $data['entity_product_id'] = $cartDetail->entityProductId->id;
             $data['quantity'] = $cartDetail->quantity;
-            $cartDetail->erase();
         }
 
         // created for composite unique contraint validation
@@ -57,6 +56,10 @@ class SavedForLater extends Model
             $this->response['statusCode'] = Constants::HTTP_BAD_REQUEST;
             $this->response['message'] = 'Validation Failed';
             return $this;
+        }
+
+        if (isset($cartDetail)) {
+            $cartDetail->erase();
         }
 
         $this->accountId = $data['account_id'];
