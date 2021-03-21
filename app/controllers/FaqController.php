@@ -9,9 +9,9 @@ class FaqController extends MainController
     {
         $faq = new Faq;
         return $this->sendSuccess(
-            $faq->response['statusCode'],
-            $faq->response['message'],
-            FaqResource::collection($faq->find())
+            Constants::HTTP_OK,
+            'success',
+            FaqResource::collection($faq->find() ?: [])
         );
     }
 }
