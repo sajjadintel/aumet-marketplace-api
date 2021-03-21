@@ -214,7 +214,7 @@ class ProductController extends MainController
         $dbProduct->madeInCountryName = "madeInCountryName_" . $this->language;
         $product = $dbProduct->findWhere("id = '$entityProductId' ")[0];
 
-        $response['product'] = $product;
+        $response['data'] = $product;
 
         $availableQuantity = ProductHelper::getAvailableQuantity($product['stock'], $product['maximumOrderQuantity']);
         $bonusInfo = ProductHelper::getBonusInfo(
@@ -225,7 +225,7 @@ class ProductController extends MainController
             $product['entityId'],
             $availableQuantity
         );
-        $response['product']['bonuses'] = $bonusInfo->arrBonus;
+        $response['data']['bonuses'] = $bonusInfo->arrBonus;
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_product')), $response);
     }
