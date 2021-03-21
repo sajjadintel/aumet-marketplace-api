@@ -451,18 +451,249 @@ class OrderController extends MainController
         return null;
     }
 
-    private function checkForProductsDuplication($missingProducts)
+    private function checkForProductsDuplication($missingProducts, $fieldId = "itemId")
     {
         $dupe_array = array();
         foreach ($missingProducts as $val) {
-            if (!isset($dupe_array[$val->itemId])) {
-                $dupe_array[$val->itemId] = 1;
+            if (!isset($dupe_array[$val->$fieldId])) {
+                $dupe_array[$val->$fieldId] = 1;
                 continue;
             }
-            if (++$dupe_array[$val->itemId] > 1) {
+            if (++$dupe_array[$val->$fieldId] > 1) {
                 return true;
             }
         }
         return false;
+    }
+
+    public function postOrderEdit()
+    {
+        // Check if body is missing mandatory fields
+        if (!isset($this->requestData->orderId) || !$this->requestData->orderId || !is_numeric($this->requestData->orderId))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_orderId')), null);
+        if (!isset($this->requestData->products) || !$this->requestData->products)
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_products')), null);
+
+        // Check if orderId is valid
+        $orderId = $this->requestData->orderId;
+
+        $dbOrder = new GenericModel($this->db, "order");
+        $dbOrder->getWhere("id = '$orderId'");
+
+        if ($dbOrder->dry())
+            $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_order')), null);
+
+        if($dbOrder['statusId'] != Constants::ORDER_STATUS_PENDING)
+            $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_order')), null);
+
+        $entitySellerId = $dbOrder['entitySellerId'];
+
+        // Check if products are valid
+        $arrProducts = $this->requestData->products;
+        $valid = is_array($arrProducts);
+
+        // Check for missing id or quantity
+        if($valid) {
+            $arrProductId = [];
+            $mapProductIdQuantity = [];
+            foreach($arrProducts as $product) {
+                if((!isset($product->productId) || !$product->productId || !is_numeric($product->productId))
+                    || (!isset($product->quantity) || !$product->quantity || !is_numeric($product->quantity))) {
+                    $valid = false;
+                    break;
+                }
+                $mapProductIdQuantity[$product->productId] = $product->quantity;
+                array_push($arrProductId, $product->productId);
+            }
+        }
+        
+        // Check for product duplicates
+        $valid = $valid && !$this->checkForProductsDuplication($arrProducts, "productId");
+
+        $arrOrderProducts = [];
+        $subtotal = 0;
+        $vat = 0;
+        if($valid) {
+            // Check if all ids are valid
+            $dbProducts = new GenericModel($this->db, "vwEntityProductSell");
+            $arrProductIdStr = implode(",", $arrProductId);
+            $arrProductsDb = $dbProducts->findWhere("productId IN ($arrProductIdStr)");
+            if(count($arrProductsDb) == count($arrProductId)) {
+                foreach($arrProductsDb as $productsDb) {
+                    $entityProductId = $productsDb['id'];
+                    $productId = $productsDb['productId'];
+                    $entityId = $productsDb['entityId'];
+                    
+                    // Check if quantity higher than availableQuantity or lower than minimumOrderQuantity or if product is from different distributor
+                    $quantity = $mapProductIdQuantity[$productId];
+                    $minimumOrderQuantity = $productsDb['minimumOrderQuantity']; 
+                    $availableQuantity = ProductHelper::getAvailableQuantity($productsDb['stock'], $productsDb['maximumOrderQuantity']);
+                    if($quantity > $availableQuantity
+                        || ($minimumOrderQuantity && $quantity < $minimumOrderQuantity)
+                        || $entityId != $entitySellerId) {
+                        $valid = false;
+                        break;
+                    }
+                    
+                    // Get freeQuantity
+                    $bonusInfo = ProductHelper::getBonusInfo(
+                        $this->db,
+                        $this->language,
+                        $this->objEntityList,
+                        $entityProductId,
+                        $entityId,
+                        $availableQuantity,
+                        $quantity
+                    );
+                    $quantityFree = $bonusInfo->activeBonus->totalBonus;
+
+                    $orderProduct = new stdClass();
+                    $orderProduct->entityProductId = $entityProductId;
+                    $orderProduct->quantity = $quantity;
+                    $orderProduct->quantityFree = $quantityFree;
+                    $orderProduct->unitPrice = $productsDb['unitPrice'];
+                    $orderProduct->tax = $productsDb['vat'];
+                    $orderProduct->totalQuantity = $quantity + $quantityFree;
+                    $orderProduct->freeRatio = $quantityFree / ($quantity + $quantityFree);
+                    $orderProduct->currency = $productsDb['currency'];
+                    $orderProduct->image = $productsDb['image'];
+                    $orderProduct->name = $productsDb["productName_" . $this->language];
+                    array_push($arrOrderProducts, $orderProduct);
+                    
+                    $productPrice = $quantity * $productsDb['unitPrice'];
+                    $subtotal += $productPrice;
+                    $vat += $productPrice * $productsDb['vat'] / 100;
+                }
+            } else {
+                $valid = false;
+            }
+        }
+
+        if (!$valid) {
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_products')), null);
+        }
+
+        $total = $subtotal + $vat;
+
+        // Update the relation
+        $dbRelation = new GenericModel($this->db, "entityRelation");
+        $dbRelation->getWhere("entityBuyerId = $dbOrder->entityBuyerId AND entitySellerId = $dbOrder->entitySellerId");
+
+        if ($dbRelation->dry()) {
+            $dbRelation->entityBuyerId = $dbOrder->entityBuyerId;
+            $dbRelation->entitySellerId = $dbOrder->entitySellerId;
+            $dbRelation->currencyId = $dbOrder->currencyId;
+            $dbRelation->orderCount = 1;
+            $dbRelation->orderTotal = $total;
+            $dbRelation->add();
+        } else {
+            $dbRelation->orderTotal -= $dbOrder->total;
+            $dbRelation->orderTotal += $total;
+            $dbRelation->updatedAt = date('Y-m-d H:i:s');
+            $dbRelation->update();
+        }
+
+        // Remove old orderDetail
+        $dbOrderDetail = new GenericModel($this->db, "orderDetail");
+        $dbOrderDetail->getWhere("orderId = $orderId");
+        while (!$dbOrderDetail->dry()) {
+            $dbOrderDetail->delete();
+            $dbOrderDetail->next();
+        }
+
+        // Add orderDetail
+        foreach($arrOrderProducts as $orderProduct) {
+            $dbOrderDetail->orderId = $dbOrder->id;
+            $dbOrderDetail->entityProductId = $orderProduct->entityProductId;
+            $dbOrderDetail->quantity = $orderProduct->quantity;
+            $dbOrderDetail->quantityFree = $orderProduct->quantityFree;
+            $dbOrderDetail->unitPrice = $orderProduct->unitPrice;
+            $dbOrderDetail->tax = $orderProduct->tax;
+            $dbOrderDetail->totalQuantity = $orderProduct->totalQuantity;
+            $dbOrderDetail->requestedQuantity = $orderProduct->totalQuantity;
+            $dbOrderDetail->shippedQuantity = $orderProduct->totalQuantity;
+            $dbOrderDetail->freeRatio = $orderProduct->freeRatio;
+            if(isset($this->requestData->note))
+                $dbOrderDetail->note = $this->requestData->note;
+
+            $dbOrderDetail->add();
+        }
+
+        // Update the order
+        if(isset($this->requestData->note))
+            $dbOrder->note = $this->requestData->note;
+
+        $dbOrder->subtotal = $subtotal;
+        $dbOrder->vat = $vat;
+        $dbOrder->total = $total;
+        $dbOrder->updateDateTime = $dbOrder->getCurrentDateTime();
+
+        if ($dbOrder->edit()) {
+            // Send mails to notify about order update
+            $emailHandler = new EmailHandler($this->db);
+            $emailFile = "emails/layout.php";
+            $this->f3->set('domainUrl', getenv('DOMAIN_URL'));
+            $this->f3->set('title', 'Order Update');
+            $this->f3->set('emailType', 'orderUpdate');
+
+            $orderStatusUpdateTitle = "Order #" . $dbOrder->id . " updated";
+            $this->f3->set('orderUpdateTitle', $orderStatusUpdateTitle);
+
+            $dbCurrency = new GenericModel($this->db, "currency");
+            $dbCurrency->getWhere("id = $dbOrder->currencyId");
+
+            $this->f3->set('products', $arrOrderProducts);
+            $this->f3->set('currencySymbol', $dbCurrency->symbol);
+            $this->f3->set('subTotal', $dbOrder->subtotal);
+            $this->f3->set('tax', $dbOrder->vat);
+            $this->f3->set('total', $dbOrder->total);
+
+            $ordersUrl = "web/pharmacy/order/history";
+            $this->f3->set('ordersUrl', $ordersUrl);
+
+            $htmlContent = View::instance()->render($emailFile);
+
+            $dbEntityUserProfile = new GenericModel($this->db, "vwEntityUserProfile");
+
+            $arrEntityUserProfile = $dbEntityUserProfile->getByField("entityId", $dbOrder->entityBuyerId);
+            foreach ($arrEntityUserProfile as $entityUserProfile) {
+                $emailHandler->appendToAddress($entityUserProfile->userEmail, $entityUserProfile->userFullName);
+            }
+
+            $subject = "Order Update";
+            if (getenv('ENV') != Constants::ENV_PROD) {
+                $subject .= " - (Test: " . getenv('ENV') . ")";
+                if (getenv('ENV') == Constants::ENV_LOCAL) {
+                    $emailHandler->resetTos();
+                    $emailHandler->appendToAddress("carl8smith94@gmail.com", "Antoine Abou Cherfane");
+                    $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
+                }
+            }
+            $emailHandler->sendEmail(Constants::EMAIL_ORDER_UPDATE, $subject, $htmlContent);
+            $emailHandler->resetTos();
+
+            $ordersUrl = "web/distributor/order/new";
+            $this->f3->set('ordersUrl', $ordersUrl);
+
+            $arrEntityUserProfile = $dbEntityUserProfile->getByField("entityId", $dbOrder->entitySellerId);
+            foreach ($arrEntityUserProfile as $entityUserProfile) {
+                $emailHandler->appendToAddress($entityUserProfile->userEmail, $entityUserProfile->userFullName);
+            }
+
+            $subject = "Order Update";
+            if (getenv('ENV') != Constants::ENV_PROD) {
+                $subject .= " - (Test: " . getenv('ENV') . ")";
+                if (getenv('ENV') == Constants::ENV_LOCAL) {
+                    $emailHandler->resetTos();
+                    $emailHandler->appendToAddress("carl8smith94@gmail.com", "Antoine Abou Cherfane");
+                    $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
+                }
+            }
+            $emailHandler->sendEmail(Constants::EMAIL_ORDER_UPDATE, $subject, $htmlContent);
+            
+            $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_order')), null);
+        } else {
+            $this->sendError(Constants::HTTP_FORBIDDEN, $dbOrder->exception, null);
+        }
     }
 }

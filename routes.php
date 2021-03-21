@@ -39,6 +39,7 @@ $f3->route('GET /v1/pharmacy/orders/@id', 'OrderController->getOrder');
 $f3->route('POST /v1/pharmacy/orders', 'OrderController->postOrder');
 $f3->route('POST /v1/pharmacy/orders/cancel', 'OrderController->postOrderCancel');
 $f3->route('POST /v1/pharmacy/orders/reportmissing', 'OrderController->postReportMissing');
+$f3->route('POST /v1/pharmacy/orders/edit', 'OrderController->postOrderEdit');
 
 ###################
 ## Feedback Endpoints
