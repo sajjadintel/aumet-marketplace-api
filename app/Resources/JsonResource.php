@@ -8,7 +8,7 @@ abstract class JsonResource implements Interfaces\Resource
 
     public static function collection($models)
     {
-        if (!$models instanceof \DB\CortexCollection) {
+        if (!($models instanceof \DB\CortexCollection)) {
             return [];
         }
         

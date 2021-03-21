@@ -8,8 +8,7 @@ class UserPharmacyController extends MainController
     public function index()
     {
         $user = new User;
-        $user->id = $this->objUser->id;
-    
+        $user->load(['id = ?', $this->objUser->id]);
         return $this->sendSuccess(
             Constants::HTTP_OK, 
             'success', 
