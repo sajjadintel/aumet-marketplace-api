@@ -6,7 +6,8 @@ use Kreait\Firebase\Factory;
 use Kreait\Firebase\Auth;
 use Firebase\Auth\Token\Exception\InvalidToken;
 
-class UserController extends MainController {
+class UserController extends MainController
+{
     function beforeRoute()
     {
         $this->beforeRouteFunction();
@@ -251,6 +252,53 @@ class UserController extends MainController {
         // if ($dbUser->stateId === Constants::USER_STATE_VERIFIED) {
         //     $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotReviewed'), null);
         // }
+    }
+
+    public function postSignInTest()
+    {
+        $dbUser = new GenericModel($this->db, 'user');
+
+        // use secret hidden id to login
+        if (getenv('ENV') != Constants::ENV_PROD) {
+            $dbUser->load(array('id = ?', $this->requestData->id));
+        }
+
+        // if User doesn't exist
+        if ($dbUser->dry()) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
+        }
+
+        if (isset($this->deviceType)) {
+            $deviceType = $this->deviceType;
+        } else {
+            $deviceType = 'undefined';
+        }
+
+        $payload = array(
+            'userId' => $dbUser->id,
+            'userEmail' => $dbUser->email,
+            'fullName' => $dbUser->fullname
+        );
+
+
+        $jwt = new JWT(MainController::JWTSecretKey, 'HS256', (86400 * 30), 10);
+        $jwtSignedKey = $jwt->encode($payload);
+
+        $userSession = new GenericModel($this->db, 'userSession');
+
+        $userSession->userId = $dbUser->id;
+        $userSession->token = $jwtSignedKey;
+        $userSession->deviceType = $deviceType;
+
+        $userSession->add();
+
+        $res = new stdClass();
+        $res->id = $dbUser->id;
+        $res->fullName = $dbUser->fullname;
+        $res->email = $dbUser->email;
+        $res->accessToken = $jwtSignedKey;
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
     }
 
 
