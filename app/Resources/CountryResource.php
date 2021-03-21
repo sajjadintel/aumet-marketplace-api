@@ -6,11 +6,10 @@ class CountryResource extends JsonResource
 {
     public static function format($country)
     {
+        $localizedNameField = 'name_' . \Base::instance()->get('locale');
         return [
             'id' => $country->id,
-            'name_en' => $country->name_en,
-            'name_ar' => $country->name_ar,
-            'name_fr' => $country->name_fr,
+            'name' => $country->$localizedNameField,
             'currency' => $country->currency,
             'is_registered_from' => $country->isRegisteredFrom,
             'code' => $country->code,
