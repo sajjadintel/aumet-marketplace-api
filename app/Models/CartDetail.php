@@ -47,10 +47,10 @@ class CartDetail extends Model
         $total = $bonusDetail->total;
 
         $total = $this->quantityFree + $this->quantity;
-        if ($total > max($bonusDetail->maxOrder, $this->$this->entityProductId->stock)) {
-            $this->errors[] = ['stock' => $this->f3->get('RESPONSE.400_lowStock', $this->entityProductId->stock)];
+        if ($total > max($bonusDetail->maxOrder, $this->entityProductId->stock)) {
+            $this->errors[] = ['stock' => \Base::instance()->get('RESPONSE.400_quantityTooHigh', $this->entityProductId->stock)];
             $this->response['statusCode'] = Constants::HTTP_BAD_REQUEST;
-            $this->response['message'] = $this->f3->get('RESPONSE.400_lowStock', $this->entityProductId->stock);
+            $this->response['message'] = \Base::instance()->get('RESPONSE.400_quantityTooHigh', $this->entityProductId->stock);
             return $this;
         }
 
