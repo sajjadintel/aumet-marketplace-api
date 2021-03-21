@@ -58,7 +58,9 @@ class SavedForLater extends Model
             return $this;
         }
 
-        $cartDetail->erase();
+        if (isset($cartDetail)) {
+            $cartDetail->erase();
+        }
 
         $this->accountId = $data['account_id'];
         $this->entityProductId = $data['entity_product_id'];
