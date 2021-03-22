@@ -13,7 +13,7 @@ class AppController extends MainController {
         $res->secondaryColor = getenv('APP_SECONDARY_COLOR');
         $res->appName = getenv("APP_NAME");
         $res->appVersion = getenv("APP_VERSION");
-        $res->colorPalettes = json_decode(getenv('APP_COLOR_PALETTES'));
+        $res->colorPalettes = json_decode(str_replace('\'','"',getenv('APP_COLOR_PALETTES')));
 
         $dbSetting = new GenericModel($this->db, "setting");
         $dbSetting->value = "value_" . $this->language;
