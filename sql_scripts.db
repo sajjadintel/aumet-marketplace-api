@@ -23,7 +23,7 @@ CHANGE COLUMN `key` `title` VARCHAR(100) NULL DEFAULT NULL ;
 
 #############################
 
-# 21/03/2021 - Sajad Abbasi
+# 22/03/2021 - Sajad Abbasi
 # Add note column from order table
 
 CREATE OR REPLACE VIEW `marketplace`.`vwOrderEntityUser` AS
