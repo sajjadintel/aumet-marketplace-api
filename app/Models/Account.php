@@ -15,5 +15,21 @@ class Account extends Model
             'type' => Schema::DT_INT,
             'belongs-to-one' => Entity::class
         ],
+        'savedForLater' => [
+            'has-many' => [SavedForLater::class, 'accountId'],
+        ],
+        'cartDetails' => [
+            'has-many' => [CartDetail::class, 'accountId'],
+        ]
     ];
+
+    /**
+     * Returns the country object of the account's entity
+     *
+     * @return Country|null
+     */
+    public function country()
+    {
+        return $this->entityId->countryId;
+    } 
 }

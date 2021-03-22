@@ -11,6 +11,9 @@ class Country extends Model
         'entities' => [
             'has-many' => [Entity::class, 'countryId'],
         ],
+        'cities' => [
+            'has-many' => [City::class, 'countryId'],
+        ],
         'id' => [
             'type' => Schema::DT_INT,
         ],

@@ -1,8 +1,8 @@
 <?php
 
 
-class ProductController extends MainController {
-
+class ProductController extends MainController
+{
     public function getProducts()
     {
         $limit = 10;
@@ -179,7 +179,7 @@ class ProductController extends MainController {
         $response['dataFilter'] = $dataFilter;
 
         $arrData = array_map(array($dbProducts, 'cast'), $dbProducts->find($filter, $order));
-        for($i = 0; $i < count($arrData); $i++) {
+        for ($i = 0; $i < count($arrData); $i++) {
             $data = $arrData[$i];
             $availableQuantity = ProductHelper::getAvailableQuantity($data['stock'], $data['maximumOrderQuantity']);
             $bonusInfo = ProductHelper::getBonusInfo(
@@ -190,7 +190,7 @@ class ProductController extends MainController {
                 $data['entityId'],
                 $availableQuantity
             );
-            $arrData[$i]['arrBonus'] = $bonusInfo->arrBonus;
+            $arrData[$i]['bonuses'] = $bonusInfo->arrBonus;
         }
 
         $response['data'] = $arrData;
@@ -213,8 +213,8 @@ class ProductController extends MainController {
         $dbProduct->madeInCountryName = "madeInCountryName_" . $this->language;
         $product = $dbProduct->findWhere("id = '$entityProductId' ")[0];
 
-        $response['product'] = $product;
-        
+        $response['data'] = $product;
+
         $availableQuantity = ProductHelper::getAvailableQuantity($product['stock'], $product['maximumOrderQuantity']);
         $bonusInfo = ProductHelper::getBonusInfo(
             $this->db,
@@ -224,40 +224,8 @@ class ProductController extends MainController {
             $product['entityId'],
             $availableQuantity
         );
-        $response['arrBonus'] = $bonusInfo->arrBonus;
+        $response['data']['bonuses'] = $bonusInfo->arrBonus;
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_product')), $response);
-    }
-
-    public function getProductBonus()
-    {
-        if (!$this->f3->get('PARAMS.productId'))
-            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_productId')), null);
-
-        $productId = $this->f3->get('PARAMS.productId');
-
-        $dbProduct = new GenericModel($this->db, "vwEntityProductSell");
-        $dbProduct->productName = "productName_" . $this->language;
-        $dbProduct->entityName = "entityName_" . $this->language;
-        $dbProduct->bonusTypeName = "bonusTypeName_" . $this->language;
-        $dbProduct->madeInCountryName = "madeInCountryName_" . $this->language;
-
-        $arrProduct = $dbProduct->findWhere("productId = '$productId'");
-        $product = $arrProduct[0];
-
-        $data['product'] = $product;
-        
-        $availableQuantity = ProductHelper::getAvailableQuantity($product['stock'], $product['maximumOrderQuantity']);
-        $bonusInfo = ProductHelper::getBonusInfo(
-            $this->db,
-            $this->language,
-            $this->objEntityList,
-            $product['id'],
-            $product['entityId'],
-            $availableQuantity
-        );
-        $data['arrBonus'] = $bonusInfo->arrBonus;
-
-        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_bonus')), $data);
     }
 }
