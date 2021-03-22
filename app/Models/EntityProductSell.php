@@ -9,9 +9,6 @@ class EntityProductSell extends Model
         'cartDetails' => [
             'has-many' => [CartDetail::class, 'entityProductId'],
         ],
-        'savedForLater' => [
-            'has-many' => [SavedForLater::class, 'entityProductId'],
-        ],
         'productId' => [
             'belongs-to-one' => Product::class,
         ],

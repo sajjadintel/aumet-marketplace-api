@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Views\EntityProductSell;
 use Constants;
 use DB\SQL\Schema;
 
