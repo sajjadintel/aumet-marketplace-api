@@ -14,12 +14,9 @@ class AppController extends MainController {
         $res->appName = getenv("APP_NAME");
         $res->appVersion = getenv("APP_VERSION");
 
-//        $dbSetting = new GenericModel($this->db, "setting");
-//        $settings = $dbSetting->findWhere("language = '{$this->language}'");
-//        $res->settings = $settings;
-
         $dbSetting = new GenericModel($this->db, "setting");
-        $dbSetting->getWhere("language = '{$this->language}'");
+        $dbSetting->value = "value_" . $this->language;
+        $dbSetting->load();
 
         while (!$dbSetting->dry()) {
             $res->settings[$dbSetting->title] = $dbSetting->value;
