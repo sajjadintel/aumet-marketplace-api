@@ -2,8 +2,7 @@
 
 use Ahc\Jwt\JWT;
 
-class MainController
-{
+class MainController {
     const APIKey = "zTvkXwJSSRa5DVvTgQhaUW52DkpkeSz";
     const JWTSecretKey = "mxczKngV84P/26qs+}nrj!T>RD^5^3F=";
 
@@ -63,7 +62,7 @@ class MainController
         $this->language = null;
         $this->sessionId = null;
         $this->env = getenv('ENV');
-        $this->db =  $this->f3->get("dbConnectionMain");
+        $this->db = $this->f3->get("dbConnectionMain");
 
         $this->fetchHttpHeaderValues();
     }
@@ -190,7 +189,7 @@ class MainController
 
     function sendSuccess($statusCode, $message = null, $data = null)
     {
-        $response =  $this->formatResponse($statusCode, $message, $data);
+        $response = $this->formatResponse($statusCode, $message, $data);
         $this->logRequest(Constants::LOG_TYPE_SUCCESS, $response);
         echo $response;
 
@@ -218,4 +217,16 @@ class MainController
 
         ApiRequestsLog::logRequest($this->f3, $this->db, $userId, $this->sessionId, $data, $type, $ip);
     }
+
+    function checkLength($variable, $variableName, $maxLength, $minLength = 0)
+    {
+        if (strlen($variable) > $maxLength) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramTooLong', $this->f3->get("entity_" . $variableName, $maxLength)), null);
+        }
+
+        if (strlen($variable) < $minLength) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramTooShort', $this->f3->get("entity_" . $variableName, $minLength)), null);
+        }
+    }
+
 }

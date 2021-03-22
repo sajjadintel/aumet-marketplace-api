@@ -50,6 +50,33 @@ class Helper {
             $orders[$i]['colorPalette'] = $mapPaletteToOrderStatus[$orders[$i]['statusId']] ?? 'main';
         }
         return $orders;
+
+    public static function generateRandomString($length = 10)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+
+    public static function isDistributor($roleId)
+    {
+        if ($roleId == 10 || $roleId == 20 || $roleId == 30) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function isPharmacy($roleId)
+    {
+        if ($roleId == 40 || $roleId == 41) {
+            return true;
+        }
+        return false;
     }
 
 }

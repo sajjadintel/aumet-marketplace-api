@@ -303,7 +303,8 @@ class OrderController extends MainController
                 $dbChatMessage->receiverEntityId = $dbChatRoom->sellerEntityId;
                 $dbChatMessage->type = 1;
                 $dbChatMessage->content = $note;
-                $dbChatMessage->isRead = 0;
+                $dbChatMessage->isReadBuyer = 0;
+                $dbChatMessage->isReadSeller = 0;
                 if (!$dbChatMessage->add())
                     $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatMessage->exception, null);
             }
@@ -325,6 +326,7 @@ class OrderController extends MainController
             $dbOrder->userSellerId = null;
             $dbOrder->statusId = 1;
             $dbOrder->paymentMethodId = $seller['paymentMethodId'];
+            $dbOrder->note = $note;
 
             // TODO: Adjust serial logic
             $dbOrder->serial = mt_rand(100000, 999999);
@@ -341,15 +343,14 @@ class OrderController extends MainController
                 $orderId = $dbOrder->id;
                 $entityProductId = $cartItem['entityProductId'];
                 $quantity = $cartItem['quantity'];
-                $note = $cartItem['note'];
                 $quantityFree = $cartItem['quantityFree'];
                 $unitPrice = $cartItem['unitPrice'];
                 $vat = $cartItem['vat'];
                 $totalQuantity = $quantity + $quantityFree;
                 $freeRatio = $quantityFree / ($quantity + $quantityFree);
 
-                $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `quantityFree`, `freeRatio`, `requestedQuantity`, `shippedQuantity`, `note`, `unitPrice`, `tax`) VALUES "
-                    . "('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $quantityFree . "', '" . $freeRatio . "', '" . $totalQuantity . "', '" . $totalQuantity . "', '" . $note . "', '" . $unitPrice . "', '" . $vat . "');";
+                $query = "INSERT INTO orderDetail (`orderId`, `entityProductId`, `quantity`, `quantityFree`, `freeRatio`, `requestedQuantity`, `shippedQuantity`, `unitPrice`, `tax`) VALUES "
+                    . "('" . $orderId . "', '" . $entityProductId . "', '" . $quantity . "', '" . $quantityFree . "', '" . $freeRatio . "', '" . $totalQuantity . "', '" . $totalQuantity . "', '" . $unitPrice . "', '" . $vat . "');";
 
                 array_push($commands, $query);
                 array_push($arrEntityProductId, $entityProductId);
