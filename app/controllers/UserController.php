@@ -255,11 +255,11 @@ class UserController extends MainController {
         $city = $dbCity->getById($allValues->cityId)[0];
         $allValues->cityName = $city['name'];
 
-//        if (Helper::isPharmacy($dbUser->roleId)) {
-//            NotificationHelper::sendVerificationPharmacyNotification($this->f3, $this->db, $allValues, $dbUser->id, $dbEntity->id, $dbEntityBranch->id);
-//        } else {
-//            NotificationHelper::sendVerificationDistributorNotification($this->f3, $this->db, $allValues, $dbUser->id, $dbEntity->id, $dbEntityBranch->id);
-//        }
+        if (Helper::isPharmacy($dbUser->roleId)) {
+            NotificationHelper::sendVerificationPharmacyNotification($this->f3, $this->db, $allValues, $dbUser->id, $dbEntity->id, $dbEntityBranch->id);
+        } else {
+            NotificationHelper::sendVerificationDistributorNotification($this->f3, $this->db, $allValues, $dbUser->id, $dbEntity->id, $dbEntityBranch->id);
+        }
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_user')), $allValues);
     }
@@ -326,7 +326,7 @@ class UserController extends MainController {
         $jwt = new JWT(getenv('JWT_SECRET_KEY'), 'HS256', (86400 * 1), 10);
         $token = $jwt->encode($payload);
 
-//        NotificationHelper::resetPasswordNotification($this->f3, $this->db, $dbUser, $token);
+        NotificationHelper::resetPasswordNotification($this->f3, $this->db, $dbUser, $token);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.email_sent'));
     }

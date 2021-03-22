@@ -44,4 +44,21 @@ class Helper {
         return $randomString;
     }
 
+
+    public static function isDistributor($roleId)
+    {
+        if ($roleId == 10 || $roleId == 20 || $roleId == 30) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function isPharmacy($roleId)
+    {
+        if ($roleId == 40 || $roleId == 41) {
+            return true;
+        }
+        return false;
+    }
+
 }

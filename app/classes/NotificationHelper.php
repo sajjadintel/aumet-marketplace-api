@@ -5,12 +5,52 @@ use Ahc\Jwt\JWT;
 class NotificationHelper {
 
 
+    /**
+     * Does something interesting
+     *
+     * @param \Base $f3 f3 instance
+     * @param GenericModel $dbConnection db connection instance
+     * @param \GenericModel $user user Model
+     * @param string $token reset password token
+     */
+    public static function resetPasswordNotification($f3, $dbConnection, $user, $token)
+    {
+        $emailHandler = new EmailHandler($dbConnection);
+        $emailFile = "emails/layout.php";
+        $title = 'Reset Password';
+        $f3->set('marketplaceDomainUrl', getenv('MARKETPLACE_DOMAIN_URL'));
+        $f3->set('domainUrl', getenv('DOMAIN_URL'));
+        $f3->set('title', $title);
+        $f3->set('emailType', 'resetPassword');
+        $f3->set('token', $token);
+
+
+        $emailHandler->appendToAddress($user->email, $user->fullname);
+
+        $htmlContent = View::instance()->render($emailFile);
+
+        $subject = $title;
+        if (getenv('ENV') != Constants::ENV_PROD) {
+            $subject .= " - (Test: " . getenv('ENV') . ")";
+
+            if (getenv('ENV') == Constants::ENV_LOCAL) {
+                $emailHandler->resetTos();
+                $emailHandler->appendToAddress("sajjadintel@gmail.com", "Sajjad intel");
+                $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
+                $emailHandler->appendToAddress("n.javaid@aumet.com", "Naveed Javaid");
+            }
+        }
+
+        $emailHandler->sendEmail(Constants::EMAIL_RESET_PASSWORD, $subject, $htmlContent);
+        $emailHandler->resetTos();
+    }
+
 
     /**
      * sendVerificationPharmacyNotification
      *
      * @param \Base $f3 f3 instance
-     * @param BaseModel $dbConnection db connection instance
+     * @param GenericModel $dbConnection db connection instance
      * @param stdClass $allValues all values
      * @param int $userId User id
      * @param int $entityId entity id
@@ -19,7 +59,7 @@ class NotificationHelper {
     public static function sendVerificationPharmacyNotification($f3, $dbConnection, $allValues, $userId, $entityId, $entityBranchId)
     {
         $emailHandler = new EmailHandler($dbConnection);
-        $emailFile = "email/layout.php";
+        $emailFile = "emails/layout.php";
         $f3->set('domainUrl', getenv('DOMAIN_URL'));
         $f3->set('title', 'Pharmacy Account Verification');
         $f3->set('emailType', 'pharmacyAccountVerification');
@@ -56,7 +96,7 @@ class NotificationHelper {
         if (getenv('ENV') != Constants::ENV_PROD) {
             $subject .= " - (Test: " . getenv('ENV') . ")";
 
-            if (getenv('ENV') == Constants::ENV_LOC) {
+            if (getenv('ENV') == Constants::ENV_LOCAL) {
                 $emailHandler->appendToAddress("carl8smith94@gmail.com", "Antoine Abou Cherfane");
                 $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
                 $emailHandler->appendToAddress("n.javaid@aumet.com", "Naveed Javaid");
@@ -71,7 +111,7 @@ class NotificationHelper {
      * sendVerificationDistributorNotification
      *
      * @param \Base $f3 f3 instance
-     * @param BaseModel $dbConnection db connection instance
+     * @param GenericModel $dbConnection db connection instance
      * @param stdClass $allValues all values
      * @param int $userId User id
      * @param int $entityId entity id
@@ -80,13 +120,13 @@ class NotificationHelper {
     public static function sendVerificationDistributorNotification($f3, $dbConnection, $allValues, $userId, $entityId, $entityBranchId)
     {
         $emailHandler = new EmailHandler($dbConnection);
-        $emailFile = "email/layout.php";
+        $emailFile = "emails/layout.php";
         $f3->set('domainUrl', getenv('DOMAIN_URL'));
         $f3->set('title', 'Distributor Account Verification');
         $f3->set('emailType', 'distributorAccountVerification');
 
 
-        $dbCity = new BaseModel($dbConnection, "city");
+        $dbCity = new GenericModel($dbConnection, "city");
         $dbCity->name = "nameEn";
         $city = $dbCity->getById($allValues->cityId)[0];
         $cityName = $city['name'];
@@ -122,7 +162,7 @@ class NotificationHelper {
         if (getenv('ENV') != Constants::ENV_PROD) {
             $subject .= " - (Test: " . getenv('ENV') . ")";
 
-            if (getenv('ENV') == Constants::ENV_LOC) {
+            if (getenv('ENV') == Constants::ENV_LOCAL) {
                 $emailHandler->appendToAddress("carl8smith94@gmail.com", "Antoine Abou Cherfane");
                 $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
                 $emailHandler->appendToAddress("n.javaid@aumet.com", "Naveed Javaid");
