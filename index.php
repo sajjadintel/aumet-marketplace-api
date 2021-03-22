@@ -126,6 +126,6 @@ session_start();
 //     }
 // );
 
-App\Validators\Validator::registerValidators();
+// App\Validators\Validator::registerValidators();
 
 $f3->run();
