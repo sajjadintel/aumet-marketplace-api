@@ -1,27 +1,53 @@
 <?php
 
-class ProductHelper
-{
+namespace App\Libraries;
 
-    public static function getAvailableQuantity($stock, $maximumOrderQuantity)
+use Base;
+use DB\SQL;
+use stdClass;
+use GenericModel;
+use Constants;
+
+class BonusHelper {
+
+    /**
+     * calculateBonusQuantity
+     *
+     * @param Base $f3 f3 instance
+     * @param SQL $dbConnection db connection instance
+     * @param string $language user language
+     * @param int $entityProductId product id
+     * @param int $quantity quantity
+     * @param boolean $isTotalQuantity is total quantity
+     *
+     * @return stdClass bonusDetail
+     */
+    public static function calculateBonusQuantity($f3, $dbConnection, $language, $entityProductId, $quantity, $entityIds, $isTotalQuantity = false): stdClass
     {
-        $availableQuantity = min($stock, $maximumOrderQuantity);
-        if (!$maximumOrderQuantity)
-            $availableQuantity = $stock;
-        if (!$stock)
-            $availableQuantity = 0;
+        $dbEntityProduct = new GenericModel($dbConnection, "vwEntityProductSell");
+        $dbEntityProduct->getWhere("id=$entityProductId");
+        $productId = $dbEntityProduct->id;
+        $sellerId = $dbEntityProduct->entityId;
 
-        return $availableQuantity;
-    }
+        $maxOrder = min($dbEntityProduct->stock, $dbEntityProduct->maximumOrderQuantity);
 
-    public static function getBonusInfo($dbConnection, $language, $objEntityList, $entityProductId, $entityId, $availableQuantity, $quantity = 0)
-    {
+        if (!$dbEntityProduct->maximumOrderQuantity)
+            $maxOrder = $dbEntityProduct->stock;
+        if (!$dbEntityProduct->stock)
+            $maxOrder = 0;
+
+        if ($isTotalQuantity) {
+            if ($quantity > $maxOrder) {
+                $quantity = $maxOrder;
+            }
+        }
+
         // Get all related bonuses
         $mapBonusIdRelationGroup = [];
         $mapSellerIdRelationGroupId = [];
         $dbBonus = new GenericModel($dbConnection, "vwEntityProductSellBonusDetail");
         $dbBonus->bonusTypeName = "bonusTypeName_" . $language;
-        $arrBonus = $dbBonus->getWhere("entityProductId = $entityProductId AND isActive = 1") ?: [];
+        $arrBonus = $dbBonus->getWhere("entityProductId = $productId AND isActive = 1");
         $arrBonusId = [];
         foreach ($arrBonus as $bonus) {
             array_push($arrBonusId, $bonus['id']);
@@ -44,18 +70,16 @@ class ProductHelper
             }
         }
 
-        $arrEntityId = Helper::idListFromArray($objEntityList);
+        $arrEntityId = implode(',', $entityIds);
         $dbEntityRelation = new GenericModel($dbConnection, "entityRelation");
         $arrEntityRelation = $dbEntityRelation->getWhere("entityBuyerId IN ($arrEntityId)");
         foreach ($arrEntityRelation as $entityRelation) {
             $mapSellerIdRelationGroupId[$entityRelation['entitySellerId']] = $entityRelation['relationGroupId'];
         }
 
-        $arrProductBonus = [];
+        $quantityFree = 0;
         $activeBonus = new stdClass();
         $activeBonus->totalBonus = 0;
-
-
         foreach ($arrBonus as $bonus) {
             $bonusId = $bonus['id'];
 
@@ -63,8 +87,8 @@ class ProductHelper
             $valid = false;
             if (array_key_exists($bonusId, $mapBonusIdRelationGroup)) {
                 $arrRelationGroup = $mapBonusIdRelationGroup[$bonusId];
-                if (array_key_exists($entityId, $mapSellerIdRelationGroupId)) {
-                    $relationGroupId = $mapSellerIdRelationGroupId[$entityId];
+                if (array_key_exists($sellerId, $mapSellerIdRelationGroupId)) {
+                    $relationGroupId = $mapSellerIdRelationGroupId[$sellerId];
                     if (in_array($relationGroupId, $arrRelationGroup)) {
                         $valid = true;
                     }
@@ -89,9 +113,16 @@ class ProductHelper
             } else if ($bonusTypeId == Constants::BONUS_TYPE_PERCENTAGE) {
                 $totalOrder = $bonusMinOrder + floor($bonusBonus * $bonusMinOrder / 100);
             }
-            if ($totalOrder > $availableQuantity) {
+            if ($totalOrder > $maxOrder) {
                 continue;
             }
+            // if it's total quantity total (max bonus value) should be less than quantity
+            if ($isTotalQuantity) {
+                if ($totalOrder > $quantity) {
+                    continue;
+                }
+            }
+
 
             $totalBonus = 0;
             if ($quantity >= $bonusMinOrder) {
@@ -113,33 +144,45 @@ class ProductHelper
                 $activeBonus->minQty = $bonusMinOrder;
                 $activeBonus->bonuses = $bonusBonus;
                 $activeBonus->totalBonus = $totalBonus;
-            }
-
-
-            $found = false;
-            for ($j = 0; $j < count($arrProductBonus); $j++) {
-                $productBonus = $arrProductBonus[$j];
-                if ($productBonus->bonusType == $bonusType) {
-                    array_push($productBonus->bonusList, array('minQty' => $bonusMinOrder, 'bonus' => $bonusBonus));
-                    $arrProductBonus[$j] = $productBonus;
-                    $found = true;
-                    break;
-                }
-            }
-            if (!$found) {
-                $productBonus = new stdClass();
-                $productBonus->bonusType = $bonusType;
-                $productBonus->bonusList = array();
-                array_push($productBonus->bonusList, array('minQty' => $bonusMinOrder, 'bonus' => $bonusBonus));
-                array_push($arrProductBonus, $productBonus);
+                $activeBonus->bonusTypeId = $bonusTypeId;
+                $quantityFree = $totalBonus;
             }
         }
 
+        $bonusDetail = new stdClass();
+        $bonusDetail->quantityFree = $quantityFree;
+        $bonusDetail->quantity = $quantity;
+        $bonusDetail->total = $quantity + $quantityFree;
+        $bonusDetail->maxOrder = $maxOrder;
+        $bonusDetail->activeBonus = $activeBonus;
+        $bonusDetail->arrBonus = $arrBonus;
+        $bonusDetail->dbEntityProduct = $dbEntityProduct;
 
-        $bonusInfo = new stdClass();
-        $bonusInfo->arrBonus = $arrProductBonus;
-        $bonusInfo->activeBonus = $activeBonus;
+        // if it's total quantity change max order with right value and consider bonus
+        if ($isTotalQuantity) {
+            switch ($bonusDetail->activeBonus->bonusTypeId) {
+                case Constants::BONUS_TYPE_FIXED:
+                    $bonusDetail->maxOrder = $bonusDetail->maxOrder - $bonusDetail->activeBonus->bonuses;
+                    break;
+                case Constants::BONUS_TYPE_DYNAMIC:
+                    $max = 0;
+                    for ($quantity = $maxOrder; $quantity > 0; $quantity--) {
+                        $res = $quantity + floor($quantity / $bonusDetail->activeBonus->minQty) * $bonusDetail->activeBonus->bonuses;
+                        if ($res <= $maxOrder) {
+                            $max = $quantity;
+                            break;
+                        }
+                    }
+                    $bonusDetail->maxOrder = $max;
+                    break;
+                case Constants::BONUS_TYPE_PERCENTAGE:
+                    $bonuses = str_replace('%', '', $bonusDetail->activeBonus->bonuses);
+                    $bonusDetail->maxOrder = floor($bonusDetail->maxOrder * 100 / ((float)$bonuses + 100));
+                    break;
+            }
+        }
 
-        return $bonusInfo;
+        return $bonusDetail;
     }
+
 }

@@ -86,3 +86,13 @@ CHANGE COLUMN `key` `title` VARCHAR(100) NULL DEFAULT NULL ;
 
 
 #############################
+# 22/03/2021 - Sajad Abbasi
+# Adjust Settings table
+
+ALTER TABLE `marketplace`.`setting`
+DROP COLUMN `language`,
+ADD COLUMN `value_ar` TEXT NULL AFTER `value_en`,
+ADD COLUMN `value_fr` TEXT NULL AFTER `value_ar`,
+CHANGE COLUMN `value` `value_en` TEXT NULL DEFAULT NULL ;
+
+#############################

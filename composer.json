@@ -11,7 +11,9 @@
 		"geoip2/geoip2": "~2.0a",
 		"vlucas/phpdotenv": "^4.1",
 		"kreait/firebase-php": "^5.8",
-		"lcobucci/jwt": "3.4.1"
+		"lcobucci/jwt": "3.4.1",
+		"ikkez/f3-cortex": "1.*",
+		"geofmureithi/f3-validate": "^1.1"
 	},
 	"license": "Aumet all rights reserved",
 	"authors": [
@@ -19,5 +21,14 @@
 			"name": "Alaa Al Atrash",
 			"email": "a.atrash@aumet.com"
 		}
-	]
+	],
+	"autoload": {
+		"psr-4": {
+			"App\\Models\\": "app/Models",
+			"App\\Utilities\\": "app/Utilities",
+			"App\\Libraries\\": "app/Libraries",
+			"App\\Resources\\": "app/Resources",
+			"App\\Validators\\": "app/Validators"
+		}
+	}
 }
