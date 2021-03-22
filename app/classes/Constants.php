@@ -101,7 +101,6 @@ class Constants
     const EMAIL_PHARMACY_ACCOUNT_APPROVED = 'Pharmacy Account Approved';
     const EMAIL_DISTRIBUTOR_ACCOUNT_APPROVED = 'Distributor Account Approved';
     const EMAIL_NEW_CUSTOMER_GROUP = 'New Customer Group';
-    const EMAIL_CHANGE_PROFILE_APPROVAL = 'Change Profile Approval';
     const EMAIL_CHANGE_PROFILE_APPROVED = 'Change Profile Approved';
 
 

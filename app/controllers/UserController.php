@@ -451,6 +451,10 @@ class UserController extends MainController {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
         }
 
+        if (!Helper::isPharmacy($dbUser->roleId)) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_pharmacyAccount')), null);
+        }
+
         if (isset($this->deviceType)) {
             $deviceType = $this->deviceType;
         } else {
@@ -546,6 +550,10 @@ class UserController extends MainController {
         // if User doesn't exist
         if ($dbUser->dry()) {
             $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
+        }
+
+        if (!Helper::isPharmacy($dbUser->roleId)) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_pharmacyAccount')), null);
         }
 
         if (isset($this->deviceType)) {
