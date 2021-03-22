@@ -16,6 +16,7 @@ $f3->route('POST /v1/users/password/forgot', 'UserController->postForgottenPassw
 $f3->route('POST /v1/users/password/reset', 'UserController->postResetPassword');
 $f3->route('POST /v1/users/signout', 'UserController->postSignOut');
 $f3->route('GET /v1/users/profile', 'UserController->getProfile');
+$f3->route('GET /v1/user/pharmacy', 'UserPharmacyController->index');
 
 ##################################################
 ## PHARMACY ACCESS
@@ -56,3 +57,23 @@ $f3->route('GET /v1/pharmacy/sellers', 'SearchController->getSellerList');
 $f3->route('GET /v1/pharmacy/news', 'NewsController->getNewsList');
 $f3->route('GET /v1/pharmacy/news/@id', 'NewsController->getNews');
 $f3->route('GET /v1/pharmacy/newsType', 'NewsController->getNewsTypeList');
+
+###################
+## FAQ
+$f3->route('GET /v1/pharmacy/faq', 'FaqController->index');
+
+###################
+## Wishlist Endpoints
+$f3->route('GET /v1/pharmacy/wishlist', 'WishlistController->index');
+$f3->route('POST /v1/pharmacy/wishlist', 'WishlistController->create');
+$f3->route('DELETE /v1/pharmacy/wishlist/@id', 'WishlistController->destroy');
+$f3->route('POST /v1/pharmacy/wishlist/@id/cart', 'WishlistController->moveToCart');
+
+###################
+## notifications
+$f3->route('GET /v1/pharmacy/notification', 'NotificationsController->index');
+$f3->route('PATCH /v1/pharmacy/notification/@id/read', 'NotificationsController->markAsRead');
+
+###################
+## Distributor Endpoints
+$f3->route('GET /v1/pharmacy/distributor', 'DistributorsController->index');

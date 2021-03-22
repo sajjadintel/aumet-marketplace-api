@@ -115,12 +115,11 @@ class MainController
             case 'PUT':
             case 'POST':
                 $this->requestData = file_get_contents('php://input');
-                if ($this->requestData) {
-                    $this->requestData = utf8_encode($this->requestData);
-                    $this->requestData = json_decode($this->requestData);
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        $this->f3->error(Constants::HTTP_UNSUPPORTED_MEDIA_TYPE, $this->f3->get('RESPONSE.415_unsupported', json_last_error()));
-                    }
+                $this->requestData = empty($this->requestData) ? '[]' : $this->requestData;
+                $this->requestData = utf8_encode($this->requestData);
+                $this->requestData = json_decode($this->requestData);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $this->f3->error(Constants::HTTP_UNSUPPORTED_MEDIA_TYPE, $this->f3->get('RESPONSE.415_unsupported', json_last_error()));
                 }
 
                 break;
@@ -159,6 +158,7 @@ class MainController
                                     $this->objEntityList[$dbEntityList->id] = $dbEntityList->name;
                                     $dbEntityList->next();
                                 }
+                                $this->f3->set('objEntityList', $this->objEntityList);
                             }
                         }
                     }
@@ -178,7 +178,8 @@ class MainController
         // set the header to make sure cache is forced and treat this as json
         header("Cache-Control: no-transform,public,max-age=300,s-maxage=900");
         header('Content-Type: application/json');
-        header('Status: 200 OK');
+        header("Status: 200 OK");
+        http_response_code($statusCode);
 
         return json_encode(array(
             'statusCode' => $statusCode,
