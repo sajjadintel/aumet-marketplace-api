@@ -59,6 +59,16 @@ $f3->route('GET /v1/pharmacy/news/@id', 'NewsController->getNews');
 $f3->route('GET /v1/pharmacy/newsType', 'NewsController->getNewsTypeList');
 
 ###################
+## Message Endpoint
+$f3->route('GET /v1/pharmacy/messages', 'MessageController->getChatRoomList');
+$f3->route('GET /v1/pharmacy/messages/@id', 'MessageController->getMessageList');
+$f3->route('POST /v1/pharmacy/messages/unread', 'MessageController->postSetMessagesUnread');
+$f3->route('POST /v1/pharmacy/messages/read', 'MessageController->postSetMessagesRead');
+$f3->route('POST /v1/pharmacy/messages/archive', 'MessageController->postSetChatRoomArchive');
+$f3->route('POST /v1/pharmacy/messages', 'MessageController->postNewMessage');
+$f3->route('POST /v1/pharmacy/messages/chatroom', 'MessageController->postNewChatRoom');
+
+###################
 ## FAQ
 $f3->route('GET /v1/pharmacy/faq', 'FaqController->index');
 
@@ -70,7 +80,7 @@ $f3->route('DELETE /v1/pharmacy/wishlist/@id', 'WishlistController->destroy');
 $f3->route('POST /v1/pharmacy/wishlist/@id/cart', 'WishlistController->moveToCart');
 
 ###################
-## notifications
+## Notifications Endpoints
 $f3->route('GET /v1/pharmacy/notification', 'NotificationsController->index');
 $f3->route('PATCH /v1/pharmacy/notification/@id/read', 'NotificationsController->markAsRead');
 

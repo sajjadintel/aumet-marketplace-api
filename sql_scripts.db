@@ -1,4 +1,70 @@
 ################################
+
+## 18/03/2021 -- Sajad Abbasi
+# fix date fields
+
+ALTER TABLE `marketplace`.`chatroom`
+ADD COLUMN `archivedAt` DATETIME NULL AFTER `updatedAt` ,
+CHANGE COLUMN `createdAt` `createdAt` DATETIME NULL DEFAULT NULL ,
+CHANGE COLUMN `updatedAt` `updatedAt` DATETIME NULL DEFAULT NULL ,
+CHANGE COLUMN `createdAt` `createdAt` DATETIME NULL DEFAULT CURRENT_TIMESTAMP ;
+
+################################
+
+## 22/03/2021 -- Sajad Abbasi
+# Create vwChatroom
+
+CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
+    SELECT
+        `marketplace`.`chatroom`.`id` AS `id`,
+        `marketplace`.`chatroom`.`entityIdSeller` AS `entityIdSeller`,
+        `marketplace`.`chatroom`.`entityIdBuyer` AS `entityIdBuyer`,
+        `marketplace`.`chatroom`.`pendingReadSeller` AS `pendingReadSeller`,
+        `marketplace`.`chatroom`.`pendingReadBuyer` AS `pendingReadBuyer`,
+        `marketplace`.`chatroom`.`archivedBuyerAt` AS `archivedBuyerAt`,
+        `marketplace`.`chatroom`.`archivedSellerAt` AS `archivedSellerAt`,
+        `marketplace`.`chatroom`.`isArchivedSeller` AS `isArchivedSeller`,
+        `marketplace`.`chatroom`.`isArchivedBuyer` AS `isArchivedBuyer`,
+        `marketplace`.`chatroom`.`isReadBuyer` AS `isReadBuyer`,
+        `marketplace`.`chatroom`.`isReadSeller` AS `isReadSeller`,
+        `marketplace`.`chatroom`.`createdAt` AS `createdAt`,
+        `marketplace`.`chatroom`.`updatedAt` AS `updatedAt`,
+        `marketplace`.`entity`.`name_en` AS `name_en`,
+        `marketplace`.`entity`.`name_ar` AS `name_ar`,
+        `marketplace`.`entity`.`name_fr` AS `name_fr`,
+        `marketplace`.`entity`.`image` AS `image`
+    FROM
+        (`marketplace`.`chatroom`
+        LEFT JOIN `marketplace`.`entity` ON (`marketplace`.`chatroom`.`entityIdSeller` = `marketplace`.`entity`.`id`))
+    ORDER BY `marketplace`.`chatroom`.`id` DESC
+
+#############################
+
+## 22/03/2021 -- Sajad Abbasi
+# alter chat columns
+
+ALTER TABLE `marketplace`.`chatroom`
+ADD COLUMN `archivedSellerAt` DATETIME NULL AFTER `archivedBuyerAt`,
+ADD COLUMN `isArchivedSeller` INT(1) NULL DEFAULT 0 AFTER `archivedSellerAt`,
+ADD COLUMN `isArchivedBuyer` INT(1) NULL DEFAULT 0 AFTER `isArchivedSeller`,
+ADD COLUMN `isReadBuyer` INT(1) NULL DEFAULT 1 AFTER `isArchivedBuyer`,
+ADD COLUMN `isReadSeller` INT(1) NULL DEFAULT 1 AFTER `isReadBuyer`,
+CHANGE COLUMN `archivedAt` `archivedBuyerAt` DATETIME NULL DEFAULT NULL ;
+
+ALTER TABLE `marketplace`.`chatroomDetail`
+ADD COLUMN `isReadSeller` TINYINT(1) NULL AFTER `isReadBuyer`,
+CHANGE COLUMN `read` `isReadBuyer` TINYINT(1) NULL DEFAULT '0' ;
+
+ALTER TABLE `marketplace`.`chatroom`
+CHANGE COLUMN `sellerPendingRead` `pendingReadSeller` INT NULL DEFAULT '0' ,
+CHANGE COLUMN `buyerPendingRead` `pendingReadBuyer` INT NULL DEFAULT '0' ;
+
+ALTER TABLE `marketplace`.`chatroom`
+CHANGE COLUMN `sellerEntityId` `entityIdSeller` INT NOT NULL ,
+CHANGE COLUMN `buyerEntityId` `entityIdBuyer` INT NOT NULL ;
+
+#############################
+
 ## 20/03/2021 -- Sajad Abbasi
 # add settings table
 
@@ -7,8 +73,6 @@ CREATE TABLE `marketplace`.`setting` (
   `key` VARCHAR(100) NULL,
   `value` TEXT NULL,
   PRIMARY KEY (`id`));
-
-################################
 
 #############################
 
@@ -20,5 +84,15 @@ ADD COLUMN `language` VARCHAR(5) NOT NULL DEFAULT 'en' AFTER `value`;
 ALTER TABLE `marketplace`.`setting` 
 CHANGE COLUMN `key` `title` VARCHAR(100) NULL DEFAULT NULL ;
 
+
+#############################
+# 22/03/2021 - Sajad Abbasi
+# Adjust Settings table
+
+ALTER TABLE `marketplace`.`setting`
+DROP COLUMN `language`,
+ADD COLUMN `value_ar` TEXT NULL AFTER `value_en`,
+ADD COLUMN `value_fr` TEXT NULL AFTER `value_ar`,
+CHANGE COLUMN `value` `value_en` TEXT NULL DEFAULT NULL ;
 
 #############################
