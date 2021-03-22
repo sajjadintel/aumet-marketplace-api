@@ -10,9 +10,10 @@ $f3->route('GET /v1/app/menu/section', 'AppController->getMenuSection');
 ## User Endpoints
 $f3->route('POST /v1/users/signin', 'UserController->postSignIn');
 $f3->route('POST /v1/users/signinTest', 'UserController->postSignInTest');
-$f3->route('POST /v1/users/signup', '');
-$f3->route('POST /v1/users/password/forgot', '');
-$f3->route('POST /v1/users/password/reset', '');
+$f3->route('POST /v1/users/signup', 'UserController->postSignUp');
+$f3->route('POST /v1/users/uploadDocument', 'UserController->postSignUpDocumentUpload');
+$f3->route('POST /v1/users/password/forgot', 'UserController->postForgottenPassword');
+$f3->route('POST /v1/users/password/reset', 'UserController->postResetPassword');
 $f3->route('POST /v1/users/signout', 'UserController->postSignOut');
 $f3->route('GET /v1/users/profile', 'UserController->getProfile');
 $f3->route('GET /v1/user/pharmacy', 'UserPharmacyController->index');
