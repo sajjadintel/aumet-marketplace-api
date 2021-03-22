@@ -125,6 +125,7 @@ class OrderController extends MainController
 
         $orders = Helper::addEditableOrders($orders);
         $orders = Helper::addCancellableOrders($orders);
+        $orders = Helper::addColorPalette($orders);
 
         $response['data'] = $orders;
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_order')), $response);
