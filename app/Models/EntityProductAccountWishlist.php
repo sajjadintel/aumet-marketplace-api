@@ -6,9 +6,9 @@ use App\Models\Views\EntityProductSell;
 use Constants;
 use DB\SQL\Schema;
 
-class SavedForLater extends Model
+class EntityProductAccountWishlist extends Model
 {
-    protected $table = 'accountEntityProductSavedForLater';
+    protected $table = 'entityProductAccountWishlist';
     protected $fieldConf = [
         'id' => [
             'type' => Schema::DT_INT,

@@ -2,7 +2,7 @@
 
 namespace App\Resources;
 
-class SavedForLaterResource extends JsonResource
+class WishlistResource extends JsonResource
 {
     public static function format($savedForLater)
     {

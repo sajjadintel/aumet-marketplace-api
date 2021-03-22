@@ -62,11 +62,11 @@ $f3->route('GET /v1/pharmacy/newsType', 'NewsController->getNewsTypeList');
 $f3->route('GET /v1/pharmacy/faq', 'FaqController->index');
 
 ###################
-## Saved For Later Endpoints
-$f3->route('GET /v1/pharmacy/saved-for-later', 'SavedForLaterController->index');
-$f3->route('POST /v1/pharmacy/saved-for-later', 'SavedForLaterController->create');
-$f3->route('DELETE /v1/pharmacy/saved-for-later/@id', 'SavedForLaterController->destroy');
-$f3->route('POST /v1/pharmacy/saved-for-later/@id/cart', 'SavedForLaterController->moveToCart');
+## Wishlist Endpoints
+$f3->route('GET /v1/pharmacy/wishlist', 'WishlistController->index');
+$f3->route('POST /v1/pharmacy/wishlist', 'WishlistController->create');
+$f3->route('DELETE /v1/pharmacy/wishlist/@id', 'WishlistController->destroy');
+$f3->route('POST /v1/pharmacy/wishlist/@id/cart', 'WishlistController->moveToCart');
 
 ###################
 ## notifications

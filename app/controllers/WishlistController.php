@@ -1,12 +1,12 @@
 <?php
 
 use App\Models\CartDetail;
-use App\Models\SavedForLater;
+use App\Models\EntityProductAccountWishlist;
 use App\Models\User;
-use App\Resources\SavedForLaterResource;
 use App\Resources\CartDetailResource;
+use App\Resources\WishlistResource;
 
-class SavedForLaterController extends MainController
+class WishlistController extends MainController
 {
     public function index()
     {
@@ -16,7 +16,7 @@ class SavedForLaterController extends MainController
         return $this->sendSuccess(
             Constants::HTTP_OK,
             'success',
-            SavedForLaterResource::collection(
+            WishlistResource::collection(
                 $user->savedForLater()
             )
         );
@@ -26,7 +26,7 @@ class SavedForLaterController extends MainController
     {
         $data = (array) $this->requestData;
         $data = array_merge($data, ['account_id' => $this->objUser->accountId]);
-        $savedForLater = new SavedForLater;
+        $savedForLater = new EntityProductAccountWishlist;
         $savedForLater = $savedForLater->create($data);
         if ($savedForLater->hasErrors()) {
             return $this->sendError($savedForLater->response['statusCode'], $savedForLater->response['message'], $savedForLater->errors);
@@ -35,13 +35,13 @@ class SavedForLaterController extends MainController
         return $this->sendSuccess(
             Constants::HTTP_OK,
             'success',
-            SavedForLaterResource::format($savedForLater)
+            WishlistResource::format($savedForLater)
         );
     }
 
     public function destroy()
     {
-        $savedForLater = new SavedForLater;
+        $savedForLater = new EntityProductAccountWishlist;
         $savedForLater->id = $this->f3->get('PARAMS.id');
         $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->objUser->accountId);
         if ($savedForLater->hasErrors()) {
@@ -57,7 +57,7 @@ class SavedForLaterController extends MainController
 
     public function moveToCart()
     {
-        $savedForLater = new SavedForLater;
+        $savedForLater = new EntityProductAccountWishlist;
         $savedForLater->id = $this->f3->get('PARAMS.id');
         $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->objUser->accountId);
         if ($savedForLater->hasErrors()) {
