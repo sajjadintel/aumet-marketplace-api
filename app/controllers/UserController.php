@@ -283,11 +283,111 @@ class UserController extends MainController {
         }
 
         if ($success) {
-            $objResult = AumetFileUploader::upload("s3", $_FILES["file"], $this->generateRandomString(64));
+            $objResult = AumetFileUploader::upload("s3", $_FILES["file"], Helper::generateRandomString(64));
             $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_file')), ['url' => $objResult->fileLink]);
         }
 
         $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_unknownError', $this->f3->get('RESPONSE.entity_file')), null);
+    }
+
+    function postForgottenPassword()
+    {
+        if (!isset($this->requestData->email))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_email')), null);
+        $email = $this->requestData->email;
+
+        $dbUser = new GenericModel($this->db, "user");
+        $dbUser->getByField("email", $email);
+
+        if ($dbUser->dry()) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_doesntExist', $this->f3->get('RESPONSE.entity_email')), null);
+        }
+        $userResetToken = new GenericModel($this->db, "userResetToken");
+        $userResetToken->getWhere('userId=' . $dbUser->id . " and userResetTokenStatusId=1");
+        if (!$userResetToken->dry()) {
+            $userResetToken->userResetTokenStatusId = 3;
+            $userResetToken->update();
+        }
+
+        $userResetToken = new GenericModel($this->db, "userResetToken");
+        $userResetToken->userId = $dbUser->id;
+        $userResetToken->userResetTokenStatusId = 1;
+        $userResetToken->token = Helper::generateRandomString(20);
+        $userResetToken->createdAt = date('Y-m-d H:i:s');
+        $userResetToken->updatedAt = date('Y-m-d H:i:s');
+        $userResetToken->addReturnID();
+
+
+        $payload = [
+            'id' => $userResetToken->id,
+            'userId' => $userResetToken->userId,
+            'token' => $userResetToken->token,
+        ];
+        $jwt = new JWT(getenv('JWT_SECRET_KEY'), 'HS256', (86400 * 1), 10);
+        $token = $jwt->encode($payload);
+
+//        NotificationHelper::resetPasswordNotification($this->f3, $this->db, $dbUser, $token);
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.email_sent'));
+    }
+
+    function postResetPassword()
+    {
+        if (!isset($this->requestData->token))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_email')), null);
+        $token = $this->requestData->token;
+
+        if (!isset($this->requestData->password))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_email')), null);
+        $password = $this->requestData->password;
+
+
+        if (strlen($password) < 6) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.vMessage_passwordNotStrong'), null);
+        }
+
+        try {
+            $jwt = new JWT(getenv('JWT_SECRET_KEY'), 'HS256', (86400 * 1), 10);
+            $accessTokenPayload = $jwt->decode($token);
+        } catch (\Exception $e) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_unknownError', $this->f3->get('RESPONSE.entity_token')) . ' 2', null);
+        }
+        if (!is_array($accessTokenPayload)) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_unknownError', $this->f3->get('RESPONSE.entity_token')) . ' 3', null);
+        }
+
+        $dbRequest = new GenericModel($this->db, "userResetToken");
+        $dbRequest->getByField("id", $accessTokenPayload['id']);
+
+        if ($dbRequest->dry()) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_unknownError', $this->f3->get('RESPONSE.entity_token')) . ' 4', null);
+        }
+
+        if ($dbRequest->userResetTokenStatusId != 1) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_unknownError', $this->f3->get('RESPONSE.entity_token')) . ' 5', null);
+        }
+
+
+        $dbUser = new GenericModel($this->db, "user");
+        $dbUser->getByField("id", $dbRequest->userId);
+
+        if ($dbUser->dry()) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_unknownError', $this->f3->get('RESPONSE.entity_token')) . ' 6', null);
+        }
+
+        $dbUser->password = password_hash($password, PASSWORD_DEFAULT);
+        $dbRequest->updatedAt = date('Y-m-d H:i:s');
+
+        if (!$dbUser->edit()) {
+            $dbRequest->userResetTokenStatusId = 1;
+            $dbRequest->edit();
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_unknownError', $this->f3->get('RESPONSE.entity_token')) . ' 7', null);
+        }
+
+        $dbRequest->userResetTokenStatusId = 3;
+        $dbRequest->edit();
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.passwordChanged'));
     }
 
     public function postSignIn()
