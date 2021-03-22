@@ -86,6 +86,72 @@ CHANGE COLUMN `key` `title` VARCHAR(100) NULL DEFAULT NULL ;
 
 
 #############################
+
+# 22/03/2021 - Antoine Abou Cherfane
+
+# Added 'currencyId' column inside 'vwCartDetail'
+CREATE OR REPLACE VIEW `marketplace`.`vwCartDetail` AS
+    SELECT 
+        `cd`.`id` AS `id`,
+        `cd`.`accountId` AS `accountId`,
+        `cd`.`entityProductId` AS `entityProductId`,
+        `cd`.`userId` AS `userId`,
+        `cd`.`insertDateTime` AS `insertDateTime`,
+        `cd`.`updateDateTime` AS `updateDateTime`,
+        `ep`.`entityId` AS `entityId`,
+        `e`.`name_ar` AS `entityName_ar`,
+        `e`.`name_en` AS `entityName_en`,
+        `e`.`name_fr` AS `entityName_fr`,
+        `ep`.`productId` AS `productId`,
+        `p`.`scientificNameId` AS `scientificNameId`,
+        `s`.`name` AS `scientificName`,
+        `p`.`name_ar` AS `productName_ar`,
+        `p`.`name_en` AS `productName_en`,
+        `p`.`name_fr` AS `productName_fr`,
+        `cd`.`quantity` AS `quantity`,
+        `cd`.`quantityFree` AS `quantityFree`,
+        `ep`.`unitPrice` AS `unitPrice`,
+        `ep`.`vat` AS `vat`,
+        `ep`.`stockStatusId` AS `stockStatusId`,
+        `cur`.`id` AS `currencyId`,
+        `ec`.`currency` AS `currency`,
+        `ss`.`name_ar` AS `stockStatusName_ar`,
+        `ss`.`name_en` AS `stockStatusName_en`,
+        `ss`.`name_fr` AS `stockStatusName_fr`,
+        `ep`.`stock` AS `stock`,
+        `ep`.`stockUpdateDateTime` AS `stockUpdateDateTime`,
+        `ep`.`maximumOrderQuantity` AS `maximumOrderQuantity`,
+        `p`.`image` AS `image`,
+        `p`.`madeInCountryId` AS `madeInCountryId`,
+        `c`.`name_ar` AS `madeInCountryName_ar`,
+        `c`.`name_en` AS `madeInCountryName_en`,
+        `c`.`name_fr` AS `madeInCountryName_fr`
+    FROM
+        ((((((((`cartDetail` `cd`
+        JOIN `entityProductSell` `ep` ON ((`cd`.`entityProductId` = `ep`.`id`)))
+        JOIN `product` `p` ON ((`ep`.`productId` = `p`.`id`)))
+        LEFT JOIN `scientificName` `s` ON ((`p`.`scientificNameId` = `s`.`id`)))
+        JOIN `entity` `e` ON ((`ep`.`entityId` = `e`.`id`)))
+        JOIN `country` `c` ON ((`p`.`madeInCountryId` = `c`.`id`)))
+        JOIN `country` `ec` ON ((`e`.`countryId` = `ec`.`id`)))
+        JOIN `stockStatus` `ss` ON ((`ep`.`stockStatusId` = `ss`.`id`)))
+        LEFT JOIN `currency` `cur` ON ((`cur`.`symbol` = `ec`.`currency`)))
+
+# Created 'vwEntityPaymentMethod' view 
+CREATE OR REPLACE VIEW `marketplace`.`vwEntityPaymentMethod` AS
+    SELECT 
+        `epm`.`id` AS `id`,
+        `epm`.`entityId` AS `entityId`,
+        `epm`.`paymentMethodId` AS `paymentMethodId`,
+        `pm`.`name_en` AS `paymentMethodName_en`,
+        `pm`.`name_ar` AS `paymentMethodName_ar`,
+        `pm`.`name_fr` AS `paymentMethodName_fr`
+    FROM
+        (`entityPaymentMethod` `epm`
+        JOIN `paymentMethod` `pm` ON ((`pm`.`id` = `epm`.`paymentMethodId`)))
+    GROUP BY `epm`.`id`
+
+#############################
 # 22/03/2021 - Sajad Abbasi
 # Adjust Settings table
 
