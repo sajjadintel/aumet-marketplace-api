@@ -50,6 +50,7 @@ class Helper {
             $orders[$i]['colorPalette'] = $mapPaletteToOrderStatus[$orders[$i]['statusId']] ?? 'main';
         }
         return $orders;
+    }
 
     public static function generateRandomString($length = 10)
     {
