@@ -302,7 +302,8 @@ class OrderController extends MainController
                 $dbChatMessage->receiverEntityId = $dbChatRoom->sellerEntityId;
                 $dbChatMessage->type = 1;
                 $dbChatMessage->content = $note;
-                $dbChatMessage->isRead = 0;
+                $dbChatMessage->isReadBuyer = 0;
+                $dbChatMessage->isReadSeller = 0;
                 if (!$dbChatMessage->add())
                     $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatMessage->exception, null);
             }

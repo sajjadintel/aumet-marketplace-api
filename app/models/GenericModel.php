@@ -92,6 +92,13 @@ class GenericModel extends DB\SQL\Mapper
         return $result;
     }
 
+
+    public function getById($value)
+    {
+        $this->load(array("id=?", $value));
+        return $this->query;
+    }
+
     public function getByField($name, $value, $order = false)
     {
         try {

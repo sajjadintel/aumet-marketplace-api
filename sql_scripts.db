@@ -1,4 +1,70 @@
 ################################
+
+## 18/03/2021 -- Sajad Abbasi
+# fix date fields
+
+ALTER TABLE `marketplace`.`chatroom`
+ADD COLUMN `archivedAt` DATETIME NULL AFTER `updatedAt` ,
+CHANGE COLUMN `createdAt` `createdAt` DATETIME NULL DEFAULT NULL ,
+CHANGE COLUMN `updatedAt` `updatedAt` DATETIME NULL DEFAULT NULL ,
+CHANGE COLUMN `createdAt` `createdAt` DATETIME NULL DEFAULT CURRENT_TIMESTAMP ;
+
+################################
+
+## 22/03/2021 -- Sajad Abbasi
+# Create vwChatroom
+
+CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
+    SELECT
+        `marketplace`.`chatroom`.`id` AS `id`,
+        `marketplace`.`chatroom`.`entityIdSeller` AS `entityIdSeller`,
+        `marketplace`.`chatroom`.`entityIdBuyer` AS `entityIdBuyer`,
+        `marketplace`.`chatroom`.`pendingReadSeller` AS `pendingReadSeller`,
+        `marketplace`.`chatroom`.`pendingReadBuyer` AS `pendingReadBuyer`,
+        `marketplace`.`chatroom`.`archivedBuyerAt` AS `archivedBuyerAt`,
+        `marketplace`.`chatroom`.`archivedSellerAt` AS `archivedSellerAt`,
+        `marketplace`.`chatroom`.`isArchivedSeller` AS `isArchivedSeller`,
+        `marketplace`.`chatroom`.`isArchivedBuyer` AS `isArchivedBuyer`,
+        `marketplace`.`chatroom`.`isReadBuyer` AS `isReadBuyer`,
+        `marketplace`.`chatroom`.`isReadSeller` AS `isReadSeller`,
+        `marketplace`.`chatroom`.`createdAt` AS `createdAt`,
+        `marketplace`.`chatroom`.`updatedAt` AS `updatedAt`,
+        `marketplace`.`entity`.`name_en` AS `name_en`,
+        `marketplace`.`entity`.`name_ar` AS `name_ar`,
+        `marketplace`.`entity`.`name_fr` AS `name_fr`,
+        `marketplace`.`entity`.`image` AS `image`
+    FROM
+        (`marketplace`.`chatroom`
+        LEFT JOIN `marketplace`.`entity` ON (`marketplace`.`chatroom`.`entityIdSeller` = `marketplace`.`entity`.`id`))
+    ORDER BY `marketplace`.`chatroom`.`id` DESC
+
+#############################
+
+## 22/03/2021 -- Sajad Abbasi
+# alter chat columns
+
+ALTER TABLE `marketplace`.`chatroom`
+ADD COLUMN `archivedSellerAt` DATETIME NULL AFTER `archivedBuyerAt`,
+ADD COLUMN `isArchivedSeller` INT(1) NULL DEFAULT 0 AFTER `archivedSellerAt`,
+ADD COLUMN `isArchivedBuyer` INT(1) NULL DEFAULT 0 AFTER `isArchivedSeller`,
+ADD COLUMN `isReadBuyer` INT(1) NULL DEFAULT 1 AFTER `isArchivedBuyer`,
+ADD COLUMN `isReadSeller` INT(1) NULL DEFAULT 1 AFTER `isReadBuyer`,
+CHANGE COLUMN `archivedAt` `archivedBuyerAt` DATETIME NULL DEFAULT NULL ;
+
+ALTER TABLE `marketplace`.`chatroomDetail`
+ADD COLUMN `isReadSeller` TINYINT(1) NULL AFTER `isReadBuyer`,
+CHANGE COLUMN `read` `isReadBuyer` TINYINT(1) NULL DEFAULT '0' ;
+
+ALTER TABLE `marketplace`.`chatroom`
+CHANGE COLUMN `sellerPendingRead` `pendingReadSeller` INT NULL DEFAULT '0' ,
+CHANGE COLUMN `buyerPendingRead` `pendingReadBuyer` INT NULL DEFAULT '0' ;
+
+ALTER TABLE `marketplace`.`chatroom`
+CHANGE COLUMN `sellerEntityId` `entityIdSeller` INT NOT NULL ,
+CHANGE COLUMN `buyerEntityId` `entityIdBuyer` INT NOT NULL ;
+
+#############################
+
 ## 20/03/2021 -- Sajad Abbasi
 # add settings table
 
@@ -7,8 +73,6 @@ CREATE TABLE `marketplace`.`setting` (
   `key` VARCHAR(100) NULL,
   `value` TEXT NULL,
   PRIMARY KEY (`id`));
-
-################################
 
 #############################
 
@@ -73,4 +137,82 @@ CREATE OR REPLACE VIEW `marketplace`.`vwOrderEntityUser` AS
         LEFT JOIN `marketplace`.`entity` `entity_Seller` ON ((`marketplace`.`order`.`entitySellerId` = `entity_Seller`.`id`)))
         LEFT JOIN `marketplace`.`entityBranch` `branch_Buyer` ON ((`marketplace`.`order`.`branchBuyerId` = `branch_Buyer`.`id`)))
         LEFT JOIN `marketplace`.`entityBranch` `branch_Seller` ON ((`marketplace`.`order`.`branchSellerId` = `branch_Seller`.`id`)))
-        LEFT JOIN `marketplace`.`paymentMethod` ON ((`marketplace`.`order`.`paymentMethodId` = `marketplace`.`paymentMethod`.`id`)))
+        LEFT JOIN `marketplace`.`paymentMethod` ON ((`marketplace`.`order`.`paymentMethodId` = `marketplace`.`paymentMethod`.`id`)));
+
+
+#############################
+# 22/03/2021 - Antoine Abou Cherfane
+
+# Added 'currencyId' column inside 'vwCartDetail'
+CREATE OR REPLACE VIEW `marketplace`.`vwCartDetail` AS
+    SELECT 
+        `cd`.`id` AS `id`,
+        `cd`.`accountId` AS `accountId`,
+        `cd`.`entityProductId` AS `entityProductId`,
+        `cd`.`userId` AS `userId`,
+        `cd`.`insertDateTime` AS `insertDateTime`,
+        `cd`.`updateDateTime` AS `updateDateTime`,
+        `ep`.`entityId` AS `entityId`,
+        `e`.`name_ar` AS `entityName_ar`,
+        `e`.`name_en` AS `entityName_en`,
+        `e`.`name_fr` AS `entityName_fr`,
+        `ep`.`productId` AS `productId`,
+        `p`.`scientificNameId` AS `scientificNameId`,
+        `s`.`name` AS `scientificName`,
+        `p`.`name_ar` AS `productName_ar`,
+        `p`.`name_en` AS `productName_en`,
+        `p`.`name_fr` AS `productName_fr`,
+        `cd`.`quantity` AS `quantity`,
+        `cd`.`quantityFree` AS `quantityFree`,
+        `ep`.`unitPrice` AS `unitPrice`,
+        `ep`.`vat` AS `vat`,
+        `ep`.`stockStatusId` AS `stockStatusId`,
+        `cur`.`id` AS `currencyId`,
+        `ec`.`currency` AS `currency`,
+        `ss`.`name_ar` AS `stockStatusName_ar`,
+        `ss`.`name_en` AS `stockStatusName_en`,
+        `ss`.`name_fr` AS `stockStatusName_fr`,
+        `ep`.`stock` AS `stock`,
+        `ep`.`stockUpdateDateTime` AS `stockUpdateDateTime`,
+        `ep`.`maximumOrderQuantity` AS `maximumOrderQuantity`,
+        `p`.`image` AS `image`,
+        `p`.`madeInCountryId` AS `madeInCountryId`,
+        `c`.`name_ar` AS `madeInCountryName_ar`,
+        `c`.`name_en` AS `madeInCountryName_en`,
+        `c`.`name_fr` AS `madeInCountryName_fr`
+    FROM
+        ((((((((`cartDetail` `cd`
+        JOIN `entityProductSell` `ep` ON ((`cd`.`entityProductId` = `ep`.`id`)))
+        JOIN `product` `p` ON ((`ep`.`productId` = `p`.`id`)))
+        LEFT JOIN `scientificName` `s` ON ((`p`.`scientificNameId` = `s`.`id`)))
+        JOIN `entity` `e` ON ((`ep`.`entityId` = `e`.`id`)))
+        JOIN `country` `c` ON ((`p`.`madeInCountryId` = `c`.`id`)))
+        JOIN `country` `ec` ON ((`e`.`countryId` = `ec`.`id`)))
+        JOIN `stockStatus` `ss` ON ((`ep`.`stockStatusId` = `ss`.`id`)))
+        LEFT JOIN `currency` `cur` ON ((`cur`.`symbol` = `ec`.`currency`)));
+
+# Created 'vwEntityPaymentMethod' view 
+CREATE OR REPLACE VIEW `marketplace`.`vwEntityPaymentMethod` AS
+    SELECT 
+        `epm`.`id` AS `id`,
+        `epm`.`entityId` AS `entityId`,
+        `epm`.`paymentMethodId` AS `paymentMethodId`,
+        `pm`.`name_en` AS `paymentMethodName_en`,
+        `pm`.`name_ar` AS `paymentMethodName_ar`,
+        `pm`.`name_fr` AS `paymentMethodName_fr`
+    FROM
+        (`entityPaymentMethod` `epm`
+        JOIN `paymentMethod` `pm` ON ((`pm`.`id` = `epm`.`paymentMethodId`)))
+    GROUP BY `epm`.`id`;
+
+#############################
+# 22/03/2021 - Sajad Abbasi
+# Adjust Settings table
+
+ALTER TABLE `marketplace`.`setting`
+DROP COLUMN `language`,
+ADD COLUMN `value_ar` TEXT NULL AFTER `value_en`,
+ADD COLUMN `value_fr` TEXT NULL AFTER `value_ar`,
+CHANGE COLUMN `value` `value_en` TEXT NULL DEFAULT NULL ;
+
+#############################
