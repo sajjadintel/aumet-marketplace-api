@@ -87,6 +87,60 @@ CHANGE COLUMN `key` `title` VARCHAR(100) NULL DEFAULT NULL ;
 
 #############################
 
+# 22/03/2021 - Sajad Abbasi
+# Add note column from order table
+
+CREATE OR REPLACE VIEW `marketplace`.`vwOrderEntityUser` AS
+    SELECT
+        `marketplace`.`order`.`id` AS `id`,
+        `marketplace`.`order`.`entityBuyerId` AS `entityBuyerId`,
+        `marketplace`.`order`.`branchBuyerId` AS `branchBuyerId`,
+        `marketplace`.`order`.`feedbackSubmitted` AS `feedbackSubmitted`,
+        `marketplace`.`order`.`note` AS `note`,
+        `user_Buyer`.`fullname` AS `userBuyer`,
+        `user_Buyer`.`email` AS `userBuyerEmail`,
+        `entity_Buyer`.`name_en` AS `entityBuyer`,
+        `entity_Buyer`.`image` AS `entityBuyerImage`,
+        `branch_Buyer`.`name_en` AS `branchBuyer`,
+        `branch_Buyer`.`address_en` AS `addressBuyer`,
+        `marketplace`.`order`.`entitySellerId` AS `entitySellerId`,
+        `marketplace`.`order`.`userSellerId` AS `userSellerId`,
+        `marketplace`.`order`.`branchSellerId` AS `branchSellerId`,
+        `user_Seller`.`fullname` AS `userSeller`,
+        `user_Seller`.`email` AS `userSellerEmail`,
+        `entity_Seller`.`name_en` AS `entitySeller`,
+        `entity_Seller`.`image` AS `entitySellerImage`,
+        `branch_Seller`.`name_en` AS `branchSeller`,
+        `branch_Seller`.`address_en` AS `addressSeller`,
+        `marketplace`.`order`.`statusId` AS `statusId`,
+        `order_status`.`name_en` AS `status`,
+        `marketplace`.`order`.`serial` AS `serial`,
+        `marketplace`.`order`.`currencyId` AS `currencyId`,
+        `marketplace`.`currency`.`symbol` AS `currency`,
+        `marketplace`.`order`.`total` AS `total`,
+        `marketplace`.`order`.`subtotal` AS `subtotal`,
+        `marketplace`.`order`.`vat` AS `orderVat`,
+        0 AS `tax`,
+        `marketplace`.`order`.`paymentMethodId` AS `orderPaymentMethodId`,
+        `marketplace`.`paymentMethod`.`name_en` AS `orderPaymentMethodName_en`,
+        `marketplace`.`paymentMethod`.`name_ar` AS `orderPaymentMethodName_ar`,
+        `marketplace`.`paymentMethod`.`name_fr` AS `orderPaymentMethodName_fr`,
+        `marketplace`.`order`.`insertDateTime` AS `insertDateTime`,
+        `marketplace`.`order`.`updateDateTime` AS `updateDateTime`
+    FROM
+        (((((((((`marketplace`.`order`
+        JOIN `marketplace`.`orderStatus` `order_status` ON ((`order_status`.`id` = `marketplace`.`order`.`statusId`)))
+        JOIN `marketplace`.`currency` ON ((`marketplace`.`currency`.`id` = `marketplace`.`order`.`currencyId`)))
+        LEFT JOIN `marketplace`.`user` `user_Buyer` ON ((`marketplace`.`order`.`userBuyerId` = `user_Buyer`.`id`)))
+        LEFT JOIN `marketplace`.`user` `user_Seller` ON ((`marketplace`.`order`.`userSellerId` = `user_Seller`.`id`)))
+        LEFT JOIN `marketplace`.`entity` `entity_Buyer` ON ((`marketplace`.`order`.`entityBuyerId` = `entity_Buyer`.`id`)))
+        LEFT JOIN `marketplace`.`entity` `entity_Seller` ON ((`marketplace`.`order`.`entitySellerId` = `entity_Seller`.`id`)))
+        LEFT JOIN `marketplace`.`entityBranch` `branch_Buyer` ON ((`marketplace`.`order`.`branchBuyerId` = `branch_Buyer`.`id`)))
+        LEFT JOIN `marketplace`.`entityBranch` `branch_Seller` ON ((`marketplace`.`order`.`branchSellerId` = `branch_Seller`.`id`)))
+        LEFT JOIN `marketplace`.`paymentMethod` ON ((`marketplace`.`order`.`paymentMethodId` = `marketplace`.`paymentMethod`.`id`)));
+
+
+#############################
 # 22/03/2021 - Antoine Abou Cherfane
 
 # Added 'currencyId' column inside 'vwCartDetail'
@@ -135,7 +189,7 @@ CREATE OR REPLACE VIEW `marketplace`.`vwCartDetail` AS
         JOIN `country` `c` ON ((`p`.`madeInCountryId` = `c`.`id`)))
         JOIN `country` `ec` ON ((`e`.`countryId` = `ec`.`id`)))
         JOIN `stockStatus` `ss` ON ((`ep`.`stockStatusId` = `ss`.`id`)))
-        LEFT JOIN `currency` `cur` ON ((`cur`.`symbol` = `ec`.`currency`)))
+        LEFT JOIN `currency` `cur` ON ((`cur`.`symbol` = `ec`.`currency`)));
 
 # Created 'vwEntityPaymentMethod' view 
 CREATE OR REPLACE VIEW `marketplace`.`vwEntityPaymentMethod` AS
@@ -149,7 +203,7 @@ CREATE OR REPLACE VIEW `marketplace`.`vwEntityPaymentMethod` AS
     FROM
         (`entityPaymentMethod` `epm`
         JOIN `paymentMethod` `pm` ON ((`pm`.`id` = `epm`.`paymentMethodId`)))
-    GROUP BY `epm`.`id`
+    GROUP BY `epm`.`id`;
 
 #############################
 # 22/03/2021 - Sajad Abbasi
