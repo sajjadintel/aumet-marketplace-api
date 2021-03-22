@@ -6,7 +6,8 @@ class SavedForLaterEntityProductSellResource extends JsonResource
 {
     public static function format($entityProduct)
     {
-        $localeNameField = 'name_' . strtolower(\Base::instance()->get('LANGUAGE'));
+        $language = explode(',', \Base::instance()->get('LANGUAGE'))[0];
+        $localeNameField = "name_{$language}";
         return [
             'product_id' => $entityProduct->productId->id,
             'product_name' => $entityProduct->productId->$localeNameField,
