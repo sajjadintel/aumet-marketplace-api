@@ -1,6 +1,6 @@
 ################################
-## 18/03/2021 -- Sajad Abbasi
 
+## 18/03/2021 -- Sajad Abbasi
 # fix date fields
 
 ALTER TABLE `marketplace`.`chatroom`
@@ -10,8 +10,8 @@ CHANGE COLUMN `updatedAt` `updatedAt` DATETIME NULL DEFAULT NULL ,
 CHANGE COLUMN `createdAt` `createdAt` DATETIME NULL DEFAULT CURRENT_TIMESTAMP ;
 
 ################################
-## 18/03/2021 -- Sajad Abbasi
 
+## 22/03/2021 -- Sajad Abbasi
 # Create vwChatroom
 
 CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
@@ -38,7 +38,10 @@ CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
         LEFT JOIN `marketplace`.`entity` ON (`marketplace`.`chatroom`.`entityIdSeller` = `marketplace`.`entity`.`id`))
     ORDER BY `marketplace`.`chatroom`.`id` DESC
 
-################################
+#############################
+
+## 22/03/2021 -- Sajad Abbasi
+# alter chat columns
 
 ALTER TABLE `marketplace`.`chatroom`
 ADD COLUMN `archivedSellerAt` DATETIME NULL AFTER `archivedBuyerAt`,
@@ -54,11 +57,13 @@ CHANGE COLUMN `read` `isReadBuyer` TINYINT(1) NULL DEFAULT '0' ;
 
 ALTER TABLE `marketplace`.`chatroom`
 CHANGE COLUMN `sellerPendingRead` `pendingReadSeller` INT NULL DEFAULT '0' ,
-CHANGE COLUMN `buyerPendingRead` `pendingRead‌Buyer` INT NULL DEFAULT '0' ;
+CHANGE COLUMN `buyerPendingRead` `pendingReadBuyer` INT NULL DEFAULT '0' ;
 
 ALTER TABLE `marketplace`.`chatroom`
 CHANGE COLUMN `sellerEntityId` `entityIdSeller` INT NOT NULL ,
 CHANGE COLUMN `buyerEntityId` `entityIdBuyer` INT NOT NULL ;
+
+#############################
 
 ## 20/03/2021 -- Sajad Abbasi
 # add settings table
@@ -68,8 +73,6 @@ CREATE TABLE `marketplace`.`setting` (
   `key` VARCHAR(100) NULL,
   `value` TEXT NULL,
   PRIMARY KEY (`id`));
-
-################################
 
 #############################
 
