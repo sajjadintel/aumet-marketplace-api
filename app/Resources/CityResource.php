@@ -6,7 +6,8 @@ class CityResource extends JsonResource
 {
     public static function format($city)
     {
-        $localizedNameField = 'name' . ucfirst(\Base::instance()->get('locale'));
+        $language = explode(',', \Base::instance()->get('LANGUAGE'))[0];
+        $localizedNameField = 'name' . ucfirst($language);
         return [
             'id' => $city->id,
             'name' => $city->$localizedNameField

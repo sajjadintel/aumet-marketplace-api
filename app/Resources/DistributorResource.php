@@ -6,7 +6,8 @@ class DistributorResource extends JsonResource
 {
     public static function format($distributor)
     {
-        $localizedNameField = 'name_' . \Base::instance()->get('locale');
+        $language = explode(',', \Base::instance()->get('LANGUAGE'))[0];
+        $localizedNameField = "name_{$language}";
         return [
             'id' => $distributor->id,
             'name' => $distributor->$localizedNameField,

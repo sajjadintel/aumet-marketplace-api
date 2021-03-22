@@ -8,10 +8,11 @@ class EntityProductSellViewResource extends JsonResource
 {
     public static function format($product)
     {
-        $productName = 'productName_' . \Base::instance()->get('LANGUAGE');
-        $entityName = 'entityName_' . \Base::instance()->get('LANGUAGE');
-        $bonusTypeName = 'bonusTypeName_' . \Base::instance()->get('LANGUAGE');
-        $madeInCountryName = 'madeInCountryName_' . \Base::instance()->get('LANGUAGE');
+        $language = explode(',', \Base::instance()->get('LANGUAGE'))[0];
+        $productName = "productName_{$language}";
+        $entityName = "entityName_{$language}";
+        $bonusTypeName = "bonusTypeName_{$language}";
+        $madeInCountryName = "madeInCountryName_{$language}";
         $availableQuantity = ProductHelper::getAvailableQuantity($product->stock, $product->maximumOrderQuantity);
         $bonusInfo = ProductHelper::getBonusInfo(
             \Base::instance()->get('dbConnectionMain'),

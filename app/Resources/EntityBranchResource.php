@@ -6,8 +6,9 @@ class EntityBranchResource extends JsonResource
 {
     public static function format($entityBranch)
     {
-        $localizedNameField = 'name_' . \Base::instance()->get('locale');
-        $localizedAddressField = 'address_' . \Base::instance()->get('locale');
+        $language = explode(',', \Base::instance()->get('LANGUAGE'))[0];
+        $localizedNameField = "name_{$language}";
+        $localizedAddressField = "address_{$language}";
         return [
             'id' => $entityBranch->id,
             'name' => $entityBranch->$localizedNameField,

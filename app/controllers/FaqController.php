@@ -11,7 +11,7 @@ class FaqController extends MainController
         return $this->sendSuccess(
             Constants::HTTP_OK,
             'success',
-            FaqResource::collection($faq->find(['language = ? AND isEnabled = ?', $this->objUser->language, 1]) ?: [])
+            FaqResource::collection($faq->find(['language = ? AND isEnabled = ?', $this->language, 1]) ?: [])
         );
     }
 }
