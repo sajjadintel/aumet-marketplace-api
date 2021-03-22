@@ -112,16 +112,6 @@ class UserController extends MainController
 
     public function postSignIn()
     {
-        $secretHiddenId = null;
-        if (array_key_exists('secretHiddenId', getallheaders())) {
-            $secretHiddenId = getallheaders()['secretHiddenId'];
-        }
-
-        $hasUid = false;
-        if (isset($this->requestData->uid)) {
-            $hasUid = true;
-        }
-
         $idTokenString = null;
         if (isset($this->requestData->token)) {
             $idTokenString = $this->requestData->token;
@@ -129,59 +119,50 @@ class UserController extends MainController
 
         $user = null;
 
-        // use secret hidden id to login
-        if ($secretHiddenId !== null) {
-            $user = new GenericModel($this->db, 'user');
-            if ($hasUid)
-                $user->load(array('uid = ?', $this->requestData->uid));
-            else
-                $user->load(array('id = ?', $this->requestData->id));
-        } else {
-            if ($idTokenString == null)
-                $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_token')), null);
+        if ($idTokenString == null)
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_token')), null);
 
-            $factory = (new Factory)->withServiceAccount($this->getRootDirectory() . '/config/aumet-com-firebase-adminsdk-2nsnx-64efaf5c39.json');
+        $factory = (new Factory)->withServiceAccount($this->getRootDirectory() . '/config/aumet-com-firebase-adminsdk-2nsnx-64efaf5c39.json');
 
-            $auth = $factory->createAuth();
+        $auth = $factory->createAuth();
 
-            try {
-                $verifiedIdToken = $auth->verifyIdToken($idTokenString);
-                $uid = $verifiedIdToken->getClaim('sub');
-                $user = $auth->getUser($uid);
+        try {
+            $verifiedIdToken = $auth->verifyIdToken($idTokenString);
+            $uid = $verifiedIdToken->getClaim('sub');
+            $user = $auth->getUser($uid);
 
-                $dbUser = new GenericModel($this->db, "user");
+            $dbUser = new GenericModel($this->db, "user");
 
-                ////////////
+            ////////////
 
-                $dbUser->getWhere("uid = '$uid'");
+            $dbUser->getWhere("uid = '$uid'");
+            if ($dbUser->dry()) {
+                $dbUser->getWhere("email = '$user->email'");
                 if ($dbUser->dry()) {
-                    $dbUser->getWhere("email = '$user->email'");
-                    if ($dbUser->dry()) {
-                        $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), $user);
-                    }
-                    $dbUser->uid = $uid;
-                    $dbUser->update();
-                }
-
-                if ($dbUser->statusId == Constants::USER_STATUS_WAITING_VERIFICATION) {
-                    $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotActivated'), $user);
-                    return;
-                } else if ($dbUser->statusId == Constants::USER_STATUS_PENDING_APPROVAL) {
-                    $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotVerified'), $user);
-                    return;
-                } else if ($dbUser->statusId !== Constants::USER_STATUS_ACCOUNT_ACTIVE) {
                     $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), $user);
                 }
-
-                ///////////
-
-
-                $dbUser->getWhere("uid = '$uid' AND statusId = 3");
-            } catch (\InvalidArgumentException $e) {
-                $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
-            } catch (InvalidToken $e) {
-                $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
+                $dbUser->uid = $uid;
+                $dbUser->update();
             }
+
+            if ($dbUser->statusId == Constants::USER_STATUS_WAITING_VERIFICATION) {
+                $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotActivated'), $user);
+                return;
+            } else if ($dbUser->statusId == Constants::USER_STATUS_PENDING_APPROVAL) {
+                $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotVerified'), $user);
+                return;
+            } else if ($dbUser->statusId !== Constants::USER_STATUS_ACCOUNT_ACTIVE) {
+                $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), $user);
+            }
+
+            ///////////
+
+
+            $dbUser->getWhere("uid = '$uid' AND statusId = 3");
+        } catch (\InvalidArgumentException $e) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
+        } catch (InvalidToken $e) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $e->getMessage(), null);
         }
 
 
@@ -271,6 +252,53 @@ class UserController extends MainController
         // if ($dbUser->stateId === Constants::USER_STATE_VERIFIED) {
         //     $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.403_signInAccountNotReviewed'), null);
         // }
+    }
+
+    public function postSignInTest()
+    {
+        $dbUser = new GenericModel($this->db, 'user');
+
+        // use secret hidden id to login
+        if (getenv('ENV') != Constants::ENV_PROD) {
+            $dbUser->load(array('id = ?', $this->requestData->id));
+        }
+
+        // if User doesn't exist
+        if ($dbUser->dry()) {
+            $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_account')), null);
+        }
+
+        if (isset($this->deviceType)) {
+            $deviceType = $this->deviceType;
+        } else {
+            $deviceType = 'undefined';
+        }
+
+        $payload = array(
+            'userId' => $dbUser->id,
+            'userEmail' => $dbUser->email,
+            'fullName' => $dbUser->fullname
+        );
+
+
+        $jwt = new JWT(MainController::JWTSecretKey, 'HS256', (86400 * 30), 10);
+        $jwtSignedKey = $jwt->encode($payload);
+
+        $userSession = new GenericModel($this->db, 'userSession');
+
+        $userSession->userId = $dbUser->id;
+        $userSession->token = $jwtSignedKey;
+        $userSession->deviceType = $deviceType;
+
+        $userSession->add();
+
+        $res = new stdClass();
+        $res->id = $dbUser->id;
+        $res->fullName = $dbUser->fullname;
+        $res->email = $dbUser->email;
+        $res->accessToken = $jwtSignedKey;
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_detailFound', $this->f3->get('RESPONSE.entity_account')), $res);
     }
 
 
