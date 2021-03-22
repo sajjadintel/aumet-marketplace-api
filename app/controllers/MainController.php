@@ -143,7 +143,7 @@ class MainController {
                             $dbUser = new GenericModel($this->db, 'vwUser');
                             $dbUser->roleName = "roleName_" . $this->language;
                             $dbUser->getWhere("id={$userId}");
-                            if (!$dbUser->dry()) {
+                            if (!$dbUser->dry() && Helper::isPharmacy($dbUser->roleId)) {
                                 $this->isAuth = true;
                                 $this->objUser = $dbUser;
 
