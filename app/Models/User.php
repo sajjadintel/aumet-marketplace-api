@@ -49,6 +49,6 @@ class User extends Model
             $account = $userAccount->accountId;
         }
 
-        return $account->savedForLater;
+        return $account->wishlist;
     }
 }

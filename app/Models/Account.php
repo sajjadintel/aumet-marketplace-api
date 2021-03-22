@@ -15,8 +15,8 @@ class Account extends Model
             'type' => Schema::DT_INT,
             'belongs-to-one' => Entity::class
         ],
-        'savedForLater' => [
-            'has-many' => [SavedForLater::class, 'accountId'],
+        'wishlist' => [
+            'has-many' => [EntityProductAccountWishlist::class, 'accountId'],
         ],
         'cartDetails' => [
             'has-many' => [CartDetail::class, 'accountId'],

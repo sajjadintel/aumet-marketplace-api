@@ -2,7 +2,7 @@
 
 namespace App\Resources;
 
-class SavedForLaterEntityProductSellResource extends JsonResource
+class WishlistEntityProductSellResource extends JsonResource
 {
     public static function format($entityProduct)
     {
