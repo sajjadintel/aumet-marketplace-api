@@ -56,3 +56,10 @@ $f3->route('GET /v1/pharmacy/sellers', 'SearchController->getSellerList');
 $f3->route('GET /v1/pharmacy/news', 'NewsController->getNewsList');
 $f3->route('GET /v1/pharmacy/news/@id', 'NewsController->getNews');
 $f3->route('GET /v1/pharmacy/newsType', 'NewsController->getNewsTypeList');
+
+###################
+## Saved For Later Endpoints
+$f3->route('GET /v1/pharmacy/saved-for-later', 'SavedForLaterController->index');
+$f3->route('POST /v1/pharmacy/saved-for-later', 'SavedForLaterController->create');
+$f3->route('DELETE /v1/pharmacy/saved-for-later/@id', 'SavedForLaterController->destroy');
+$f3->route('POST /v1/pharmacy/saved-for-later/@id/cart', 'SavedForLaterController->moveToCart');

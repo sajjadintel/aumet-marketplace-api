@@ -8,7 +8,7 @@ class EntityResource extends JsonResource
 {
     public static function format($entity)
     {
-        $localizedNameField = 'name_' . \Base::instance()->get('locale');
+        $localizedNameField = 'name_' . \Base::instance()->get('LANGUAGE');
         return [
             'id' => $entity->id,
             'name' => $entity->$localizedNameField,
