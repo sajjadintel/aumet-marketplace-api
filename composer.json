@@ -12,6 +12,7 @@
 		"vlucas/phpdotenv": "^4.1",
 		"kreait/firebase-php": "^5.8",
 		"lcobucci/jwt": "3.4.1",
+		"aws/aws-sdk-php": "^3.175",
 		"ikkez/f3-cortex": "1.*",
 		"geofmureithi/f3-validate": "^1.1"
 	},
