@@ -83,4 +83,26 @@ class Constants
 
     ## Email Types
     const EMAIL_ORDER_UPDATE = 'Order Update';
+
+
+
+    ### User role
+    const USER_ROLE_DISTRIBUTOR_SYSTEM_ADMINISTRATOR = 10;
+    const USER_ROLE_DISTRIBUTOR_ENTITY_MANAGER = 20;
+    const USER_ROLE_DISTRIBUTOR_SYSTEM_MANAGER = 30;
+    const USER_ROLE_PHARMACY_SYSTEM_ADMINISTRATOR = 40;
+    const USER_ROLE_AUMET_ADMIN = 1000;
+
+    ### Entity type
+    const ENTITY_TYPE_DISTRIBUTOR = 10;
+    const ENTITY_TYPE_SUB_DISTRIBUTOR = 11;
+    const ENTITY_TYPE_PHARMACY = 20;
+    const ENTITY_TYPE_PHARMACY_CHAIN = 21;
+    const ENTITY_TYPE_AUMET_ADMIN = 1000;
+
+    ### Account status
+    const ACCOUNT_STATUS_ACTIVE = 1;
+    const ACCOUNT_STATUS_INACTIVE = 2;
+    const ACCOUNT_STATUS_BLOCKED = 3;
+
 }

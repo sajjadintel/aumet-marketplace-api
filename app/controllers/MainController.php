@@ -115,10 +115,12 @@ class MainController
             case 'PUT':
             case 'POST':
                 $this->requestData = file_get_contents('php://input');
-                $this->requestData = utf8_encode($this->requestData);
-                $this->requestData = json_decode($this->requestData);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    $this->f3->error(Constants::HTTP_UNSUPPORTED_MEDIA_TYPE, $this->f3->get('RESPONSE.415_unsupported', json_last_error()));
+                if ($this->requestData) {
+                    $this->requestData = utf8_encode($this->requestData);
+                    $this->requestData = json_decode($this->requestData);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        $this->f3->error(Constants::HTTP_UNSUPPORTED_MEDIA_TYPE, $this->f3->get('RESPONSE.415_unsupported', json_last_error()));
+                    }
                 }
 
                 break;
@@ -215,4 +217,17 @@ class MainController
 
         ApiRequestsLog::logRequest($this->f3, $this->db, $userId, $this->sessionId, $data, $type, $ip);
     }
+
+
+    function generateRandomString($length = 10)
+    {
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
 }

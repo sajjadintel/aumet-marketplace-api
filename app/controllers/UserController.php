@@ -6,8 +6,7 @@ use Kreait\Firebase\Factory;
 use Kreait\Firebase\Auth;
 use Firebase\Auth\Token\Exception\InvalidToken;
 
-class UserController extends MainController
-{
+class UserController extends MainController {
     function beforeRoute()
     {
         $this->beforeRouteFunction();
@@ -109,6 +108,187 @@ class UserController extends MainController
 
     //     $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_userCreated'), null);
     // }
+
+    function postSignUp()
+    {
+        if (!isset($this->requestData->email))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_email')), null);
+        $email = $this->requestData->email;
+
+        if (!isset($this->requestData->password))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_password')), null);
+        $password = $this->requestData->password;
+
+        if (!isset($this->requestData->pharmacyName) && !isset($this->requestData->distributorName))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_name')), null);
+        $entityName = !empty($this->requestData->pharmacyName) ? $this->requestData->pharmacyName : $this->requestData->distributorName;
+
+        if (!isset($this->requestData->country))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_countryId')), null);
+        $countryId = $this->requestData->country;
+
+        if (!isset($this->requestData->city))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_cityId')), null);
+        $cityId = $this->requestData->city;
+
+        if (!isset($this->requestData->address))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_address')), null);
+        $address = $this->requestData->address;
+
+        if (!isset($this->requestData->mobile))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_mobile')), null);
+        $mobile = $this->requestData->mobile;
+
+        $uid = $this->requestData->uid ?? NULL;
+        $name = $this->requestData->name ?? NULL;
+        $tradeLicenseNumber = $this->requestData->tradeLicenseNumber ?? NULL;
+        $pharmacyDocument = $this->requestData->pharmacyDocument ?? NULL;
+        $isDistributor = empty($this->requestData->pharmacyName);
+
+        // Check if email is unique
+        $dbUser = new GenericModel($this->db, "user");
+        $dbUser->getByField("email", $email);
+
+        if (!$dbUser->dry()) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_alreadyExists', $this->f3->get('RESPONSE.entity_email')), null);
+        }
+
+        // Check if phone number is unique
+        $dbUser = new GenericModel($this->db, "user");
+        $dbUser->getByField("mobile", $mobile);
+
+        if (!$dbUser->dry()) {
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_alreadyExists', $this->f3->get('RESPONSE.entity_mobile')), null);
+        }
+
+        // Check if trading license is unique
+        $dbEntityBranch = new GenericModel($this->db, "entityBranch");
+        if ($tradeLicenseNumber != '') {
+            $dbEntityBranch->getByField("tradeLicenseNumber", $tradeLicenseNumber);
+
+            if (!$dbEntityBranch->dry()) {
+                $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_alreadyExists', $this->f3->get('RESPONSE.entity_trading_license')), null);
+            }
+        }
+
+        // Get currency symbol
+        $dbCountry = new GenericModel($this->db, "country");
+        $country = $dbCountry->getById($countryId)[0];
+        $currencySymbol = $country['currency'];
+
+        // Get currency id
+        $dbCurrency = new GenericModel($this->db, "currency");
+        $currency = $dbCurrency->getByField("symbol", $currencySymbol)[0];
+        $currencyId = $currency['id'];
+
+        // Add user
+        if ($uid != NULL && trim($uid) != '') {
+            $dbUser->uid = $uid;
+        }
+        $dbUser->email = $email;
+        $dbUser->password = password_hash($password, PASSWORD_DEFAULT);
+        $dbUser->statusId = Constants::USER_STATUS_WAITING_VERIFICATION;
+        $dbUser->fullname = $name;
+        $dbUser->mobile = $mobile;
+        $dbUser->roleId = $isDistributor ? Constants::USER_ROLE_DISTRIBUTOR_SYSTEM_ADMINISTRATOR : Constants::USER_ROLE_PHARMACY_SYSTEM_ADMINISTRATOR;
+        $dbUser->language = "en";
+        $dbUser->addReturnID();
+
+        // Add entity
+        $dbEntity = new GenericModel($this->db, "entity");
+        $dbEntity->typeId = $isDistributor ? Constants::ENTITY_TYPE_DISTRIBUTOR : Constants::ENTITY_TYPE_PHARMACY;
+        $dbEntity->name_ar = $entityName;
+        $dbEntity->name_en = $entityName;
+        $dbEntity->name_fr = $entityName;
+        $dbEntity->countryId = $countryId;
+        $dbEntity->currencyId = $currencyId;
+        $dbEntity->addReturnID();
+
+        // Add entity branch
+        $dbEntityBranch = new GenericModel($this->db, "entityBranch");
+        $dbEntityBranch->entityId = $dbEntity->id;
+        $dbEntityBranch->name_ar = $entityName;
+        $dbEntityBranch->name_en = $entityName;
+        $dbEntityBranch->name_fr = $entityName;
+        $dbEntityBranch->cityId = $cityId;
+        $dbEntityBranch->address_ar = $address;
+        $dbEntityBranch->address_en = $address;
+        $dbEntityBranch->address_fr = $address;
+        $dbEntityBranch->tradeLicenseNumber = $tradeLicenseNumber;
+        $dbEntityBranch->tradeLicenseUrl = $pharmacyDocument;
+        $dbEntityBranch->addReturnID();
+
+        // Add account
+        $dbAccount = new GenericModel($this->db, "account");
+        $dbAccount->entityId = $dbEntity->id;
+        $dbAccount->number = 100;
+        $dbAccount->statusId = Constants::ACCOUNT_STATUS_ACTIVE;
+        $dbAccount->addReturnID();
+
+        // Add user account
+        $dbUserAccount = new GenericModel($this->db, "userAccount");
+        $dbUserAccount->userId = $dbUser->id;
+        $dbUserAccount->accountId = $dbAccount->id;
+        $dbUserAccount->statusId = Constants::ACCOUNT_STATUS_ACTIVE;
+        $dbUserAccount->addReturnID();
+
+        // Send verification email
+        $allValues = new stdClass();
+        $allValues->name = $name;
+        $allValues->mobile = $mobile;
+        $allValues->email = $email;
+        $allValues->entityName = $entityName;
+        $allValues->tradeLicenseNumber = $tradeLicenseNumber;
+        $allValues->countryId = $countryId;
+        $allValues->cityId = $cityId;
+        $allValues->address = $address;
+        $allValues->tradeLicenseUrl = $pharmacyDocument;
+        $allValues->roleId = $dbUser->roleId;
+
+        $dbCountry = new GenericModel($this->db, "country");
+        $dbCountry->name = "name_en";
+        $country = $dbCountry->getById($allValues->countryId)[0];
+        $allValues->countryName = $country['name'];
+
+        $dbCity = new GenericModel($this->db, "city");
+        $dbCity->name = "nameEn";
+        $city = $dbCity->getById($allValues->cityId)[0];
+        $allValues->cityName = $city['name'];
+
+//        if (Helper::isPharmacy($dbUser->roleId)) {
+//            NotificationHelper::sendVerificationPharmacyNotification($this->f3, $this->db, $allValues, $dbUser->id, $dbEntity->id, $dbEntityBranch->id);
+//        } else {
+//            NotificationHelper::sendVerificationDistributorNotification($this->f3, $this->db, $allValues, $dbUser->id, $dbEntity->id, $dbEntityBranch->id);
+//        }
+
+        $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_user')), $allValues);
+    }
+
+    function postSignUpDocumentUpload()
+    {
+        $allValidExtensions = [
+            "pdf",
+            "ppt",
+            "docx",
+            "jpeg",
+            "jpg",
+            "png",
+        ];
+
+        $success = false;
+
+        $ext = pathinfo(basename($_FILES["file"]["name"]), PATHINFO_EXTENSION);
+        if (in_array($ext, $allValidExtensions)) {
+            $success = true;
+        }
+
+        if ($success) {
+            $objResult = AumetFileUploader::upload("s3", $_FILES["file"], $this->generateRandomString(64));
+            $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_file')), ['url' => $objResult->fileLink]);
+        }
+
+        $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.403_unknownError', $this->f3->get('RESPONSE.entity_file')), null);
+    }
 
     public function postSignIn()
     {
