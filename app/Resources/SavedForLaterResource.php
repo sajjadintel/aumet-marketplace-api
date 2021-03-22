@@ -9,9 +9,9 @@ class SavedForLaterResource extends JsonResource
         return [
             'id' => $savedForLater->id,
             'quantity' => $savedForLater->quantity,
-            'account_id' => $savedForLater->accountId->id,
-            'created_at' => $savedForLater->createdAt,
-            'product' => SavedForLaterEntityProductSellResource::format($savedForLater->entityProductId),
+            'accountId' => $savedForLater->accountId->id,
+            'createdAt' => $savedForLater->createdAt,
+            'product' => EntityProductSellViewResource::format($savedForLater->entityProductId),
         ];
     }
 }

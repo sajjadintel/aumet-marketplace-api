@@ -22,4 +22,14 @@ class Account extends Model
             'has-many' => [CartDetail::class, 'accountId'],
         ]
     ];
+
+    /**
+     * Returns the country object of the account's entity
+     *
+     * @return Country|null
+     */
+    public function country()
+    {
+        return $this->entityId->countryId;
+    } 
 }

@@ -58,6 +58,10 @@ $f3->route('GET /v1/pharmacy/news/@id', 'NewsController->getNews');
 $f3->route('GET /v1/pharmacy/newsType', 'NewsController->getNewsTypeList');
 
 ###################
+## FAQ
+$f3->route('GET /v1/pharmacy/faq', 'FaqController->index');
+
+###################
 ## Saved For Later Endpoints
 $f3->route('GET /v1/pharmacy/saved-for-later', 'SavedForLaterController->index');
 $f3->route('POST /v1/pharmacy/saved-for-later', 'SavedForLaterController->create');
@@ -68,3 +72,7 @@ $f3->route('POST /v1/pharmacy/saved-for-later/@id/cart', 'SavedForLaterControlle
 ## notifications
 $f3->route('GET /v1/pharmacy/notification', 'NotificationsController->index');
 $f3->route('PATCH /v1/pharmacy/notification/@id/read', 'NotificationsController->markAsRead');
+
+###################
+## Distributor Endpoints
+$f3->route('GET /v1/pharmacy/distributor', 'DistributorsController->index');
