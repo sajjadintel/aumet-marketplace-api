@@ -18,6 +18,9 @@ class User extends Model
         'cartDetails' => [
             'has-many' => [CartDetail::class, 'userId']
         ],
+        'notifications' => [
+            'has-many' => [Notification::class, 'user_id'],
+        ]
     ];
 
     public function pharmacies()

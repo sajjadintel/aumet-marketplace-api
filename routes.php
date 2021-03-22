@@ -69,5 +69,10 @@ $f3->route('DELETE /v1/pharmacy/saved-for-later/@id', 'SavedForLaterController->
 $f3->route('POST /v1/pharmacy/saved-for-later/@id/cart', 'SavedForLaterController->moveToCart');
 
 ###################
+## notifications
+$f3->route('GET /v1/pharmacy/notification', 'NotificationsController->index');
+$f3->route('PATCH /v1/pharmacy/notification/@id/read', 'NotificationsController->markAsRead');
+
+###################
 ## Distributor Endpoints
 $f3->route('GET /v1/pharmacy/distributor', 'DistributorsController->index');
