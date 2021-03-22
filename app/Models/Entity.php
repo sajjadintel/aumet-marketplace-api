@@ -20,6 +20,9 @@ class Entity extends Model
         'statusId' => [
             'belongs-to-one' => EntityStatus::class
         ],
+        'entityBranches' => [
+            'has-many' => [EntityBranch::class, 'entityId'],
+        ],
         'id' => [
             'type' => Schema::DT_INT,
         ],
@@ -39,4 +42,26 @@ class Entity extends Model
             'type' => Schema::DT_DATETIME,
         ],
     ];
+
+    public function paginateDistributors($page = 1, $pageSize = 10)
+    {
+        return $this->paginate(
+            $page - 1,
+            $pageSize,
+            ['typeId = ?', EntityType::TYPE_DISTRIBUTOR]
+        );
+    }
+
+    public function paginateDistributorsByCountry($page = 1, $pageSize = 10, $countryId)
+    {
+        $distributors = $this->paginate(
+            $page - 1,
+            $pageSize,
+            ['typeId = ? AND countryId = ?', EntityType::TYPE_DISTRIBUTOR, $countryId]
+        );
+
+        return isset($distributors['subset'])
+                ? $distributors['subset']
+                : [];
+    }
 }
