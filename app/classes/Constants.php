@@ -83,6 +83,7 @@ class Constants
 
     ## Email Types
     const EMAIL_ORDER_UPDATE = 'Order Update';
+    const EMAIL_CHANGE_PROFILE_APPROVAL = 'Change Profile Approval';
     const EMAIL_NEW_ORDER = 'New Order';
     const EMAIL_LOW_STOCK = 'Low Stock';
     const EMAIL_RESET_PASSWORD = 'Reset Password';
