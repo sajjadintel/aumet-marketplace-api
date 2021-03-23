@@ -47,7 +47,7 @@ class BonusHelper {
         $mapSellerIdRelationGroupId = [];
         $dbBonus = new GenericModel($dbConnection, "vwEntityProductSellBonusDetail");
         $dbBonus->bonusTypeName = "bonusTypeName_" . $language;
-        $arrBonus = $dbBonus->getWhere("entityProductId = $productId AND isActive = 1");
+        $arrBonus = $dbBonus->getWhere("entityProductId = $productId AND isActive = 1") ?: [];
         $arrBonusId = [];
         foreach ($arrBonus as $bonus) {
             array_push($arrBonusId, $bonus['id']);
