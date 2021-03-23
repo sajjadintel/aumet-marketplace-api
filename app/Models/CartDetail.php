@@ -39,7 +39,7 @@ class CartDetail extends Model
             \Base::instance(), 
             $this->db, 
             $this->userId->language, 
-            $this->entityProductId->productId->id, 
+            $this->entityProductId->id, 
             $this->quantity,
             $this->pluck($this->userId->accounts, 'entityId.id')
         );

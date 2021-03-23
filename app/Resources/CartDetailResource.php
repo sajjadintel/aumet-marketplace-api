@@ -8,9 +8,8 @@ class CartDetailResource extends JsonResource
     {
         return [
             'id' => $cartDetail->id,
-            'entity_product' => EntityProductSellResource::format($cartDetail->entityProductId),
-            'account' => AccountResource::format($cartDetail->accountId),
-            'user' => $cartDetail->userId->id,
+            'accountId' => $cartDetail->accountId->id,
+            'userId' => $cartDetail->userId->id,
             'quantity' => $cartDetail->quantity,
             'quantity_free' => $cartDetail->quantityFree,
             'unitPrice' => $cartDetail->unitPrice,
@@ -18,6 +17,7 @@ class CartDetailResource extends JsonResource
             'note' => $cartDetail->note,
             'created_at' => $cartDetail->insertDateTime,
             'updated_at' => $cartDetail->updateDateTime,
+            'product' => EntityProductSellViewResource::format($cartDetail->entityProductId),
         ];
     }
 } 

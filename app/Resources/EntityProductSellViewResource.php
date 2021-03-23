@@ -16,7 +16,7 @@ class EntityProductSellViewResource extends JsonResource
         $availableQuantity = ProductHelper::getAvailableQuantity($product->stock, $product->maximumOrderQuantity);
         $bonusInfo = ProductHelper::getBonusInfo(
             \Base::instance()->get('dbConnectionMain'),
-            \Base::instance()->get('LANGUAGE'),
+            $language,
             \Base::instance()->get('objEntityList'),
             $product->id,
             $product->entityId,
