@@ -103,7 +103,8 @@ class EntityProductSellViewResource extends JsonResource
                 'entityName' => $product->$entityName,
                 'bonusTypeName' => $product->$bonusTypeName,
                 'madeInCountryName' => $product->$madeInCountryName,
-                'bonuses' => $bonusInfo->arrBonus
+                'bonuses' => $bonusInfo->arrBonus,
+                'activeBonuses' => $bonusInfo->activeBonus,
         ];
     }
 }
