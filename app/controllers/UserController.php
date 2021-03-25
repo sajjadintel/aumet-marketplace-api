@@ -206,7 +206,7 @@ class UserController extends MainController {
         
         if(strlen($entityImage) > 0) {
             // Upload file to s3
-            $objResult = AumetFileUploader::uploadS3Base64Image($this->requestData->entityImage, $this->generateRandomString(64));
+            $objResult = AumetFileUploader::uploadS3Base64($this->requestData->entityImage, $this->generateRandomString(64));
             if ($objResult->isError) {
                 // $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_errorUploading'), null);
                 $this->sendError(Constants::HTTP_FORBIDDEN, $objResult->error, null);
@@ -926,7 +926,7 @@ class UserController extends MainController {
         }
 
         // Upload file to s3
-        $objResult = AumetFileUploader::uploadS3Base64Image($this->requestData->entityImage, $this->generateRandomString(64));
+        $objResult = AumetFileUploader::uploadS3Base64($this->requestData->entityImage, $this->generateRandomString(64));
         if ($objResult->isError) {
             // $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_errorUploading'), null);
             $this->sendError(Constants::HTTP_FORBIDDEN, $objResult->error, null);

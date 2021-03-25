@@ -72,7 +72,7 @@ class AumetFileUploader
         return $objResult;
     }
 
-    public static function uploadS3Base64Image($base64, $saveFileName)
+    public static function uploadS3Base64($base64, $saveFileName)
     {
         $objResult = new stdClass();
         $objResult->isError = false;
@@ -84,10 +84,10 @@ class AumetFileUploader
             $fileExtension = explode('/', mime_content_type($base64))[1];
             $targetFileName = "$saveFileName.$fileExtension";
             
-            $image_parts = explode(";base64,", $base64);
-            $image_type_aux = explode("image/", $image_parts[0]);
-            $image_type = $image_type_aux[1];
-            $image_base64 = base64_decode($image_parts[1]);
+            $allParts = explode(";base64,", $base64);
+            $allTypeParts = explode("data:", $allParts[0]);
+            $type = $allTypeParts[1];
+            $body = base64_decode($allParts[1]);
 
             $s3Client = new S3Client([
                 'region' => 'us-west-1',
@@ -99,9 +99,9 @@ class AumetFileUploader
             ]);
             $result = $s3Client->putObject([
                 'Bucket' => 'aumetapps',
-                'Body' => $image_base64,
+                'Body' => $body,
                 'Key'    => 'mp/uploads/' . $targetFileName,
-                'ContentType' => 'image/' . $image_type
+                'ContentType' => $type
             ]);
             $objResult->isError = false;
             $objResult->isUploaded = true;
