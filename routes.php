@@ -12,6 +12,7 @@ $f3->route('POST /v1/users/signin', 'UserController->postSignIn');
 $f3->route('POST /v1/users/signinTest', 'UserController->postSignInTest');
 $f3->route('POST /v1/users/signup', 'UserController->postSignUp');
 $f3->route('POST /v1/users/uploadDocument', 'UserController->postSignUpDocumentUpload');
+$f3->route('POST /v1/users/uploadEntityImage', 'UserController->postEntityImageUpload');
 $f3->route('POST /v1/users/uploadEntityDocument', 'UserController->postEntityDocumentUpload');
 $f3->route('POST /v1/users/password/forgot', 'UserController->postForgottenPassword');
 $f3->route('POST /v1/users/password/reset', 'UserController->postResetPassword');

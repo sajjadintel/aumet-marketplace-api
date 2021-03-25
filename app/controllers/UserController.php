@@ -206,7 +206,7 @@ class UserController extends MainController {
         
         if(strlen($entityImage) > 0) {
             // Upload file to s3
-            $objResult = AumetFileUploader::uploadS3Base64($this->requestData->entityImage, $this->generateRandomString(64));
+            $objResult = AumetFileUploader::uploadS3Base64($entityImage, $this->generateRandomString(64));
             if ($objResult->isError) {
                 // $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_errorUploading'), null);
                 $this->sendError(Constants::HTTP_FORBIDDEN, $objResult->error, null);
@@ -227,7 +227,17 @@ class UserController extends MainController {
         $dbEntityBranch->address_en = $address;
         $dbEntityBranch->address_fr = $address;
         $dbEntityBranch->tradeLicenseNumber = $tradeLicenseNumber;
-        $dbEntityBranch->tradeLicenseUrl = $pharmacyDocument;
+        
+        if(strlen($pharmacyDocument) > 0) {
+            // Upload file to s3
+            $objResult = AumetFileUploader::uploadS3Base64($pharmacyDocument, $this->generateRandomString(64));
+            if ($objResult->isError) {
+                // $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_errorUploading'), null);
+                $this->sendError(Constants::HTTP_FORBIDDEN, $objResult->error, null);
+            }
+            $dbEntityBranch->tradeLicenseUrl = $objResult->fileLink;
+        }
+
         $dbEntityBranch->addReturnID();
 
         // Add account
@@ -902,7 +912,7 @@ class UserController extends MainController {
     //     $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_password')), null);
     // }
 
-    public function postEntityDocumentUpload()
+    public function postEntityImageUpload()
     {
         // Check if body is missing mandatory fields
         if (!isset($this->requestData->entityId) || !$this->requestData->entityId || !is_numeric($this->requestData->entityId))
@@ -938,6 +948,45 @@ class UserController extends MainController {
             $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_entity')), null);
         } else {
             $this->sendError(Constants::HTTP_FORBIDDEN, $dbEntity->exception, null);
+        }
+    }
+
+    public function postEntityDocumentUpload()
+    {
+        // Check if body is missing mandatory fields
+        if (!isset($this->requestData->entityId) || !$this->requestData->entityId || !is_numeric($this->requestData->entityId))
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_entityId')), null);
+        if (!isset($this->requestData->entityDocument) || !$this->requestData->entityDocument)
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_entityDocument')), null);
+
+        $entityId = $this->requestData->entityId;
+
+        // Check if entity exists
+        $dbEntityBranch = new GenericModel($this->db, "entityBranch");
+        $dbEntityBranch->getWhere("entityId=$entityId");
+
+        if ($dbEntityBranch->dry()) {
+            $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_entityBranch')), null);
+        }
+
+        // Check if entity valid for user
+        if (!array_key_exists($entityId, $this->objEntityList)) {
+            $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_entityBranch')), null);
+        }
+
+        // Upload file to s3
+        $objResult = AumetFileUploader::uploadS3Base64($this->requestData->entityDocument, $this->generateRandomString(64));
+        if ($objResult->isError) {
+            // $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.403_errorUploading'), null);
+            $this->sendError(Constants::HTTP_FORBIDDEN, $objResult->error, null);
+        }
+
+        $dbEntityBranch->tradeLicenseUrl = $objResult->fileLink;
+
+        if ($dbEntityBranch->edit()) {
+            $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_entityBranch')), null);
+        } else {
+            $this->sendError(Constants::HTTP_FORBIDDEN, $dbEntityBranch->exception, null);
         }
     }
 }
