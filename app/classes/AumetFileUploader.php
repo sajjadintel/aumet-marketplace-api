@@ -9,6 +9,7 @@ class AumetFileUploader
 {
     const AWS_ACCESS_KEY = "AKIAQQRZF2VNF2NDLC7Z";
     const AWS_SECRET_ACCESS_KEY = "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";
+
     public static function upload($destination, $arrFileParams, $saveFileName)
     {
         $fileName = $arrFileParams['name'];
@@ -67,6 +68,49 @@ class AumetFileUploader
                 $objResult->error = "Unknown destination";
                 $objResult->isError = true;
             }
+        }
+        return $objResult;
+    }
+
+    public static function uploadS3Base64Image($base64, $saveFileName)
+    {
+        $objResult = new stdClass();
+        $objResult->isError = false;
+        $objResult->isUploaded = false;
+        $objResult->fileLink = null;
+        $objResult->filePath = null;
+        $objResult->data = null;
+        try {
+            $fileExtension = explode('/', mime_content_type($base64))[1];
+            $targetFileName = "$saveFileName.$fileExtension";
+            
+            $image_parts = explode(";base64,", $base64);
+            $image_type_aux = explode("image/", $image_parts[0]);
+            $image_type = $image_type_aux[1];
+            $image_base64 = base64_decode($image_parts[1]);
+
+            $s3Client = new S3Client([
+                'region' => 'us-west-1',
+                'version' => 'latest',
+                'credentials' => [
+                    'key'    => AumetFileUploader::AWS_ACCESS_KEY,
+                    'secret' => AumetFileUploader::AWS_SECRET_ACCESS_KEY,
+                ],
+            ]);
+            $result = $s3Client->putObject([
+                'Bucket' => 'aumetapps',
+                'Body' => $image_base64,
+                'Key'    => 'mp/uploads/' . $targetFileName,
+                'ContentType' => 'image/' . $image_type
+            ]);
+            $objResult->isError = false;
+            $objResult->isUploaded = true;
+            $objResult->fileLink = "https://d2qyez1diqag7p.cloudfront.net/mp/uploads/$targetFileName";
+            $objResult->filePath = $result['ObjectURL'];
+            $objResult->data = $result;
+        } catch (Exception $e) {
+            $objResult->error = $e->getMessage();
+            $objResult->isError = true;
         }
         return $objResult;
     }
