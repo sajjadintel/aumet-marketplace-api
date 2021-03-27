@@ -164,6 +164,7 @@ class ProductController extends MainController
 
         $dbProducts = new GenericModel($this->db, "vwEntityProductSell");
         $dbProducts->productName = "productName_" . $this->language;
+        $dbProducts->stockStatusName = "stockStatusName_" . $this->language;
         $dbProducts->entityName = "entityName_" . $this->language;
         $dbProducts->bonusTypeName = "bonusTypeName_" . $this->language;
         $dbProducts->madeInCountryName = "madeInCountryName_" . $this->language;
@@ -208,6 +209,7 @@ class ProductController extends MainController
 
         $dbProduct = new GenericModel($this->db, "vwEntityProductSell");
         $dbProduct->productName = "productName_" . $this->language;
+        $dbProduct->stockStatusName = "stockStatusName_" . $this->language;
         $dbProduct->entityName = "entityName_" . $this->language;
         $dbProduct->bonusTypeName = "bonusTypeName_" . $this->language;
         $dbProduct->madeInCountryName = "madeInCountryName_" . $this->language;
