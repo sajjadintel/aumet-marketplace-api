@@ -48,20 +48,21 @@ class CartController extends MainController
         $dbCartDetail->userId = $this->objUser->id;
         $dbCartDetail->unitPrice = $dbEntityProduct->unitPrice;
         $dbCartDetail->quantity = $quantity;
-        $total = $quantity;
 
-        ## TODO: Fix Bonus logic
-        // if ($dbEntityProduct->bonusTypeId == 2) {
-        //     $dbBonus = new GenericModel($this->db, "entityProductSellBonusDetail");
-        //     $arrBonus = $dbBonus->findWhere("entityProductId = '$dbEntityProduct->id' AND isActive = 1", 'minOrder DESC');
+        $availableQuantity = ProductHelper::getAvailableQuantity($dbEntityProduct->stock, $dbEntityProduct->maximumOrderQuantity);
+        $bonusInfo = ProductHelper::getBonusInfo(
+            $this->db,
+            $this->language,
+            $this->objEntityList,
+            $dbEntityProduct->id,
+            $entityId,
+            $availableQuantity,
+            $quantity
+        );
+        $quantityFree = $bonusInfo->activeBonus->totalBonus;
+        $dbCartDetail->quantityFree = $quantityFree;
 
-        //     $entityProductBonusType = new GenericModel($this->db, "entityProductBonusType");
-        //     $entityProductBonusType->getWhere("id = '$dbEntityProduct->bonusTypeId'");
-
-        //     $quantityFree = $this->calculateBonus($dbCartDetail->quantity, $arrBonus, $entityProductBonusType->formula);
-        //     $dbCartDetail->quantityFree = $quantityFree;
-        //     $total = $quantityFree + $quantity;
-        // }
+        $total = $quantity + $quantityFree;
 
         ## TODO: To check stock and maxOrderQuantity (as per Marketplace Web logic)
         if ($total > $dbEntityProduct->stock) {
