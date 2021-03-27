@@ -2,6 +2,11 @@
 
 class GeoController extends MainController
 {
+    function beforeRoute()
+    {
+        $this->beforeRouteFunction();
+    }
+
     public function getCountryList()
     {
         $query = '1 = 1';
