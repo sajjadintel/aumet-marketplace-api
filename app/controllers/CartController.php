@@ -91,24 +91,6 @@ class CartController extends MainController
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_cartItem')), $user);
     }
 
-    private function calculateBonus($quantity, $bonuses, $formula)
-    {
-        foreach ($bonuses as $bonus) {
-            if ($quantity >= $bonus['minOrder']) {
-                $formula = str_replace('quantity', $quantity, $formula);
-                $formula = str_replace('minOrder', $bonus['minOrder'], $formula);
-                $formula = str_replace('bonus', $bonus['bonus'], $formula);
-                if (strpos($formula, ';') === false) {
-                    $formula .= ';';
-                }
-                $formula = '$response = ' . $formula;
-                eval($formula);
-                return $response;
-            }
-        }
-        return 0;
-    }
-
     function postDeleteItem()
     {
         if (!$this->requestData->cartItemId)
@@ -253,7 +235,7 @@ class CartController extends MainController
 
         $dbVwEntityPaymentMethod = new GenericModel($this->db, "vwEntityPaymentMethod");
         $dbVwEntityPaymentMethod->paymentMethodName = "paymentMethodName_" . $this->language;
-        
+
         $dbVwCartDetail = new GenericModel($this->db, "vwCartDetail");
         $dbVwCartDetail->entityName = "entityName_" . $this->language;
         $dbVwCartDetail->stockStatusName = "stockStatusName_" . $this->language;
@@ -263,19 +245,19 @@ class CartController extends MainController
         // Get detailsBuyer
         $arrDetailBuyer = [];
         $arrCurrencyId = [];
-        foreach($this->objEntityList as $entityId => $entityName) {
+        foreach ($this->objEntityList as $entityId => $entityName) {
             $detailBuyer = new stdClass();
-            
+
             $detailBuyer->entityId = $entityId;
             $detailBuyer->entityName = $entityName;
 
             // Get account id
-            $account = $dbAccount->getWhere('entityId='.$entityId)[0];
+            $account = $dbAccount->getWhere('entityId=' . $entityId)[0];
             $accountId = $account['id'];
             $detailBuyer->accountId = $accountId;
 
             // Get buyer currency
-            $entity = $dbEntity->getWhere('id='.$entityId)[0];
+            $entity = $dbEntity->getWhere('id=' . $entityId)[0];
             $buyerCurrencyId = $entity['currencyId'];
             array_push($arrCurrencyId, $buyerCurrencyId);
             $detailBuyer->entityCurrencyId = $buyerCurrencyId;
@@ -283,7 +265,7 @@ class CartController extends MainController
             // Get all sellers
             $arrCartItem = $dbVwCartDetail->findWhere("accountId=" . $accountId);
             $arrSeller = [];
-            foreach($arrCartItem as $cartItem) {
+            foreach ($arrCartItem as $cartItem) {
                 $seller = new stdClass();
                 $seller->entityId = $cartItem['entityId'];
                 $seller->entityName = $cartItem['entityName'];
@@ -291,11 +273,11 @@ class CartController extends MainController
                 array_push($arrSeller, $seller);
                 array_push($arrCurrencyId, $cartItem['currencyId']);
             }
-    
+
             // Get seller details
             foreach ($arrSeller as $seller) {
                 $sellerId = $seller->entityId;
-    
+
                 // Get cartItems
                 $arrCartItem = $dbVwCartDetail->findWhere("accountId=" . $accountId . " AND entityId=" . $sellerId);
                 for ($i = 0; $i < count($arrCartItem); $i++) {
@@ -312,11 +294,11 @@ class CartController extends MainController
                     );
                     $arrCartItem[$i]['bonuses'] = $bonusInfo->arrBonus;
                     $arrCartItem[$i]['activeBonus'] = $bonusInfo->activeBonus;
-    
+
                     $dbVwCartDetail->next();
                 }
                 $seller->cartItems = $arrCartItem;
-    
+
                 // Get paymentMethods
                 $dbVwEntityPaymentMethod->getWhere("entityId=" . $sellerId);
                 $arrEntityPaymentMethod = [];
@@ -325,7 +307,7 @@ class CartController extends MainController
                     $paymentMethod->id = $dbVwEntityPaymentMethod['paymentMethodId'];
                     $paymentMethod->name = $dbVwEntityPaymentMethod['paymentMethodName'];
                     array_push($arrEntityPaymentMethod, $paymentMethod);
-    
+
                     $dbVwEntityPaymentMethod->next();
                 }
                 $seller->paymentMethods = $arrEntityPaymentMethod;
@@ -337,7 +319,7 @@ class CartController extends MainController
         $data['detailsBuyer'] = $arrDetailBuyer;
 
         // Get currencies
-        $arrCurrency = $dbCurrency->findWhere('id IN ('. implode(",", $arrCurrencyId) .')');
+        $arrCurrency = $dbCurrency->findWhere('id IN (' . implode(",", $arrCurrencyId) . ')');
         $data['currencies'] = $arrCurrency;
 
 

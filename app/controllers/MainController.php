@@ -2,7 +2,8 @@
 
 use Ahc\Jwt\JWT;
 
-class MainController {
+class MainController
+{
     const APIKey = "zTvkXwJSSRa5DVvTgQhaUW52DkpkeSz";
     const JWTSecretKey = "mxczKngV84P/26qs+}nrj!T>RD^5^3F=";
 
@@ -29,6 +30,7 @@ class MainController {
     protected $mcc;
 
     protected $requestData;
+    protected $dbLog;
 
     function beforeRoute()
     {
@@ -44,7 +46,7 @@ class MainController {
 
         $this->prepareRequestData();
         $this->verifyUser();
-        $this->logRequest(Constants::LOG_TYPE_INIT);
+        $this->logRequest();
     }
 
     public function validateUser()
@@ -190,7 +192,7 @@ class MainController {
     function sendSuccess($statusCode, $message = null, $data = null)
     {
         $response = $this->formatResponse($statusCode, $message, $data);
-        $this->logRequest(Constants::LOG_TYPE_SUCCESS, $response);
+        $this->logResponse(Constants::LOG_TYPE_SUCCESS, $response);
         echo $response;
 
         die;
@@ -199,13 +201,13 @@ class MainController {
     function sendError($statusCode, $message = null, $data = null)
     {
         $response = $this->formatResponse($statusCode, $message, $data);
-        $this->logRequest(Constants::LOG_TYPE_ERROR, $response);
+        $this->logResponse(Constants::LOG_TYPE_ERROR, $response);
         echo $response;
 
         die;
     }
 
-    function logRequest($type, $data = null)
+    function logRequest()
     {
         // if the $userId == -1 this is an anonymous request (login/sigenup) for example
 
@@ -215,7 +217,12 @@ class MainController {
         $data = !empty($data) ? $data : $requestData;
         $ip = Utils::getClientIP();
 
-        ApiRequestsLog::logRequest($this->f3, $this->db, $userId, $this->sessionId, $data, $type, $ip);
+        $this->dbLog = ApiRequestsLog::logRequest($this->f3, $this->db, $userId, $this->sessionId, $data, $ip);
+    }
+
+    function logResponse($type, $response)
+    {
+        ApiRequestsLog::updateRequestResponse($this->dbLog, $type, $response);
     }
 
     function checkLength($variable, $variableName, $maxLength, $minLength = 0)
