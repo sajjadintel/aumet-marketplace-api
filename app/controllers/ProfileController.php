@@ -2,10 +2,15 @@
 
 use Ahc\Jwt\JWT;
 
-class ProfileController extends MainController {
-
-    function postPharmacyProfile()
+// TODO: Replace this Controller onto UserPharmacyController
+class ProfileController extends MainController
+{
+    function postRequestUpdatePharmacyProfile()
     {
+        if (!isset($this->requestData->entityId))
+            $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_entityId')), null);
+        $entityId = $this->requestData->entityId;
+
         if (!isset($this->requestData->entityName))
             $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_entityName')), null);
         $entityName = $this->requestData->entityName;
@@ -34,14 +39,14 @@ class ProfileController extends MainController {
 
         // Check if user exists
         $dbUser = new GenericModel($this->db, "vwEntityUserProfile");
-        $dbUser->getWhere("userId=$userId");
+        $dbUser->getWhere("userId=$userId AND entityId=$entityId");
 
         if ($dbUser->dry()) {
             $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_user')), null);
         }
 
         $dbEntity = new GenericModel($this->db, "entity");
-        $dbEntity->getByField("id", $dbUser->entityId);
+        $dbEntity->getByField("id", $entityId);
 
         $entityBranchId = $dbUser->entityBranchId;
         $dbEntityBranch = new GenericModel($this->db, "entityBranch");
@@ -130,6 +135,7 @@ class ProfileController extends MainController {
         $this->sendSuccess(Constants::HTTP_OK, $message);
     }
 
+    // TODO: Move this function to Helpers
     function sendChangeApprovalEmail($entityChangeApprovalId, $mapDisplayNameOldNewValue, $oldTradeLicenseUrl, $tradeLicenseUrl, $approvalUrl, $userEmail)
     {
         $emailHandler = new EmailHandler($this->db);
@@ -181,5 +187,4 @@ class ProfileController extends MainController {
         }
         $emailHandler->sendEmail(Constants::EMAIL_CHANGE_PROFILE_APPROVAL, $subject, $htmlContent);
     }
-
 }
