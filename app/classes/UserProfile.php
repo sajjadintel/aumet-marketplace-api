@@ -8,6 +8,7 @@ class UserProfile
         $this->id = $objUser->id;
         $this->fullName = $objUser->fullname;
         $this->email = $objUser->email;
+        $this->mobile = $objUser->mobile;
         $this->roleName = $objUser['roleName'];
         $this->cartCount = $objUser->cartCount;
         $this->entityList = $objEntityList;

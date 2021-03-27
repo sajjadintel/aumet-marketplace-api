@@ -8,7 +8,7 @@ $f3->route('GET /v1/app/menu/section', 'AppController->getMenuSection');
 
 ###################
 ## Geo Endpoints
-$f3->route('GET /v1/geo/country/registered', 'GeoController->getRegisteredCountryList');
+$f3->route('GET /v1/geo/country', 'GeoController->getCountryList');
 $f3->route('GET /v1/geo/city', 'GeoController->getCityList');
 
 ###################
@@ -20,9 +20,12 @@ $f3->route('POST /v1/users/uploadDocument', 'UserController->postSignUpDocumentU
 $f3->route('POST /v1/users/password/forgot', 'UserController->postForgottenPassword');
 $f3->route('POST /v1/users/password/reset', 'UserController->postResetPassword');
 $f3->route('POST /v1/users/signout', 'UserController->postSignOut');
-$f3->route('GET /v1/users/profile', 'UserController->getProfile');
-$f3->route('GET /v1/user/pharmacy', 'UserPharmacyController->index');
-$f3->route('POST /v1/users/profile', 'ProfileController->postPharmacyProfile');
+$f3->route('POST /v1/users/edit', 'UserController->postUpdateUser');
+
+###################
+## User Pharmacy Endpoints
+$f3->route('GET /v1/users/pharmacy', 'UserPharmacyController->index');
+$f3->route('POST /v1/users/pharmacy/edit', 'ProfileController->postRequestUpdatePharmacyProfile');
 
 ##################################################
 ## PHARMACY ACCESS
