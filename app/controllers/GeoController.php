@@ -26,7 +26,7 @@ class GeoController extends MainController
 
         $data = array();
         while (!$dbCountry->dry()) {
-            array_push($data, array("id" => $dbCountry->id, "name" => $dbCountry->name, "currency" => $dbCountry->currency, "countryCode", $dbCountry->countryCode, "flag" => $this->f3->get('API_URL') . "assets/img/countries/" . strtolower(Helper::getCountryIso($dbCountry->name_en)) . ".svg"));
+            array_push($data, array("id" => $dbCountry->id, "name" => $dbCountry->name, "currency" => $dbCountry->currency, "countryCode" => $dbCountry->countryCode, "flag" => $this->f3->get('API_URL') . "assets/img/countries/" . strtolower(Helper::getCountryIso($dbCountry->name_en)) . ".svg"));
             $dbCountry->next();
         }
         $response['data'] = $data;
