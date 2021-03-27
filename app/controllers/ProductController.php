@@ -209,6 +209,7 @@ class ProductController extends MainController
 
         $dbProduct = new GenericModel($this->db, "vwEntityProductSell");
         $dbProduct->productName = "productName_" . $this->language;
+        $dbProduct->stockStatusName = "stockStatusName_" . $this->language;
         $dbProduct->entityName = "entityName_" . $this->language;
         $dbProduct->bonusTypeName = "bonusTypeName_" . $this->language;
         $dbProduct->madeInCountryName = "madeInCountryName_" . $this->language;

@@ -7,6 +7,11 @@ $f3->route('GET /v1/app/menu', 'AppController->getMenu');
 $f3->route('GET /v1/app/menu/section', 'AppController->getMenuSection');
 
 ###################
+## Geo Endpoints
+$f3->route('GET /v1/geo/country/registered', 'GeoController->getRegisteredCountryList');
+$f3->route('GET /v1/geo/city', 'GeoController->getCityList');
+
+###################
 ## User Endpoints
 $f3->route('POST /v1/users/signin', 'UserController->postSignIn');
 $f3->route('POST /v1/users/signinTest', 'UserController->postSignInTest');
