@@ -43,7 +43,7 @@ class GeoController extends MainController
         }
 
         $dbCity = new GenericModel($this->db, "city");
-        $dbCity->name = "name" . ucfirst($this->objUser->language);
+        $dbCity->name = "name" . ucfirst($this->language);
         $response['data'] = $dbCity->findWhere($query, "countryId ASC, name ASC");
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_city')), $response);
