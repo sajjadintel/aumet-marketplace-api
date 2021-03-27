@@ -134,6 +134,8 @@ class OrderController extends MainController
 
     public function postOrder()
     {
+        ini_set('max_execution_time', 120);
+
         if (!isset($this->requestData->detailsSeller))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_detailsSeller')), null);
         $detailsSeller = $this->requestData->detailsSeller;
@@ -141,15 +143,22 @@ class OrderController extends MainController
         if (!isset($this->requestData->detailsBuyer))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_detailsBuyer')), null);
         $detailsBuyer = $this->requestData->detailsBuyer;
-
-        $dbEntityPaymentMethod = new GenericModel($this->db, "entityPaymentMethod");
+        
         $dbCurrencies = new GenericModel($this->db, "currency");
-        $dbEntities = new GenericModel($this->db, "entity");
         $dbAccount = new GenericModel($this->db, "account");
-        $dbEntityBranch = new GenericModel($this->db, "entityBranch");
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
         $dbOrder = new GenericModel($this->db, "order");
+        $dbVwEntityUserProfile = new GenericModel($this->db, "vwEntityUserProfile");
+        
+        $dbEntityBranch = new GenericModel($this->db, "entityBranch");
+        $dbEntityBranch->address = "address_" . $this->language;
 
+        $dbEntities = new GenericModel($this->db, "entity");
+        $dbEntities->name = "name_" . $this->language;
+        
+        $dbVwEntityPaymentMethod = new GenericModel($this->db, "vwEntityPaymentMethod");
+        $dbVwEntityPaymentMethod->paymentMethodName = "paymentMethodName_" . $this->language;
+        
         $dbVwCartDetail = new GenericModel($this->db, "vwCartDetail");
         $dbVwCartDetail->entityName = "entityName_" . $this->language;
         $dbVwCartDetail->stockStatusName = "stockStatusName_" . $this->language;
@@ -179,20 +188,24 @@ class OrderController extends MainController
             if ($dbEntities->dry()) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_detailsBuyer') . " - " . $this->f3->get('RESPONSE.entity_entityId')), null);
             }
+            $buyer['entityName'] = $dbEntities->name;
 
-            // get Entity Branch
+            // get Entity Branch details
             $dbEntityBranch->getWhere("entityId = '{$buyerItem->entityId}'");
             if ($dbEntityBranch->dry()) {
                 $this->sendError(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_detailsBuyer') . " - " . $this->f3->get('RESPONSE.entity_entityBranch')), null);
             }
             $buyer['entityBranchId'] = $dbEntityBranch->id;
+            $buyer['address'] = $dbEntityBranch->address;
 
-            // get currency id
+            // get currency details
             $dbCurrencies->getWhere("id = '{$dbEntities->currencyId}'");
             if ($dbCurrencies->dry()) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_detailsBuyer') . " - " . $this->f3->get('RESPONSE.entity_currencyId')), null);
             }
             $buyer['currencyId'] = $dbEntities->currencyId;
+            $buyer['currencySymbol'] = $dbCurrencies->symbol;
+            $buyer['conversionToUSD'] = $dbCurrencies->conversionToUSD;
 
             array_push($buyers, $buyer);
         }
@@ -213,6 +226,7 @@ class OrderController extends MainController
             if ($dbEntities->dry()) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_detailsSeller') . " - " . $this->f3->get('RESPONSE.entity_entityId')), null);
             }
+            $seller['entityName'] = $dbEntities->name;
 
             // get Entity Branch
             $dbEntityBranch->getWhere("entityId = '{$sellerItem->entityId}'");
@@ -226,14 +240,15 @@ class OrderController extends MainController
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_detailsSeller') . " - " . $this->f3->get('RESPONSE.entity_paymentMethodId')), null);
             $paymentMethodId = $sellerItem->paymentMethodId;
 
-            $dbEntityPaymentMethod->getWhere("paymentMethodId = '{$paymentMethodId}' AND entityId = '{$sellerItem->entityId}'");
-            if ($dbEntityPaymentMethod->dry()) {
+            $dbVwEntityPaymentMethod->getWhere("paymentMethodId = '{$paymentMethodId}' AND entityId = '{$sellerItem->entityId}'");
+            if ($dbVwEntityPaymentMethod->dry()) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_detailsSeller') . " - " . $this->f3->get('RESPONSE.entity_paymentMethod')), null);
             }
-            $dbEntityPaymentMethod->reset();
+            $dbVwEntityPaymentMethod->reset();
 
             // add payment method
             $seller['paymentMethodId'] = $paymentMethodId;
+            $seller['paymentMethodName'] = $dbVwEntityPaymentMethod->paymentMethodName;
 
             // add note to seller
             if (isset($sellerItem->note)) {
@@ -247,12 +262,13 @@ class OrderController extends MainController
             }
             $dbVwCartDetail->reset();
 
-            // get currency id
+            // get currency details
             $dbCurrencies->getWhere("id = '{$dbEntities->currencyId}'");
             if ($dbCurrencies->dry()) {
                 $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_detailsBuyer') . " - " . $this->f3->get('RESPONSE.entity_currencyId')), null);
             }
             $seller['currencyId'] = $dbEntities->currencyId;
+            $seller['currencySymbol'] = $dbCurrencies->symbol;
 
             array_push($sellers, $seller);
         }
@@ -261,16 +277,30 @@ class OrderController extends MainController
 
         // Add to orderGrand
         $dbOrderGrand = new GenericModel($this->db, "orderGrand");
-        $dbOrderGrand->buyerEntityId =  $buyers[0]['entityId'];
-        $dbOrderGrand->buyerBranchId =  $buyers[0]['entityBranchId'];
+        $dbOrderGrand->buyerEntityId = $buyers[0]['entityId'];
+        $dbOrderGrand->buyerBranchId = $buyers[0]['entityBranchId'];
         $dbOrderGrand->buyerUserId = $this->objUser->id;
         $dbOrderGrand->addReturnID();
 
+        // Create emailHandler
+        $emailHandler = new EmailHandler($this->db);
+        $emailFile = "emails/layout.php";
+        $this->f3->set('domainUrl', getenv('DOMAIN_URL'));
+        $this->f3->set('title', 'New Order');
+        $this->f3->set('emailType', 'newOrder');
+        $this->f3->set('orderSubmittedAt', date("Y-m-d H:i:s"));
+
+        $arrProducts = [];
+        $arrOrderId = [];
+        $arrCurrencyId = [];
+        $arrSellerName = [];
+        $mapCurrencyIdSubTotal = [];
+        $mapCurrencyIdTax = [];
+        $mapCurrencyIdTotal = [];
 
         foreach ($sellers as $seller) {
             $sellerEntityId = $seller['entityId'];
             $note = $seller['note'] ? $seller['note'] : null;
-            $paymentMethodId = $seller['paymentMethodId'];
 
             // Send note
             if ($note != null && $note != '') {
@@ -310,10 +340,48 @@ class OrderController extends MainController
             }
 
             $cartItems = $seller['cartItems'];
+            $arrCartItems = [];
 
-            $total = 0;
+            $subTotal = 0;
+            $tax = 0;
             foreach ($cartItems as $cartItem) {
-                $total += $cartItem['quantity'] * $cartItem['unitPrice'];
+                $productPrice = $cartItem['quantity'] * $cartItem['unitPrice'];
+                $subTotal += $productPrice;
+                $tax += $productPrice * $cartItem['vat'] / 100;
+
+                $product = new stdClass();
+                $product->image = $cartItem['image'];
+                $product->name = $cartItem['productName'];
+                $product->quantity = $cartItem['quantity'];
+                $product->quantityFree = $cartItem['quantityFree'];
+                $product->unitPrice = $cartItem['unitPrice'];
+                $product->currency = $cartItem['currency'];
+
+                array_push($arrCartItems, $product);
+                array_push($arrProducts, $product);
+            }
+
+            $total = $subTotal + $tax;
+
+            $sellerCurrencyId = $seller['currencyId'];
+            array_push($arrCurrencyId, $sellerCurrencyId);
+
+            if (array_key_exists($sellerCurrencyId, $mapCurrencyIdSubTotal)) {
+                $mapCurrencyIdSubTotal[$sellerCurrencyId] += $subTotal;
+            } else {
+                $mapCurrencyIdSubTotal[$sellerCurrencyId] = $subTotal;
+            }
+
+            if (array_key_exists($sellerCurrencyId, $mapCurrencyIdTax)) {
+                $mapCurrencyIdTax[$sellerCurrencyId] += $tax;
+            } else {
+                $mapCurrencyIdTax[$sellerCurrencyId] = $tax;
+            }
+
+            if (array_key_exists($sellerCurrencyId, $mapCurrencyIdTotal)) {
+                $mapCurrencyIdTotal[$sellerCurrencyId] += $total;
+            } else {
+                $mapCurrencyIdTotal[$sellerCurrencyId] = $total;
             }
 
             // Add to order
@@ -331,10 +399,48 @@ class OrderController extends MainController
             // TODO: Adjust serial logic
             $dbOrder->serial = mt_rand(100000, 999999);
 
-            $dbOrder->currencyId = $seller['currencyId'];
-            $dbOrder->subtotal = $total;
+            $dbOrder->currencyId = $sellerCurrencyId;
+            $dbOrder->subtotal = $subTotal;
+            $dbOrder->vat = $tax;
             $dbOrder->total = $total;
             $dbOrder->addReturnID();
+
+            array_push($arrOrderId, $dbOrder->id);
+            array_push($arrSellerName, $seller['entityName']);
+
+            // Send email to seller
+            $this->f3->set('products', $arrCartItems);
+            $this->f3->set('currencySymbol', $seller['currencySymbol']);
+            $this->f3->set('subTotal', round($subTotal, 2));
+            $this->f3->set('tax', round($tax, 2));
+            $this->f3->set('total', round($total, 2));
+            $this->f3->set('ordersUrl', "web/distributor/order/pending");
+            $this->f3->set('name', "Buyer name: " . $buyers[0]['entityName']);
+            $this->f3->set('buyerEmail', "Email: " . $this->objUser->email);
+            $this->f3->set('buyerAddress', "Address: " . $buyers[0]['address']);
+            $this->f3->set('paymentMethod', $seller['paymentMethodName']);
+
+            $arrEntityUserProfile = $dbVwEntityUserProfile->getByField("entityId", $sellerEntityId);
+            foreach ($arrEntityUserProfile as $entityUserProfile) {
+                $emailHandler->appendToAddress($entityUserProfile->userEmail, $entityUserProfile->userFullName);
+            }
+            $htmlContent = View::instance()->render($emailFile);
+
+            $subject = "Aumet - you've got a new order! (" . $dbOrder->id . ")";
+            if (getenv('ENV') != Constants::ENV_PROD) {
+                $subject .= " - (Test: " . getenv('ENV') . ")";
+
+                if (getenv('ENV') == Constants::ENV_LOCAL) {
+                    $emailHandler->resetTos();
+                    $emailHandler->appendToAddress("carl8smith94@gmail.com", "Antoine Abou Cherfane");
+                    $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
+                    $emailHandler->appendToAddress("sajjadintel@gmail.com", "Sajad");
+                    $emailHandler->appendToAddress("n.javaid@aumet.com", "Naveed Javaid");
+                }
+            }
+
+            $emailHandler->sendEmail(Constants::EMAIL_NEW_ORDER, $subject, $htmlContent);
+            $emailHandler->resetTos();
 
             $arrEntityProductId = array();
 
@@ -360,6 +466,70 @@ class OrderController extends MainController
 
             $dbCartDetail->erase("accountId = '{$buyers[0]['accountId']}' AND entityProductId IN (" . implode(", ", $arrEntityProductId) . ") ");
         }
+
+        // Send email to buyer
+        $subTotalUSD = 0;
+        $taxUSD = 0;
+        $totalUSD = 0;
+        if(count($arrCurrencyId) > 0) {
+            $arrCurrency = $dbCurrencies->findWhere("id IN (" . implode(",", $arrCurrencyId) . ")");
+            foreach ($arrCurrency as $currency) {
+                $currencyId = $currency['id'];
+                if (array_key_exists($currencyId, $mapCurrencyIdSubTotal)) {
+                    $subTotal = $mapCurrencyIdSubTotal[$currencyId];
+                    $subTotalUSD += $subTotal * $currency['conversionToUSD'];
+                }
+    
+                if (array_key_exists($currencyId, $mapCurrencyIdTax)) {
+                    $tax = $mapCurrencyIdTax[$currencyId];
+                    $taxUSD += $tax * $currency['conversionToUSD'];
+                }
+    
+                if (array_key_exists($currencyId, $mapCurrencyIdTotal)) {
+                    $total = $mapCurrencyIdTotal[$currencyId];
+                    $totalUSD += $total * $currency['conversionToUSD'];
+                }
+            }
+        }
+
+        $subTotal = $subTotalUSD / $buyers[0]['conversionToUSD'];
+        $tax = $taxUSD / $buyers[0]['conversionToUSD'];
+        $total = $totalUSD / $buyers[0]['conversionToUSD'];
+
+        $this->f3->set('products', $arrProducts);
+        $this->f3->set('currencySymbol', $buyers[0]['currencySymbol']);
+        $this->f3->set('subTotal', round($subTotal, 2));
+        $this->f3->set('tax', round($tax, 2));
+        $this->f3->set('total', round($total, 2));
+        $this->f3->set('ordersUrl', "web/pharmacy/order/history");
+
+        $name = count($arrSellerName) > 1 ? "Seller names: " : "Seller name: ";
+        $name .= implode(", ", $arrSellerName);
+        $this->f3->set('name', $name);
+
+        $this->f3->set('paymentMethod', null);
+
+        $arrEntityUserProfile = $dbVwEntityUserProfile->getByField("entityId", $buyers[0]['entityId']);
+        foreach ($arrEntityUserProfile as $entityUserProfile) {
+            $emailHandler->appendToAddress($entityUserProfile->userEmail, $entityUserProfile->userFullName);
+        }
+        $htmlContent = View::instance()->render($emailFile);
+
+        if (count($arrOrderId) > 1) {
+            $subject = "Aumet - New Orders Confirmation (" . implode(", ", $arrOrderId) . ")";
+        } else {
+            $subject = "Aumet - New Order Confirmation (" . implode(", ", $arrOrderId) . ")";
+        }
+        if (getenv('ENV') != Constants::ENV_PROD) {
+            $subject .= " - (Test: " . getenv('ENV') . ")";
+            if (getenv('ENV') == Constants::ENV_LOCAL) {
+                $emailHandler->resetTos();
+                $emailHandler->appendToAddress("carl8smith94@gmail.com", "Antoine Abou Cherfane");
+                $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
+                $emailHandler->appendToAddress("sajjadintel@gmail.com", "Sajad");
+            }
+        }
+        $emailHandler->sendEmail(Constants::EMAIL_NEW_ORDER, $subject, $htmlContent);
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_order')), null);
     }
