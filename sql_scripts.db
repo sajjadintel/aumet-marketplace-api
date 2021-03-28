@@ -237,6 +237,10 @@ CREATE VIEW marketplace.vwEntityWithProducts AS
 SELECT entity.* FROM marketplace.entity entity 
 INNER JOIN marketplace.entityProductSell entityProductSell WHERE entity.id = entityProductSell.entityId GROUP BY entity.id;
 
+UPDATE `marketplace`.`menuItemApp` SET `tapAction` = '{\"type\": \"seller_list\", \"data\": \"\"}' WHERE (`id` = '9');
+UPDATE `marketplace`.`menuItemApp` SET `tapAction` = '{\"type\": \"order_list\", \"data\": \"\"}' WHERE (`id` = '12');
+
+
 #############################
 
 # 28/03/2021 - Sajad Abbasi
