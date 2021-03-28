@@ -25,7 +25,7 @@ class SearchController extends MainController
             $search = $_GET['search'];
 
 
-        $filter = "typeId = 20 ";
+        $filter = "typeId = 20 AND countryId IN (" . implode(",", $this->objEntityCountryList) . ")";
 
         if ($search !== null) {
             $filter .= " AND ( name_en LIKE '%{$search}%'";
