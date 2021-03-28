@@ -225,3 +225,26 @@ ADD COLUMN `response` TEXT NULL AFTER `data`;
 ALTER TABLE `marketplace`.`apiRequestLog` 
 ADD COLUMN `updatedAt` DATETIME NULL AFTER `createdAt`;
 TRUNCATE `marketplace`.`apiRequestLog`;
+
+#############################
+
+# 28/03/2021 - Sajad Abbasi
+# Add chatroomId in order table
+
+ALTER TABLE `marketplace`.`order`
+ADD COLUMN `chatroomId` INT NULL AFTER `serial`,
+CHANGE COLUMN `currencyId` `currencyId` INT NOT NULL DEFAULT '1' AFTER `statusId`;
+
+#############################
+
+# 28/03/2021 - Sajad Abbasi
+# Refactor chatroom and chatroomDetail
+
+ALTER TABLE `marketplace`.`chatroom`
+CHANGE COLUMN `entityIdSeller` `entitySellerId` INT NOT NULL ,
+CHANGE COLUMN `entityIdBuyer` `entityBuyerId` INT NOT NULL ;
+
+ALTER TABLE `marketplace`.`chatroomDetail`
+CHANGE COLUMN `senderUserId` `userSenderId` INT NOT NULL ,
+CHANGE COLUMN `senderEntityId` `entitySenderId` INT NOT NULL ,
+CHANGE COLUMN `receiverEntityId` `entityReceiverId` INT NOT NULL ;
