@@ -13,10 +13,10 @@ class EntityBranchResource extends JsonResource
             'id' => $entityBranch->id,
             'name' => $entityBranch->$localizedNameField,
             'image' => $entityBranch->image,
-            'created_at' => $entityBranch->insertDateTime,
+            'createdAt' => $entityBranch->insertDateTime,
             'address' => $entityBranch->$localizedAddressField,
-            'trade_license_number' => $entityBranch->tradeLicenseNumber,
-            'trade_license_url' => $entityBranch->tradeLicenseUrl,
+            'tradeLicenseNumber' => $entityBranch->tradeLicenseNumber,
+            'tradeLicenseUrl' => $entityBranch->tradeLicenseUrl,
             'city' => CityResource::format($entityBranch->cityId),
         ];
     }
