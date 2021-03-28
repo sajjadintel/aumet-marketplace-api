@@ -233,6 +233,10 @@ UPDATE `marketplace`.`menuItemApp` SET `menuId` = '-2' WHERE (`id` = '10');
 UPDATE `marketplace`.`menuItemApp` SET `menuId` = '-2' WHERE (`id` = '11');
 INSERT INTO `marketplace`.`menuItemApp` (`id`, `menuId`, `parentItemId`, `orderId`, `type`, `title_en`, `title_fr`, `title_ar`, `subtitle_en`, `subtitle_fr`, `subtitle_ar`, `icon`, `tapAction`, `createdAt`, `isActive`) VALUES ('12', '2', '8', '2', 'item', 'Recent Orders', 'Recent Orders', 'Recent Orders', 'View your orders', 'View your orders', 'View your orders', 'assets/img/recent-orders.jpg', '{\"type\": \"order\", \"data\": \"\"}', '2020-12-12 11:59:21', '1');
 
+CREATE VIEW marketplace.vwEntityWithProducts AS
+SELECT entity.* FROM marketplace.entity entity 
+INNER JOIN marketplace.entityProductSell entityProductSell WHERE entity.id = entityProductSell.entityId GROUP BY entity.id;
+
 #############################
 
 # 28/03/2021 - Sajad Abbasi

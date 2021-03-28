@@ -25,7 +25,7 @@ class SearchController extends MainController
             $search = $_GET['search'];
 
 
-        $filter = "typeId = 20 ";
+        $filter = "typeId = 20 AND countryId IN (" . implode(",", $this->objEntityCountryList) . ")";
 
         if ($search !== null) {
             $filter .= " AND ( name_en LIKE '%{$search}%'";
@@ -59,11 +59,11 @@ class SearchController extends MainController
 
         $order['order'] = $orderString;
 
-        $dbProducts = new GenericModel($this->db, "entity");
-        $dbProducts->name = 'name_' . $this->language;
+        $dbEntities = new GenericModel($this->db, "vwEntityWithProducts");
+        $dbEntities->name = 'name_' . $this->language;
 
-        $dataCount = $dbProducts->count($filter);
-        $dbProducts->reset();
+        $dataCount = $dbEntities->count($filter);
+        $dbEntities->reset();
 
         $dataFilter = new stdClass();
         $dataFilter->dataCount = $dataCount;
@@ -72,7 +72,7 @@ class SearchController extends MainController
 
         $response['dataFilter'] = $dataFilter;
 
-        $response['data'] = array_map(array($dbProducts, 'cast'), $dbProducts->find($filter, $order));
+        $response['data'] = array_map(array($dbEntities, 'cast'), $dbEntities->find($filter, $order));
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_seller')), $response);
     }

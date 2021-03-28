@@ -16,6 +16,7 @@ class MainController
 
     protected $objUser;
     protected $objEntityList;
+    protected $objEntityCountryList;
 
     // header values being used
     protected $accessToken;
@@ -159,9 +160,13 @@ class MainController
 
                                 while (!$dbEntityList->dry()) {
                                     $this->objEntityList[$dbEntityList->id] = $dbEntityList->name;
+                                    if (!in_array($this->objEntityCountryList, $dbEntityList->countryId, true)) {
+                                        array_push($this->objEntityCountryList, $dbEntityList->countryId);
+                                    }
                                     $dbEntityList->next();
                                 }
                                 $this->f3->set('objEntityList', $this->objEntityList);
+                                $this->f3->set('objEntityCountryList', $this->objEntityCountryList);
                             }
                         }
                     }
