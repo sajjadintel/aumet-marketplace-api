@@ -20,7 +20,7 @@ class SearchController extends MainController
             $search = $_GET['search'];
 
 
-        $filter = "entityId = 20 ";
+        $filter = "typeId = 20 ";
 
         if ($search !== null) {
             $filter .= " AND ( name_en LIKE '%{$search}%'";
