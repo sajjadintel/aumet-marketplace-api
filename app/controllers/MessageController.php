@@ -1,6 +1,7 @@
 <?php
 
-class MessageController extends MainController {
+class MessageController extends MainController
+{
 
     public function getChatRoomList()
     {
@@ -229,5 +230,4 @@ class MessageController extends MainController {
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_chatRoom')), null);
     }
-
 }
