@@ -47,8 +47,8 @@ class MainController
         }
 
         $this->prepareRequestData();
-        $this->logRequest();
         $this->verifyUser();
+        $this->logRequest();
     }
 
     public function validateUser()
