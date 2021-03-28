@@ -64,7 +64,7 @@ class CartController extends MainController
 
         $total = $quantity + $quantityFree;
 
-        ## TODO: To check stock and maxOrderQuantity (as per Marketplace Web logic)
+        // TODO: @Sajad - To check stock and maxOrderQuantity (as per Marketplace Web logic)
         if ($total > $dbEntityProduct->stock) {
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_lowStock', $dbEntityProduct->stock), null);
         }
