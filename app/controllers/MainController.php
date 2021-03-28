@@ -15,8 +15,8 @@ class MainController
     protected $accessTokenPayload;
 
     protected $objUser;
-    protected $objEntityList;
-    protected $objEntityCountryList;
+    protected $objEntityList = array();
+    protected $objEntityCountryList = array();
 
     // header values being used
     protected $accessToken;
@@ -160,7 +160,7 @@ class MainController
 
                                 while (!$dbEntityList->dry()) {
                                     $this->objEntityList[$dbEntityList->id] = $dbEntityList->name;
-                                    if (!in_array($this->objEntityCountryList, $dbEntityList->countryId, true)) {
+                                    if (!in_array($dbEntityList->countryId, $this->objEntityCountryList, true)) {
                                         array_push($this->objEntityCountryList, $dbEntityList->countryId);
                                     }
                                     $dbEntityList->next();
