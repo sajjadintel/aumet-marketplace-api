@@ -2,9 +2,10 @@
 
 use Ahc\Jwt\JWT;
 
-// TODO: Replace this Controller onto UserPharmacyController
+// TODO: @Antoine - to remove this controller after having migrated properly
 class ProfileController extends MainController
 {
+    // TODO: @Antoine - Replace this function onto UserPharmacyController
     function postRequestUpdatePharmacyProfile()
     {
         if (!isset($this->requestData->entityId))
@@ -135,7 +136,7 @@ class ProfileController extends MainController
         $this->sendSuccess(Constants::HTTP_OK, $message);
     }
 
-    // TODO: Move this function to Helpers
+    // TODO: @Antoine - Move this function to NotificationHelper or normal Helper
     function sendChangeApprovalEmail($entityChangeApprovalId, $mapDisplayNameOldNewValue, $oldTradeLicenseUrl, $tradeLicenseUrl, $approvalUrl, $userEmail)
     {
         $emailHandler = new EmailHandler($this->db);

@@ -581,7 +581,7 @@ class OrderController extends MainController
         $dbOrder->edit();
 
         $missingProductsToEmail = $missingProducts;
-        // TODO: Email To Distributor
+        // TODO: @Antoine - Email To Distributor
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_added', $this->f3->get('RESPONSE.entity_feedback')), null);
     }
