@@ -31,6 +31,7 @@ class MainController
 
     protected $requestData;
     protected $dbLog;
+    protected $apiStartTime;
 
     function beforeRoute()
     {
@@ -40,13 +41,14 @@ class MainController
 
     public function beforeRouteFunction()
     {
+        $this->apiStartTime = date("Y-m-d H:i:s");
         if (!$this->verifyApiKey()) {
             $this->f3->error(Constants::HTTP_UNAUTHORIZED, $this->f3->get('RESPONSE.401_invalidApiKey'));
         }
 
         $this->prepareRequestData();
-        $this->verifyUser();
         $this->logRequest();
+        $this->verifyUser();
     }
 
     public function validateUser()
@@ -217,7 +219,7 @@ class MainController
         $data = !empty($data) ? $data : $requestData;
         $ip = Utils::getClientIP();
 
-        $this->dbLog = ApiRequestsLog::logRequest($this->f3, $this->db, $userId, $this->sessionId, $data, $ip);
+        $this->dbLog = ApiRequestsLog::logRequest($this->f3, $this->db, $userId, $this->sessionId, $data, $ip, $this->apiStartTime);
     }
 
     function logResponse($type, $response)
