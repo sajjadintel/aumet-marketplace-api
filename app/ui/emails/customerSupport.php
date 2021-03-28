@@ -63,7 +63,7 @@
                         </div>
                         <!--[if mso]></td>
                         <td valign="top" style="padding: 0px 8px;"><![endif]-->
-                        <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 100px;">
+                        <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 400px;">
                             <div class="o_px-xs o_sans o_text-xs " style="font-family: Helvetica, Arial, sans-serif;margin-top: 0px;margin-bottom: 0px;font-size: 14px;text-align: left;line-height: 21px;padding-left: 8px;padding-right: 8px;">
                                 <p class="o_text-light" style="color: #82899a;margin-top: 0px;margin-bottom: 0px;"><?php echo $email ?></p>
                             </div>
@@ -89,7 +89,7 @@
                             </div>
                             <!--[if mso]></td>
                             <td valign="top" style="padding: 0px 8px;"><![endif]-->
-                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 100px;">
+                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 400px;">
                                 <div class="o_px-xs o_sans o_text-xs " style="font-family: Helvetica, Arial, sans-serif;margin-top: 0px;margin-bottom: 0px;font-size: 14px;text-align: left;line-height: 21px;padding-left: 8px;padding-right: 8px;">
                                     <p class="o_text-light" style="color: #82899a;margin-top: 0px;margin-bottom: 0px;"><?php echo $phone ?></p>
                                 </div>
@@ -114,7 +114,7 @@
                         </div>
                         <!--[if mso]></td>
                         <td valign="top" style="padding: 0px 8px;"><![endif]-->
-                        <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 100px;">
+                        <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 400px;">
                             <div class="o_px-xs o_sans o_text-xs " style="font-family: Helvetica, Arial, sans-serif;margin-top: 0px;margin-bottom: 0px;font-size: 14px;text-align: left;line-height: 21px;padding-left: 8px;padding-right: 8px;">
                                 <p class="o_text-light" style="color: #82899a;margin-top: 0px;margin-bottom: 0px;"><?php echo $subject ?></p>
                             </div>
@@ -140,7 +140,7 @@
                             </div>
                             <!--[if mso]></td>
                             <td valign="top" style="padding: 0px 8px;"><![endif]-->
-                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 100px;">
+                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 400px;">
                                 <div class="o_px-xs o_sans o_text-xs " style="font-family: Helvetica, Arial, sans-serif;margin-top: 0px;margin-bottom: 0px;font-size: 14px;text-align: left;line-height: 21px;padding-left: 8px;padding-right: 8px;">
                                     <p class="o_text-light" style="color: #82899a;margin-top: 0px;margin-bottom: 0px;"><?php echo $supportCustomer ?></p>
                                 </div>
@@ -166,7 +166,7 @@
                             </div>
                             <!--[if mso]></td>
                             <td valign="top" style="padding: 0px 8px;"><![endif]-->
-                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 100px;">
+                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 400px;">
                                 <div class="o_px-xs o_sans o_text-xs " style="font-family: Helvetica, Arial, sans-serif;margin-top: 0px;margin-bottom: 0px;font-size: 14px;text-align: left;line-height: 21px;padding-left: 8px;padding-right: 8px;">
                                     <p class="o_text-light" style="color: #82899a;margin-top: 0px;margin-bottom: 0px;"><?php echo $supportOrder ?></p>
                                 </div>
@@ -192,7 +192,7 @@
                             </div>
                             <!--[if mso]></td>
                             <td valign="top" style="padding: 0px 8px;"><![endif]-->
-                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 100px;">
+                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 400px;">
                                 <div class="o_px-xs o_sans o_text-xs " style="font-family: Helvetica, Arial, sans-serif;margin-top: 0px;margin-bottom: 0px;font-size: 14px;text-align: left;line-height: 21px;padding-left: 8px;padding-right: 8px;">
                                     <p class="o_text-light" style="color: #82899a;margin-top: 0px;margin-bottom: 0px;"><?php echo $requestCall ?></p>
                                 </div>
@@ -218,7 +218,7 @@
                             </div>
                             <!--[if mso]></td>
                             <td valign="top" style="padding: 0px 8px;"><![endif]-->
-                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 100px;">
+                            <div class="o_col o_col-1" style="display: inline-block;vertical-align: top;width: 100%;max-width: 400px;">
                                 <div class="o_px-xs o_sans o_text-xs " style="font-family: Helvetica, Arial, sans-serif;margin-top: 0px;margin-bottom: 0px;font-size: 14px;text-align: left;line-height: 21px;padding-left: 8px;padding-right: 8px;">
                                     <p class="o_text-light" style="color: #82899a;margin-top: 0px;margin-bottom: 0px;"><?php echo $message ?></p>
                                 </div>
