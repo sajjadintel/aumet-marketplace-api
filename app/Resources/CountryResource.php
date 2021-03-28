@@ -12,7 +12,7 @@ class CountryResource extends JsonResource
             'id' => $country->id,
             'name' => $country->$localizedNameField,
             'currency' => $country->currency,
-            'is_registered_from' => $country->isRegisteredFrom,
+            'isRegisteredFrom' => $country->isRegisteredFrom,
             'code' => $country->code,
         ];
     }

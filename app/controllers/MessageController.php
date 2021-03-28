@@ -20,7 +20,7 @@ class MessageController extends MainController
             $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Offset')), null);
 
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $filter = "entityIdBuyer IN ($arrEntityId)";
+        $filter = "entityBuyerId IN ($arrEntityId)";
         $filter .= " AND isArchivedBuyer=0";
 
         $dbChatroom = new GenericModel($this->db, "vwChatroom");
@@ -40,8 +40,8 @@ class MessageController extends MainController
             $dbChatroom[$i]['content'] = $lastMessage->content;
             $dbChatroom[$i]['messageCreatedAt'] = $lastMessage->createdAt;
             $dbChatroom[$i]['type'] = $lastMessage->type;
-            $dbChatroom[$i]['senderUserId'] = $lastMessage->senderUserId;
-            $dbChatroom[$i]['senderEntityId'] = $lastMessage->senderEntityId;
+            $dbChatroom[$i]['userSenderId'] = $lastMessage->userSenderId;
+            $dbChatroom[$i]['entitySenderId'] = $lastMessage->entitySenderId;
         }
 
         $response['dataFilter'] = $dataFilter;
@@ -71,7 +71,7 @@ class MessageController extends MainController
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityIdBuyer IN ($arrEntityId)");
+        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityBuyerId IN ($arrEntityId)");
 
         if ($dbChatRoom->dry())
             $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_chatRoom')), null);
@@ -93,13 +93,13 @@ class MessageController extends MainController
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityIdBuyer IN ($arrEntityId)");
+        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityBuyerId IN ($arrEntityId)");
 
         if ($dbChatRoom->dry())
             $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_chatRoom')), null);
 
         $unreadMessagesDb = new GenericModel($this->db, "chatroomDetail");
-        $unreadMessagesDb->getWhere("isReadBuyer=1 AND chatroomId={$chatRoomId} AND receiverEntityId IN ($arrEntityId)");
+        $unreadMessagesDb->getWhere("isReadBuyer=1 AND chatroomId={$chatRoomId} AND entityReceiverId IN ($arrEntityId)");
         while (!$unreadMessagesDb->dry()) {
             $unreadMessagesDb->isReadBuyer = 0;
             $unreadMessagesDb->update();
@@ -124,13 +124,13 @@ class MessageController extends MainController
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityIdBuyer IN ($arrEntityId)");
+        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityBuyerId IN ($arrEntityId)");
 
         if ($dbChatRoom->dry())
             $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_chatRoom')), null);
 
         $unreadMessagesDb = new GenericModel($this->db, "chatroomDetail");
-        $unreadMessagesDb->getWhere("isReadBuyer=0 AND chatroomId={$chatRoomId} AND receiverEntityId IN ($arrEntityId)");
+        $unreadMessagesDb->getWhere("isReadBuyer=0 AND chatroomId={$chatRoomId} AND entityReceiverId IN ($arrEntityId)");
         while (!$unreadMessagesDb->dry()) {
             $unreadMessagesDb->isReadBuyer = 1;
             $unreadMessagesDb->update();
@@ -155,7 +155,7 @@ class MessageController extends MainController
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityIdBuyer IN ($arrEntityId)");
+        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityBuyerId IN ($arrEntityId)");
 
         if ($dbChatRoom->dry())
             $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_chatRoom')), null);
@@ -181,7 +181,7 @@ class MessageController extends MainController
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
-        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityIdBuyer IN ($arrEntityId)");
+        $dbChatRoom->getWhere("id = '$chatRoomId' AND entityBuyerId IN ($arrEntityId)");
 
         if ($dbChatRoom->dry())
             $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_chatRoom')), null);
@@ -197,9 +197,9 @@ class MessageController extends MainController
 
         $dbChatMessage = new GenericModel($this->db, "chatroomDetail");
         $dbChatMessage->chatroomId = $dbChatRoom->id;
-        $dbChatMessage->senderUserId = $this->objUser->id;
-        $dbChatMessage->senderEntityId = $dbChatRoom->entityIdBuyer;
-        $dbChatMessage->receiverEntityId = $dbChatRoom->entityIdSeller;
+        $dbChatMessage->userSenderId = $this->objUser->id;
+        $dbChatMessage->entitySenderId = $dbChatRoom->entityBuyerId;
+        $dbChatMessage->entityReceiverId = $dbChatRoom->entitySellerId;
         $dbChatMessage->type = 1;
         $dbChatMessage->content = $message;
         $dbChatMessage->isReadBuyer = 1;
@@ -212,16 +212,16 @@ class MessageController extends MainController
 
     public function postNewChatRoom()
     {
-        if (!$this->requestData->entityIdSeller || !is_numeric($this->requestData->entityIdSeller))
+        if (!$this->requestData->entitySellerId || !is_numeric($this->requestData->entitySellerId))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_sellerId')), null);
 
-        $entityIdSeller = addslashes($this->requestData->entityIdSeller);
+        $entitySellerId = addslashes($this->requestData->entitySellerId);
 
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
 
         $dbChatRoom = new GenericModel($this->db, "chatroom");
-        $dbChatRoom->entityIdSeller = $entityIdSeller;
-        $dbChatRoom->entityIdBuyer = $arrEntityId[0];
+        $dbChatRoom->entitySellerId = $entitySellerId;
+        $dbChatRoom->entityBuyerId = $arrEntityId[0];
         $dbChatRoom->pendingReadSeller = 0;
         $dbChatRoom->pendingReadBuyer = 0;
         $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
