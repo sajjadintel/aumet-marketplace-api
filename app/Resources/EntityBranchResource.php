@@ -15,6 +15,8 @@ class EntityBranchResource extends JsonResource
             'image' => $entityBranch->image,
             'created_at' => $entityBranch->insertDateTime,
             'address' => $entityBranch->$localizedAddressField,
+            'trade_license_number' => $entityBranch->tradeLicenseNumber,
+            'trade_license_url' => $entityBranch->tradeLicenseUrl,
             'city' => CityResource::format($entityBranch->cityId),
         ];
     }
