@@ -143,22 +143,22 @@ class OrderController extends MainController
         if (!isset($this->requestData->detailsBuyer))
             $this->sendError(Constants::HTTP_FORBIDDEN, $this->f3->get('RESPONSE.400_paramMissing', $this->f3->get('RESPONSE.entity_detailsBuyer')), null);
         $detailsBuyer = $this->requestData->detailsBuyer;
-        
+
         $dbCurrencies = new GenericModel($this->db, "currency");
         $dbAccount = new GenericModel($this->db, "account");
         $dbCartDetail = new GenericModel($this->db, "cartDetail");
         $dbOrder = new GenericModel($this->db, "order");
         $dbVwEntityUserProfile = new GenericModel($this->db, "vwEntityUserProfile");
-        
+
         $dbEntityBranch = new GenericModel($this->db, "entityBranch");
         $dbEntityBranch->address = "address_" . $this->language;
 
         $dbEntities = new GenericModel($this->db, "entity");
         $dbEntities->name = "name_" . $this->language;
-        
+
         $dbVwEntityPaymentMethod = new GenericModel($this->db, "vwEntityPaymentMethod");
         $dbVwEntityPaymentMethod->paymentMethodName = "paymentMethodName_" . $this->language;
-        
+
         $dbVwCartDetail = new GenericModel($this->db, "vwCartDetail");
         $dbVwCartDetail->entityName = "entityName_" . $this->language;
         $dbVwCartDetail->stockStatusName = "stockStatusName_" . $this->language;
@@ -302,43 +302,6 @@ class OrderController extends MainController
             $sellerEntityId = $seller['entityId'];
             $note = $seller['note'] ? $seller['note'] : null;
 
-            // Send note
-            if ($note != null && $note != '') {
-
-                // TODO: @Sajad - CREATE A HELPER FUNCTION TO CREATE CHATROOM
-                $dbChatRoom = new GenericModel($this->db, "chatroom");
-                $dbChatRoom->getWhere("sellerEntityId='{$sellerEntityId}' AND buyerEntityId = '{$dbOrderGrand->buyerEntityId}'");
-                if ($dbChatRoom->dry()) {
-                    $dbChatRoom->sellerEntityId = $sellerEntityId;
-                    $dbChatRoom->buyerEntityId = $dbOrderGrand->buyerEntityId;
-                    $dbChatRoom->sellerPendingRead = 0;
-                    $dbChatRoom->buyerPendingRead = 0;
-                    $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
-                    if (!$dbChatRoom->add())
-                        $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
-                }
-
-                $dbChatRoom->sellerPendingRead++;
-                $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
-                $dbChatRoom->archivedAt = null;
-
-                if (!$dbChatRoom->update())
-                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
-
-                // TODO: @Sajad - CREATE A HELPER FUNCTION TO SEND MESSAGE
-                $dbChatMessage = new GenericModel($this->db, "chatroomDetail");
-                $dbChatMessage->chatroomId = $dbChatRoom->id;
-                $dbChatMessage->senderUserId = $this->objUser->id;
-                $dbChatMessage->senderEntityId = $dbChatRoom->buyerEntityId;
-                $dbChatMessage->receiverEntityId = $dbChatRoom->sellerEntityId;
-                $dbChatMessage->type = 1;
-                $dbChatMessage->content = $note;
-                $dbChatMessage->isReadBuyer = 0;
-                $dbChatMessage->isReadSeller = 0;
-                if (!$dbChatMessage->add())
-                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatMessage->exception, null);
-            }
-
             $cartItems = $seller['cartItems'];
             $arrCartItems = [];
 
@@ -404,6 +367,43 @@ class OrderController extends MainController
             $dbOrder->vat = $tax;
             $dbOrder->total = $total;
             $dbOrder->addReturnID();
+
+            // Send note
+            if ($note != null && $note != '') {
+
+                // TODO: @Sajad - CREATE A HELPER FUNCTION TO CREATE CHATROOM
+                $dbChatRoom = new GenericModel($this->db, "chatroom");
+                $dbChatRoom->getWhere("sellerEntityId='{$sellerEntityId}' AND buyerEntityId = '{$dbOrderGrand->buyerEntityId}'");
+                if ($dbChatRoom->dry()) {
+                    $dbChatRoom->sellerEntityId = $sellerEntityId;
+                    $dbChatRoom->buyerEntityId = $dbOrderGrand->buyerEntityId;
+                    $dbChatRoom->sellerPendingRead = 0;
+                    $dbChatRoom->buyerPendingRead = 0;
+                    $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
+                    if (!$dbChatRoom->add())
+                        $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
+                }
+
+                $dbChatRoom->sellerPendingRead++;
+                $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
+                $dbChatRoom->archivedAt = null;
+
+                if (!$dbChatRoom->update())
+                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
+
+                // TODO: @Sajad - CREATE A HELPER FUNCTION TO SEND MESSAGE
+                $dbChatMessage = new GenericModel($this->db, "chatroomDetail");
+                $dbChatMessage->chatroomId = $dbChatRoom->id;
+                $dbChatMessage->senderUserId = $this->objUser->id;
+                $dbChatMessage->senderEntityId = $dbChatRoom->buyerEntityId;
+                $dbChatMessage->receiverEntityId = $dbChatRoom->sellerEntityId;
+                $dbChatMessage->type = 1;
+                $dbChatMessage->content = "Note for Order #{$dbOrder->id}: " . $note;
+                $dbChatMessage->isReadBuyer = 0;
+                $dbChatMessage->isReadSeller = 0;
+                if (!$dbChatMessage->add())
+                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatMessage->exception, null);
+            }
 
             array_push($arrOrderId, $dbOrder->id);
             array_push($arrSellerName, $seller['entityName']);
@@ -471,7 +471,7 @@ class OrderController extends MainController
         $subTotalUSD = 0;
         $taxUSD = 0;
         $totalUSD = 0;
-        if(count($arrCurrencyId) > 0) {
+        if (count($arrCurrencyId) > 0) {
             $arrCurrency = $dbCurrencies->findWhere("id IN (" . implode(",", $arrCurrencyId) . ")");
             foreach ($arrCurrency as $currency) {
                 $currencyId = $currency['id'];
@@ -479,12 +479,12 @@ class OrderController extends MainController
                     $subTotal = $mapCurrencyIdSubTotal[$currencyId];
                     $subTotalUSD += $subTotal * $currency['conversionToUSD'];
                 }
-    
+
                 if (array_key_exists($currencyId, $mapCurrencyIdTax)) {
                     $tax = $mapCurrencyIdTax[$currencyId];
                     $taxUSD += $tax * $currency['conversionToUSD'];
                 }
-    
+
                 if (array_key_exists($currencyId, $mapCurrencyIdTotal)) {
                     $total = $mapCurrencyIdTotal[$currencyId];
                     $totalUSD += $total * $currency['conversionToUSD'];
@@ -655,7 +655,7 @@ class OrderController extends MainController
         if ($dbOrder->dry())
             $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.404_itemNotFound', $this->f3->get('RESPONSE.entity_order')), null);
 
-        if($dbOrder['statusId'] != Constants::ORDER_STATUS_PENDING)
+        if ($dbOrder['statusId'] != Constants::ORDER_STATUS_PENDING)
             $this->sendError(Constants::HTTP_NOT_FOUND, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_order')), null);
 
         $entitySellerId = $dbOrder['entitySellerId'];
@@ -665,12 +665,13 @@ class OrderController extends MainController
         $valid = is_array($arrProducts);
 
         // Check for missing id or quantity
-        if($valid) {
+        if ($valid) {
             $arrProductId = [];
             $mapProductIdQuantity = [];
-            foreach($arrProducts as $product) {
-                if((!isset($product->productId) || !$product->productId || !is_numeric($product->productId))
-                    || (!isset($product->quantity) || !$product->quantity || !is_numeric($product->quantity))) {
+            foreach ($arrProducts as $product) {
+                if ((!isset($product->productId) || !$product->productId || !is_numeric($product->productId))
+                    || (!isset($product->quantity) || !$product->quantity || !is_numeric($product->quantity))
+                ) {
                     $valid = false;
                     break;
                 }
@@ -678,35 +679,37 @@ class OrderController extends MainController
                 array_push($arrProductId, $product->productId);
             }
         }
-        
+
         // Check for product duplicates
         $valid = $valid && !$this->checkForProductsDuplication($arrProducts, "productId");
 
         $arrOrderProducts = [];
         $subtotal = 0;
         $vat = 0;
-        if($valid) {
+        if ($valid) {
             // Check if all ids are valid
             $dbProducts = new GenericModel($this->db, "vwEntityProductSell");
             $arrProductIdStr = implode(",", $arrProductId);
             $arrProductsDb = $dbProducts->findWhere("productId IN ($arrProductIdStr)");
-            if(count($arrProductsDb) == count($arrProductId)) {
-                foreach($arrProductsDb as $productsDb) {
+            if (count($arrProductsDb) == count($arrProductId)) {
+                foreach ($arrProductsDb as $productsDb) {
                     $entityProductId = $productsDb['id'];
                     $productId = $productsDb['productId'];
                     $entityId = $productsDb['entityId'];
-                    
+
                     // Check if quantity higher than availableQuantity or lower than minimumOrderQuantity or if product is from different distributor
                     $quantity = $mapProductIdQuantity[$productId];
-                    $minimumOrderQuantity = $productsDb['minimumOrderQuantity']; 
+                    $minimumOrderQuantity = $productsDb['minimumOrderQuantity'];
                     $availableQuantity = ProductHelper::getAvailableQuantity($productsDb['stock'], $productsDb['maximumOrderQuantity']);
-                    if($quantity > $availableQuantity
+                    if (
+                        $quantity > $availableQuantity
                         || ($minimumOrderQuantity && $quantity < $minimumOrderQuantity)
-                        || $entityId != $entitySellerId) {
+                        || $entityId != $entitySellerId
+                    ) {
                         $valid = false;
                         break;
                     }
-                    
+
                     // Get freeQuantity
                     $bonusInfo = ProductHelper::getBonusInfo(
                         $this->db,
@@ -731,7 +734,7 @@ class OrderController extends MainController
                     $orderProduct->image = $productsDb['image'];
                     $orderProduct->name = $productsDb["productName_" . $this->language];
                     array_push($arrOrderProducts, $orderProduct);
-                    
+
                     $productPrice = $quantity * $productsDb['unitPrice'];
                     $subtotal += $productPrice;
                     $vat += $productPrice * $productsDb['vat'] / 100;
@@ -774,7 +777,7 @@ class OrderController extends MainController
         }
 
         // Add orderDetail
-        foreach($arrOrderProducts as $orderProduct) {
+        foreach ($arrOrderProducts as $orderProduct) {
             $dbOrderDetail->orderId = $dbOrder->id;
             $dbOrderDetail->entityProductId = $orderProduct->entityProductId;
             $dbOrderDetail->quantity = $orderProduct->quantity;
@@ -785,14 +788,14 @@ class OrderController extends MainController
             $dbOrderDetail->requestedQuantity = $orderProduct->totalQuantity;
             $dbOrderDetail->shippedQuantity = $orderProduct->totalQuantity;
             $dbOrderDetail->freeRatio = $orderProduct->freeRatio;
-            if(isset($this->requestData->note))
+            if (isset($this->requestData->note))
                 $dbOrderDetail->note = $this->requestData->note;
 
             $dbOrderDetail->add();
         }
 
         // Update the order
-        if(isset($this->requestData->note))
+        if (isset($this->requestData->note))
             $dbOrder->note = $this->requestData->note;
 
         $dbOrder->subtotal = $subtotal;
@@ -862,7 +865,7 @@ class OrderController extends MainController
                 }
             }
             $emailHandler->sendEmail(Constants::EMAIL_ORDER_UPDATE, $subject, $htmlContent);
-            
+
             $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.201_updated', $this->f3->get('RESPONSE.entity_order')), null);
         } else {
             $this->sendError(Constants::HTTP_FORBIDDEN, $dbOrder->exception, null);
