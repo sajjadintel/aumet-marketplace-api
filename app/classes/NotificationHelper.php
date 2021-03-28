@@ -174,4 +174,129 @@ class NotificationHelper {
     }
 
 
+    public static function customerSupportNotification($f3, $dbConnection, $supportLog)
+    {
+        $supportReason = new GenericModel($dbConnection, 'supportReason');
+        $supportReason->getWhere('id=' . $supportLog->supportReasonId);
+
+        $emailHandler = new EmailHandler($dbConnection);
+        $emailFile = "emails/layout.php";
+        if ($supportLog->entityBuyerId > 0) {
+            $dbData = new GenericModel($dbConnection, 'entity');
+            $dbData->getWhere('id = ' . $supportLog->entityBuyerId . '');
+            $f3->set('supportCustomer', $dbData->name_ar);
+        }
+
+        if ($supportLog->orderId > 0) {
+            $f3->set('supportOrder', $supportLog->orderId);
+        }
+
+        if ($supportLog->requestCall > 0) {
+            $f3->set('requestCall', 'Yes');
+        }
+
+        if (!empty($supportLog->message)) {
+            $f3->set('message', $supportLog->message);
+        }
+
+        if (!empty($supportLog->subject)) {
+            $f3->set('subject', $supportLog->subject);
+        }
+
+        // $email
+        // $subject
+        // $message
+
+        $f3->set('domainUrl', getenv('DOMAIN_URL'));
+        $f3->set('title', 'Customer Support Request');
+        $f3->set('emailType', 'customerSupport');
+        $f3->set('email', $supportLog->email);
+//        $f3->set('phone', $supportLog->phone);
+//        $f3->set('reason', $supportReason->name_en);
+
+        $emailList = explode(';', getenv('SUPPORT_EMAIL'));
+        for ($i = 0; $i < count($emailList); $i++) {
+            $currentEmail = explode(',', $emailList[$i]);
+            if (count($currentEmail) == 2) {
+                $emailHandler->appendToAddress($currentEmail[0], $currentEmail[1]);
+            } else {
+                $emailHandler->appendToAddress($currentEmail[0], $currentEmail[0]);
+            }
+        }
+
+        $htmlContent = View::instance()->render($emailFile);
+
+        $subject = "Customer Support Request";
+        if (getenv('ENV') != Constants::ENV_PROD) {
+            $subject .= " - (Test: " . getenv('ENV') . ")";
+
+            if (getenv('ENV') == Constants::ENV_LOCAL) {
+                $emailHandler->resetTos();
+                $emailHandler->appendToAddress("sajjadintel@gmail.com", "Sajjad intel");
+                $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
+                $emailHandler->appendToAddress("n.javaid@aumet.com", "Naveed Javaid");
+                $emailHandler->appendToAddress("carl8smith94@gmail.com", "Antoine Abou Cherfane");
+            }
+        }
+
+        $emailHandler->sendEmail(Constants::EMAIL_CUSTOMER_SUPPORT_REQUEST, $subject, $htmlContent);
+        $emailHandler->resetTos();
+    }
+
+    public static function customerSupportConfirmNotification($f3, $dbConnection, $supportLog)
+    {
+
+        $supportReason = new GenericModel($dbConnection, 'supportReason');
+        $supportReason->getWhere('id=' . $supportLog->supportReasonId);
+
+        $emailHandler = new EmailHandler($dbConnection);
+        $emailFile = "emails/layout.php";
+        $f3->set('domainUrl', getenv('DOMAIN_URL'));
+        $f3->set('title', 'Customer Support Confirmation');
+        $f3->set('emailType', 'customerSupport');
+        $f3->set('email', $supportLog->email);
+//        $f3->set('phone', $supportLog->phone);
+//        $f3->set('reason', $supportReason->name_en);
+
+        if (!empty($supportLog->message)) {
+            $f3->set('message', $supportLog->message);
+        }
+
+        if (!empty($supportLog->subject)) {
+            $f3->set('subject', $supportLog->subject);
+        }
+
+
+        // if not logged in
+        if (!$supportLog->entityId) {
+            $emailHandler->appendToAddress($supportLog->email, '');
+        } else {
+            $dbEntityUserProfile = new GenericModel($dbConnection, "vwEntityUserProfile");
+            $arrEntityUserProfile = $dbEntityUserProfile->getByField("entityId", $supportLog->entityId);
+            foreach ($arrEntityUserProfile as $entityUserProfile) {
+                $emailHandler->appendToAddress($entityUserProfile->userEmail, $entityUserProfile->userFullName);
+            }
+        }
+
+
+        $htmlContent = View::instance()->render($emailFile);
+
+        $subject = "Customer Support Confirmation";
+        if (getenv('ENV') != Constants::ENV_PROD) {
+            $subject .= " - (Test: " . getenv('ENV') . ")";
+
+            if (getenv('ENV') == Constants::ENV_LOCAL) {
+                $emailHandler->resetTos();
+                $emailHandler->appendToAddress("sajjadintel@gmail.com", "Sajjad intel");
+                $emailHandler->appendToAddress("patrick.younes.1.py@gmail.com", "Patrick");
+                $emailHandler->appendToAddress("carl8smith94@gmail.com", "Antoine Abou Cherfane");
+                $emailHandler->appendToAddress("n.javaid@aumet.com", "Naveed Javaid");
+            }
+        }
+
+        $emailHandler->sendEmail(Constants::EMAIL_CUSTOMER_SUPPORT_CONFIRMATION, $subject, $htmlContent);
+        $emailHandler->resetTos();
+    }
+
+
 }
