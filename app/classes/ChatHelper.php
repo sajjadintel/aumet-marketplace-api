@@ -61,7 +61,7 @@ class ChatHelper {
         $dbChatMessage->entityReceiverId = $dbChatRoom->entitySellerId;
         $dbChatMessage->type = 1;
         $dbChatMessage->content = $message;
-        $dbChatMessage->isReadBuyer = 0;
+        $dbChatMessage->isReadBuyer = 1;
         $dbChatMessage->isReadSeller = 0;
         if (!$dbChatMessage->add()) {
             ChatHelper::sendError(Constants::HTTP_FORBIDDEN, $dbChatMessage->exception, null);
