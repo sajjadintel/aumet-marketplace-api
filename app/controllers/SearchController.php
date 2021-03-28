@@ -1,6 +1,7 @@
 <?php
 
-class SearchController extends MainController {
+class SearchController extends MainController
+{
 
     public function getSellerList()
     {
@@ -19,10 +20,10 @@ class SearchController extends MainController {
             $search = $_GET['search'];
 
 
-        $filter = "";
+        $filter = "entityId = 20 ";
 
         if ($search !== null) {
-            $filter .= " ( name_en LIKE '%{$search}%'";
+            $filter .= " AND ( name_en LIKE '%{$search}%'";
             $filter .= " OR name_fr LIKE '%{$search}%'";
             $filter .= " OR name_ar LIKE '%{$search}%' ) ";
         }
@@ -44,5 +45,4 @@ class SearchController extends MainController {
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_seller')), $response);
     }
-
 }
