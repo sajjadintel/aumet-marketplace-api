@@ -216,3 +216,12 @@ ADD COLUMN `value_fr` TEXT NULL AFTER `value_ar`,
 CHANGE COLUMN `value` `value_en` TEXT NULL DEFAULT NULL ;
 
 #############################
+
+# 28/03/2021 - Patrick Younes
+# Adjust apiRequestLog table
+
+ALTER TABLE `marketplace`.`apiRequestLog` 
+ADD COLUMN `response` TEXT NULL AFTER `data`;
+ALTER TABLE `marketplace`.`apiRequestLog` 
+ADD COLUMN `updatedAt` DATETIME NULL AFTER `createdAt`;
+TRUNCATE `marketplace`.`apiRequestLog`;

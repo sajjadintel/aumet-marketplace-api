@@ -368,24 +368,30 @@ class OrderController extends MainController
             $dbOrder->total = $total;
             $dbOrder->addReturnID();
 
+            // TODO: @Sajad - CREATE A HELPER FUNCTION TO CREATE CHATROOM
+            $dbChatRoom = new GenericModel($this->db, "chatroom");
+            $dbChatRoom->getWhere("sellerEntityId='{$sellerEntityId}' AND buyerEntityId = '{$dbOrderGrand->buyerEntityId}'");
+            if ($dbChatRoom->dry()) {
+
+                // TODO: @Sajad - Replace sellerEntityId and buyerEntityId with entitySellerId and entityBuyerId
+                $dbChatRoom->sellerEntityId = $sellerEntityId;
+                $dbChatRoom->buyerEntityId = $dbOrderGrand->buyerEntityId;
+
+                // TODO: @Sajad - Replace sellerPendingRead and buyerPendingRead with pendingReadSeller and pendingReadBuyer
+                $dbChatRoom->sellerPendingRead = 0;
+                $dbChatRoom->buyerPendingRead = 0;
+                $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
+                if (!$dbChatRoom->add())
+                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
+            }
+
             // Send note
             if ($note != null && $note != '') {
 
-                // TODO: @Sajad - CREATE A HELPER FUNCTION TO CREATE CHATROOM
-                $dbChatRoom = new GenericModel($this->db, "chatroom");
-                $dbChatRoom->getWhere("sellerEntityId='{$sellerEntityId}' AND buyerEntityId = '{$dbOrderGrand->buyerEntityId}'");
-                if ($dbChatRoom->dry()) {
-                    $dbChatRoom->sellerEntityId = $sellerEntityId;
-                    $dbChatRoom->buyerEntityId = $dbOrderGrand->buyerEntityId;
-                    $dbChatRoom->sellerPendingRead = 0;
-                    $dbChatRoom->buyerPendingRead = 0;
-                    $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
-                    if (!$dbChatRoom->add())
-                        $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
-                }
-
                 $dbChatRoom->sellerPendingRead++;
                 $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
+
+                // TODO: @Sajad - fix archivedAt and replace with archivedSellerAt and archivedBuyerAt
                 $dbChatRoom->archivedAt = null;
 
                 if (!$dbChatRoom->update())
@@ -394,6 +400,8 @@ class OrderController extends MainController
                 // TODO: @Sajad - CREATE A HELPER FUNCTION TO SEND MESSAGE
                 $dbChatMessage = new GenericModel($this->db, "chatroomDetail");
                 $dbChatMessage->chatroomId = $dbChatRoom->id;
+
+                // TODO: @Sajad - Replace senderUserId, senderEntityId and receiverEntityId with userSenderId, entitySenderId and entityReceiverId
                 $dbChatMessage->senderUserId = $this->objUser->id;
                 $dbChatMessage->senderEntityId = $dbChatRoom->buyerEntityId;
                 $dbChatMessage->receiverEntityId = $dbChatRoom->sellerEntityId;

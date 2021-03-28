@@ -14,7 +14,6 @@ class ApiRequestsLog
         $dbLog->data = $data;
         $dbLog->ip = $ip;
 
-        // TODO: Add error handling
         $dbLog->addReturnID();
 
         return $dbLog;
@@ -24,8 +23,8 @@ class ApiRequestsLog
     {
         $dbRequest->type = $type;
         $dbRequest->response = $response;
+        $dbRequest->updatedAt = date('Y-m-d H:i:s');
 
-        // TODO: Add error handling
         $dbRequest->update();
     }
 }
