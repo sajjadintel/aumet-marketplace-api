@@ -266,16 +266,12 @@ class CartController extends MainController
             $arrCartItem = $dbVwCartDetail->findWhere("accountId=" . $accountId);
             $arrSeller = [];
             foreach ($arrCartItem as $cartItem) {
+                // Get seller details
                 $seller = new stdClass();
                 $seller->entityId = $cartItem['entityId'];
                 $seller->entityName = $cartItem['entityName'];
                 $seller->entityCurrencyId = $cartItem['currencyId'];
-                array_push($arrSeller, $seller);
-                array_push($arrCurrencyId, $cartItem['currencyId']);
-            }
 
-            // Get seller details
-            foreach ($arrSeller as $seller) {
                 $sellerId = $seller->entityId;
 
                 // Get cartItems
@@ -311,6 +307,8 @@ class CartController extends MainController
                     $dbVwEntityPaymentMethod->next();
                 }
                 $seller->paymentMethods = $arrEntityPaymentMethod;
+                array_push($arrSeller, $seller);
+                array_push($arrCurrencyId, $cartItem['currencyId']);
             }
             $detailBuyer->sellers = $arrSeller;
 
