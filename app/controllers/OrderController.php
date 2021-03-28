@@ -366,51 +366,15 @@ class OrderController extends MainController
             $dbOrder->subtotal = $subTotal;
             $dbOrder->vat = $tax;
             $dbOrder->total = $total;
+
+            $dbChatRoom = ChatHelper::createChatroom($this->db, $sellerEntityId, $dbOrderGrand->buyerEntityId);
+
+            $dbOrder->chatroomId = $dbChatRoom->id;
             $dbOrder->addReturnID();
 
-            // TODO: @Sajad - CREATE A HELPER FUNCTION TO CREATE CHATROOM
-            $dbChatRoom = new GenericModel($this->db, "chatroom");
-            $dbChatRoom->getWhere("sellerEntityId='{$sellerEntityId}' AND buyerEntityId = '{$dbOrderGrand->buyerEntityId}'");
-            if ($dbChatRoom->dry()) {
-
-                // TODO: @Sajad - Replace sellerEntityId and buyerEntityId with entitySellerId and entityBuyerId
-                $dbChatRoom->sellerEntityId = $sellerEntityId;
-                $dbChatRoom->buyerEntityId = $dbOrderGrand->buyerEntityId;
-
-                // TODO: @Sajad - Replace sellerPendingRead and buyerPendingRead with pendingReadSeller and pendingReadBuyer
-                $dbChatRoom->sellerPendingRead = 0;
-                $dbChatRoom->buyerPendingRead = 0;
-                $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
-                if (!$dbChatRoom->add())
-                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
-            }
-
-            // Send note
+            // Send note as chat message
             if ($note != null && $note != '') {
-
-                $dbChatRoom->sellerPendingRead++;
-                $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
-
-                // TODO: @Sajad - fix archivedAt and replace with archivedSellerAt and archivedBuyerAt
-                $dbChatRoom->archivedAt = null;
-
-                if (!$dbChatRoom->update())
-                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
-
-                // TODO: @Sajad - CREATE A HELPER FUNCTION TO SEND MESSAGE
-                $dbChatMessage = new GenericModel($this->db, "chatroomDetail");
-                $dbChatMessage->chatroomId = $dbChatRoom->id;
-
-                // TODO: @Sajad - Replace senderUserId, senderEntityId and receiverEntityId with userSenderId, entitySenderId and entityReceiverId
-                $dbChatMessage->senderUserId = $this->objUser->id;
-                $dbChatMessage->senderEntityId = $dbChatRoom->buyerEntityId;
-                $dbChatMessage->receiverEntityId = $dbChatRoom->sellerEntityId;
-                $dbChatMessage->type = 1;
-                $dbChatMessage->content = "Note for Order #{$dbOrder->id}: " . $note;
-                $dbChatMessage->isReadBuyer = 0;
-                $dbChatMessage->isReadSeller = 0;
-                if (!$dbChatMessage->add())
-                    $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatMessage->exception, null);
+                ChatHelper::sendMessage($this->db, $dbChatRoom, $this->objUser->id, "Note for Order #{$dbOrder->id}: " . $note);
             }
 
             array_push($arrOrderId, $dbOrder->id);
