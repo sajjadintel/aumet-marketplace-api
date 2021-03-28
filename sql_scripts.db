@@ -249,9 +249,11 @@ CHANGE COLUMN `senderUserId` `userSenderId` INT NOT NULL ,
 CHANGE COLUMN `senderEntityId` `entitySenderId` INT NOT NULL ,
 CHANGE COLUMN `receiverEntityId` `entityReceiverId` INT NOT NULL ;
 
-#############################
+# add subject to supportLog
 
-# 28/03/2021 - Sajad Abbasi
+ALTER TABLE `marketplace`.`supportLog`
+ADD COLUMN `subject` VARCHAR(100) NULL AFTER `supportReasonId`;
+
 # add chatroomId in vwOrderEntityUser
 
 CREATE OR REPLACE VIEW `marketplace`.`vwOrderEntityUser` AS
@@ -302,4 +304,4 @@ CREATE OR REPLACE VIEW `marketplace`.`vwOrderEntityUser` AS
         LEFT JOIN `entity` `entity_Seller` ON ((`order`.`entitySellerId` = `entity_Seller`.`id`)))
         LEFT JOIN `entityBranch` `branch_Buyer` ON ((`order`.`branchBuyerId` = `branch_Buyer`.`id`)))
         LEFT JOIN `entityBranch` `branch_Seller` ON ((`order`.`branchSellerId` = `branch_Seller`.`id`)))
-        LEFT JOIN `paymentMethod` ON ((`order`.`paymentMethodId` = `paymentMethod`.`id`)))
+        LEFT JOIN `paymentMethod` ON ((`order`.`paymentMethodId` = `paymentMethod`.`id`)));
