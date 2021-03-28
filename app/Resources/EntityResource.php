@@ -18,7 +18,7 @@ class EntityResource extends JsonResource
             'status' => EntityStatusResource::format($entity->statusId),
             'branches' => EntityBranchResource::collection($entity->entityBranches),
             'image' => $entity->image,
-            'created_at' => $entity->insertDateTime,
+            'createdAt' => $entity->insertDateTime,
         ];
     }
 }
