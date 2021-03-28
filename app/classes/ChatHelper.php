@@ -48,6 +48,7 @@ class ChatHelper {
         $dbChatRoom->archivedBuyerAt = null;
         $dbChatRoom->isArchivedBuyer = 0;
         $dbChatRoom->isArchivedSeller = 0;
+        $dbChatRoom->messageCount++;
 
         if (!$dbChatRoom->update()) {
             ChatHelper::sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);

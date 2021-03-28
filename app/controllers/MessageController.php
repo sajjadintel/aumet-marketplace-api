@@ -22,6 +22,7 @@ class MessageController extends MainController
         $arrEntityId = Helper::idListFromArray($this->objEntityList);
         $filter = "entityBuyerId IN ($arrEntityId)";
         $filter .= " AND isArchivedBuyer=0";
+        $filter .= " AND messageCount!=0";
 
         $dbChatroom = new GenericModel($this->db, "vwChatroom");
         $dataCount = $dbChatroom->count($filter);
@@ -191,6 +192,7 @@ class MessageController extends MainController
         $dbChatRoom->updatedAt = date('Y-m-d H:i:s');
         $dbChatRoom->isArchivedBuyer = 0;
         $dbChatRoom->archivedBuyerAt = null;
+        $dbChatRoom->messageCount++;
 
         if (!$dbChatRoom->update())
             $this->sendError(Constants::HTTP_FORBIDDEN, $dbChatRoom->exception, null);
