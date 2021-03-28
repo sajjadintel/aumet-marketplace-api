@@ -16,8 +16,9 @@ class EntityResource extends JsonResource
             'country' => CountryResource::format($entity->countryId),
             'currency' => CurrencyResource::format($entity->currencyId),
             'status' => EntityStatusResource::format($entity->statusId),
+            'branches' => EntityBranchResource::collection($entity->entityBranches),
             'image' => $entity->image,
-            'created_at' => $entity->insertDateTime,
+            'createdAt' => $entity->insertDateTime,
         ];
     }
 }

@@ -9,9 +9,9 @@ class CurrencyResource extends JsonResource
         return [
             'id' => $currency->id,
             'name' => $currency->name,
-            'short_name' => $currency->shortName,
+            'shortName' => $currency->shortName,
             'symbol' => $currency->symbol,
-            'conversion_to_usd' => $currency->conversionToUSD,
+            'conversionToUSD' => $currency->conversionToUSD,
         ];
     }
 }
