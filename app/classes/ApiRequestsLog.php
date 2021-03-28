@@ -3,7 +3,7 @@
 class ApiRequestsLog
 {
 
-    public static function logRequest($f3, $db, $userId, $sessionId, $data, $ip)
+    public static function logRequest($f3, $db, $userId, $sessionId, $data, $ip, $createdAt)
     {
         $dbLog = new GenericModel($db, "apiRequestLog");
 
@@ -13,6 +13,7 @@ class ApiRequestsLog
         $dbLog->request =  $f3->get('PARAMS.0');
         $dbLog->data = $data;
         $dbLog->ip = $ip;
+        $dbLog->createdAt = $createdAt;
 
         $dbLog->addReturnID();
 
