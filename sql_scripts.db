@@ -226,6 +226,21 @@ ALTER TABLE `marketplace`.`apiRequestLog`
 ADD COLUMN `updatedAt` DATETIME NULL AFTER `createdAt`;
 TRUNCATE `marketplace`.`apiRequestLog`;
 
+UPDATE `marketplace`.`menuItemApp` SET `title_en` = 'Find Distributor', `title_fr` = 'Find Distributor', `title_ar` = 'Find Distributor', `subtitle_en` = 'See all of our distributors', `subtitle_fr` = 'See all of our distributors', `subtitle_ar` = 'See all of our distributors', `icon` = 'assets/img/find-distributors.jpg', `tapAction` = '{\"type\": \"seller\", \"data\": \"\"}' WHERE (`id` = '9');
+UPDATE `marketplace`.`menuItemApp` SET `icon` = 'assets/img/home-20off.jpg' WHERE (`id` = '6');
+UPDATE `marketplace`.`menuItemApp` SET `icon` = 'assets/img/home-20off.jpg' WHERE (`id` = '7');
+UPDATE `marketplace`.`menuItemApp` SET `menuId` = '-2' WHERE (`id` = '10');
+UPDATE `marketplace`.`menuItemApp` SET `menuId` = '-2' WHERE (`id` = '11');
+INSERT INTO `marketplace`.`menuItemApp` (`id`, `menuId`, `parentItemId`, `orderId`, `type`, `title_en`, `title_fr`, `title_ar`, `subtitle_en`, `subtitle_fr`, `subtitle_ar`, `icon`, `tapAction`, `createdAt`, `isActive`) VALUES ('12', '2', '8', '2', 'item', 'Recent Orders', 'Recent Orders', 'Recent Orders', 'View your orders', 'View your orders', 'View your orders', 'assets/img/recent-orders.jpg', '{\"type\": \"order\", \"data\": \"\"}', '2020-12-12 11:59:21', '1');
+
+CREATE VIEW marketplace.vwEntityWithProducts AS
+SELECT entity.* FROM marketplace.entity entity 
+INNER JOIN marketplace.entityProductSell entityProductSell WHERE entity.id = entityProductSell.entityId GROUP BY entity.id;
+
+UPDATE `marketplace`.`menuItemApp` SET `tapAction` = '{\"type\": \"seller_list\", \"data\": \"\"}' WHERE (`id` = '9');
+UPDATE `marketplace`.`menuItemApp` SET `tapAction` = '{\"type\": \"order_list\", \"data\": \"\"}' WHERE (`id` = '12');
+
+
 #############################
 
 # 28/03/2021 - Sajad Abbasi
@@ -249,9 +264,11 @@ CHANGE COLUMN `senderUserId` `userSenderId` INT NOT NULL ,
 CHANGE COLUMN `senderEntityId` `entitySenderId` INT NOT NULL ,
 CHANGE COLUMN `receiverEntityId` `entityReceiverId` INT NOT NULL ;
 
-#############################
+# add subject to supportLog
 
-# 28/03/2021 - Sajad Abbasi
+ALTER TABLE `marketplace`.`supportLog`
+ADD COLUMN `subject` VARCHAR(100) NULL AFTER `supportReasonId`;
+
 # add chatroomId in vwOrderEntityUser
 
 CREATE OR REPLACE VIEW `marketplace`.`vwOrderEntityUser` AS
@@ -302,7 +319,7 @@ CREATE OR REPLACE VIEW `marketplace`.`vwOrderEntityUser` AS
         LEFT JOIN `entity` `entity_Seller` ON ((`order`.`entitySellerId` = `entity_Seller`.`id`)))
         LEFT JOIN `entityBranch` `branch_Buyer` ON ((`order`.`branchBuyerId` = `branch_Buyer`.`id`)))
         LEFT JOIN `entityBranch` `branch_Seller` ON ((`order`.`branchSellerId` = `branch_Seller`.`id`)))
-        LEFT JOIN `paymentMethod` ON ((`order`.`paymentMethodId` = `paymentMethod`.`id`)))
+        LEFT JOIN `paymentMethod` ON ((`order`.`paymentMethodId` = `paymentMethod`.`id`)));
 
 #############################
 
@@ -330,7 +347,7 @@ CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
         `entity`.`image` AS `image`
     FROM
         (`chatroom`
-        LEFT JOIN `entity` ON ((`chatroom`.`entitySellerId` = `entity`.`id`)))
+        LEFT JOIN `entity` ON ((`chatroom`.`entitySellerId` = `entity`.`id`)))        LEFT JOIN `paymentMethod` ON ((`order`.`paymentMethodId` = `paymentMethod`.`id`)));
     ORDER BY `chatroom`.`id` DESC;
 
 #############################
@@ -373,4 +390,3 @@ CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
     ORDER BY `chatroom`.`id` DESC;
 
 #############################
-

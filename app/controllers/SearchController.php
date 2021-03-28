@@ -1,6 +1,7 @@
 <?php
 
-class SearchController extends MainController {
+class SearchController extends MainController
+{
 
     public function getSellerList()
     {
@@ -14,24 +15,55 @@ class SearchController extends MainController {
             $offset = (int)$_GET['offset'];
         $order['offset'] = $offset;
 
+        $sortBy = 'id_desc';
+        if (isset($_GET['sort']))
+            $sortBy = $_GET['sort'];
+        $order['order'] = $sortBy;
+
         $search = null;
         if (isset($_GET['search']) && $_GET['search'] != "")
             $search = $_GET['search'];
 
 
-        $filter = "";
+        $filter = "typeId = " . Constants::ENTITY_TYPE_DISTRIBUTOR . " AND countryId IN (" . implode(",", $this->objEntityCountryList) . ")";
 
         if ($search !== null) {
-            $filter .= " ( name_en LIKE '%{$search}%'";
+            $filter .= " AND ( name_en LIKE '%{$search}%'";
             $filter .= " OR name_fr LIKE '%{$search}%'";
             $filter .= " OR name_ar LIKE '%{$search}%' ) ";
         }
 
-        $dbProducts = new GenericModel($this->db, "entity");
-        $dbProducts->name = 'name_' . $this->language;
+        switch ($sortBy) {
+            case "rand":
+                $orderString = "rand()";
+                break;
 
-        $dataCount = $dbProducts->count($filter);
-        $dbProducts->reset();
+            case "id_asc":
+                $orderString = "id ASC";
+                break;
+            case "id_desc":
+                $orderString = "id DESC";
+                break;
+
+            case "name_asc":
+                $orderString = "name_en ASC, id ASC";
+                break;
+            case "name_desc":
+                $orderString = "name_en DESC, id ASC";
+                break;
+
+            default:
+                $this->sendError(Constants::HTTP_BAD_REQUEST, $this->f3->get('RESPONSE.400_paramInvalid', $this->f3->get('RESPONSE.entity_Sort')), null);
+                return;
+        }
+
+        $order['order'] = $orderString;
+
+        $dbEntities = new GenericModel($this->db, "vwEntityWithProducts");
+        $dbEntities->name = 'name_' . $this->language;
+
+        $dataCount = $dbEntities->count($filter);
+        $dbEntities->reset();
 
         $dataFilter = new stdClass();
         $dataFilter->dataCount = $dataCount;
@@ -40,9 +72,8 @@ class SearchController extends MainController {
 
         $response['dataFilter'] = $dataFilter;
 
-        $response['data'] = array_map(array($dbProducts, 'cast'), $dbProducts->find($filter, $order));
+        $response['data'] = array_map(array($dbEntities, 'cast'), $dbEntities->find($filter, $order));
 
         $this->sendSuccess(Constants::HTTP_OK, $this->f3->get('RESPONSE.200_listFound', $this->f3->get('RESPONSE.entity_seller')), $response);
     }
-
 }
