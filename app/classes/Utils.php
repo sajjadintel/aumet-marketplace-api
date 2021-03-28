@@ -133,7 +133,7 @@ class Utils
                     $item = [
                         "title" => $dbItem->title,
                         "subtitle" => $dbItem->subtitle,
-                        "icon" => $dbItem->icon,
+                        "icon" => $f3->get('API_URL') . $dbItem->icon,
                         "color" => $dbItem->color,
                         "tapAction" => (json_decode($dbItem->tapAction, true))
                     ];
