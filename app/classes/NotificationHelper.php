@@ -203,9 +203,6 @@ class NotificationHelper {
             $f3->set('subject', $supportLog->subject);
         }
 
-        // $email
-        // $subject
-        // $message
 
         $f3->set('domainUrl', getenv('DOMAIN_URL'));
         $f3->set('title', 'Customer Support Request');

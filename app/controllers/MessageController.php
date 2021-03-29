@@ -25,6 +25,9 @@ class MessageController extends MainController
         $filter .= " AND messageCount!=0";
 
         $dbChatroom = new GenericModel($this->db, "vwChatroom");
+        $dbChatroom->entitySellerName = 'entitySellerName_' . $this->language;
+        $dbChatroom->entityBuyerName = 'entityBuyerName_' . $this->language;
+
         $dataCount = $dbChatroom->count($filter);
         $dbChatroom->reset();
 
@@ -38,8 +41,8 @@ class MessageController extends MainController
         for ($i = 0; $i < count($dbChatroom); $i++) {
             $lastMessage = new GenericModel($this->db, "chatroomDetail");
             $lastMessage->getWhere("chatroomId = '{$dbChatroom[$i]['id']}' ", 'id DESC', 1);
-            $dbChatroom[$i]['content'] = $lastMessage->content;
-            $dbChatroom[$i]['messageCreatedAt'] = $lastMessage->createdAt;
+            $dbChatroom[$i]['lastMessage'] = $lastMessage->content;
+            $dbChatroom[$i]['lastMessageCreatedAt'] = $lastMessage->createdAt;
             $dbChatroom[$i]['type'] = $lastMessage->type;
             $dbChatroom[$i]['userSenderId'] = $lastMessage->userSenderId;
             $dbChatroom[$i]['entitySenderId'] = $lastMessage->entitySenderId;
