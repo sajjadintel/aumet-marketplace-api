@@ -37,7 +37,15 @@ class EntityProductAccountWishlist extends Model
             return $this;
         }
 
-        $data['entity_product_id'] = (new EntityProductSell)->findByProductId($data['product_id'])->id;
+        $entityProduct = (new EntityProductSell)->findByProductId($data['product_id']);
+        if ($entityProduct->hasErrors()) {
+            $this->errors = $entityProduct->errors;
+            $this->response['statusCode'] = $entityProduct->response['statusCode'];
+            $this->response['message'] = $entityProduct->response['message'];
+            return $this;
+        }
+
+        $data['entity_product_id'] = $entityProduct->id;
 
         // created for composite unique contraint validation
         $data['entity_product_id_account_id'] = [
@@ -52,7 +60,6 @@ class EntityProductAccountWishlist extends Model
 
         $this->accountId = $data['account_id'];
         $this->entityProductId = $data['entity_product_id'];
-        $this->quantity = $data['quantity'];
 
         return $this->save();
     }
@@ -87,6 +94,7 @@ class EntityProductAccountWishlist extends Model
     public function getRules()
     {
         return [
+            'account_id' => 'required|numeric',
             'product_id' => 'required|numeric|exists,id,product',
             'entity_product_id_account_id' => "composite_unique,{$this->table}",
             'quantity' => 'numeric',
