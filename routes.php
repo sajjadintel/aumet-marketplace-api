@@ -86,10 +86,11 @@ $f3->route('GET /v1/pharmacy/faq', 'FaqController->index');
 
 ###################
 ## Wishlist Endpoints
-$f3->route('GET /v1/pharmacy/wishlist', 'WishlistController->index');
-$f3->route('POST /v1/pharmacy/wishlist', 'WishlistController->create');
-$f3->route('DELETE /v1/pharmacy/wishlist/@id', 'WishlistController->destroy');
-$f3->route('POST /v1/pharmacy/wishlist/@id/cart', 'WishlistController->moveToCart');
+$f3->route('GET /v1/pharmacy/wishlist/product', 'WishlistProductController->index');
+$f3->route('POST /v1/pharmacy/wishlist/product', 'WishlistProductController->create');
+$f3->route('GET /v1/pharmacy/wishlist/product/@id', 'WishlistProductController->show');
+$f3->route('DELETE /v1/pharmacy/wishlist/product/@id', 'WishlistProductController->destroy');
+$f3->route('POST /v1/pharmacy/wishlist/product/@id/cart', 'WishlistProductController->moveToCart');
 
 ###################
 ## Notifications Endpoints

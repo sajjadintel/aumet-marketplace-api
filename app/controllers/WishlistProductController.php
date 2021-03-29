@@ -2,11 +2,12 @@
 
 use App\Models\CartDetail;
 use App\Models\EntityProductAccountWishlist;
+use App\Models\EntityProductSell;
 use App\Models\User;
 use App\Resources\CartDetailResource;
 use App\Resources\WishlistResource;
 
-class WishlistController extends MainController
+class WishlistProductController extends MainController
 {
     public function index()
     {
@@ -17,8 +18,23 @@ class WishlistController extends MainController
             Constants::HTTP_OK,
             'success',
             WishlistResource::collection(
-                $user->savedForLater()
+                $user->wishlist()
             )
+        );
+    }
+
+    public function show()
+    {
+        $wishlistProduct = new EntityProductAccountWishlist;
+        $wishlistProduct = $wishlistProduct->retrieveAndCheckForAccount($this->objUser->accountId, $this->f3->get('PARAMS.id'));
+        if ($wishlistProduct->hasErrors()) {
+            return $this->sendError($wishlistProduct->response['statusCode'], $wishlistProduct->response['message'], $wishlistProduct->errors);
+        }
+
+        return $this->sendSuccess(
+            Constants::HTTP_OK,
+            'success',
+            WishlistResource::format($wishlistProduct)
         );
     }
 
@@ -26,28 +42,27 @@ class WishlistController extends MainController
     {
         $data = (array) $this->requestData;
         $data = array_merge($data, ['account_id' => $this->objUser->accountId]);
-        $savedForLater = new EntityProductAccountWishlist;
-        $savedForLater = $savedForLater->create($data);
-        if ($savedForLater->hasErrors()) {
-            return $this->sendError($savedForLater->response['statusCode'], $savedForLater->response['message'], $savedForLater->errors);
+        $wishlistProduct = new EntityProductAccountWishlist;
+        $wishlistProduct = $wishlistProduct->create($data);
+        if ($wishlistProduct->hasErrors()) {
+            return $this->sendError($wishlistProduct->response['statusCode'], $wishlistProduct->response['message'], $wishlistProduct->errors);
         }
         
         return $this->sendSuccess(
             Constants::HTTP_OK,
             'success',
-            WishlistResource::format($savedForLater)
+            WishlistResource::format($wishlistProduct)
         );
     }
 
     public function destroy()
     {
-        $savedForLater = new EntityProductAccountWishlist;
-        $savedForLater->id = $this->f3->get('PARAMS.id');
-        $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->objUser->accountId);
-        if ($savedForLater->hasErrors()) {
-            return $this->sendError($savedForLater->response['statusCode'], $savedForLater->response['message'], $savedForLater->errors);
+        $wishlistProduct = new EntityProductAccountWishlist;
+        $wishlistProduct = $wishlistProduct->retrieveAndCheckForAccount($this->objUser->accountId, $this->f3->get('PARAMS.id'));
+        if ($wishlistProduct->hasErrors()) {
+            return $this->sendError($wishlistProduct->response['statusCode'], $wishlistProduct->response['message'], $wishlistProduct->errors);
         }
-        $savedForLater->erase();
+        $wishlistProduct->erase();
 
         return $this->sendSuccess(
             Constants::HTTP_OK,
@@ -58,8 +73,7 @@ class WishlistController extends MainController
     public function moveToCart()
     {
         $savedForLater = new EntityProductAccountWishlist;
-        $savedForLater->id = $this->f3->get('PARAMS.id');
-        $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->objUser->accountId);
+        $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->objUser->accountId, $this->f3->get('PARAMS.id'));
         if ($savedForLater->hasErrors()) {
             return $this->sendError($savedForLater->response['statusCode'], $savedForLater->response['message'], $savedForLater->errors);
         }

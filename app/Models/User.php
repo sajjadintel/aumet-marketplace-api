@@ -38,7 +38,7 @@ class User extends Model
      * @param int $accountId
      * @return DB\CortexCollection
      */
-    public function savedForLater($accountId = null)
+    public function wishlist($accountId = null)
     {
         if ($accountId) {
             $account = new Account;

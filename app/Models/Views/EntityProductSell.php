@@ -16,4 +16,10 @@ class EntityProductSell extends Model
             'type' => self::DT_JSON,
         ]
     ];
+
+    public function findByProductId($productId)
+    {
+        $self = $this->findone(['productId = ?', $productId]);
+        return $self ? $self : $this;
+    }
 }
