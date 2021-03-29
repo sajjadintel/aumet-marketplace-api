@@ -72,23 +72,23 @@ class WishlistProductController extends MainController
 
     public function moveToCart()
     {
-        $savedForLater = new EntityProductAccountWishlist;
-        $savedForLater = $savedForLater->retrieveAndCheckForAccount($this->objUser->accountId, $this->f3->get('PARAMS.id'));
-        if ($savedForLater->hasErrors()) {
-            return $this->sendError($savedForLater->response['statusCode'], $savedForLater->response['message'], $savedForLater->errors);
+        $wishlistProduct = new EntityProductAccountWishlist;
+        $wishlistProduct = $wishlistProduct->retrieveAndCheckForAccount($this->objUser->accountId, $this->f3->get('PARAMS.id'));
+        if ($wishlistProduct->hasErrors()) {
+            return $this->sendError($wishlistProduct->response['statusCode'], $wishlistProduct->response['message'], $wishlistProduct->errors);
         }
         $cartDetail = new CartDetail;
         $cartDetail->create([
             'userId' => $this->objUser->id,
             'accountId' => $this->objUser->accountId,
-            'entityProductId' => $savedForLater->entityProductId->id,
-            'quantity' => $savedForLater->quantity,
+            'entityProductId' => $wishlistProduct->entityProductId->id,
+            'quantity' => $wishlistProduct->quantity,
         ]);
         if ($cartDetail->hasErrors()) {
             return $this->sendError($cartDetail->response['statusCode'], $cartDetail->response['message'], $cartDetail->errors);
         }
 
-        $savedForLater->erase();
+        $wishlistProduct->erase();
         return $this->sendSuccess(
             Constants::HTTP_OK,
             'success',

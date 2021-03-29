@@ -44,7 +44,7 @@ class EntityProductAccountWishlist extends Model
             'entityProductId' => $data['entity_product_id'],
             'accountId' => $data['account_id']
         ];
-        
+
         $this->validate($data);
         if ($this->hasErrors()) {
             return $this;
@@ -65,8 +65,15 @@ class EntityProductAccountWishlist extends Model
             return $this;
         }
 
-        $entityProductId = (new EntityProductSell)->findByProductId($productId)->id;
-        $this->load(['accountId = ? AND entityProductId = ?', $accountId, $entityProductId]);
+        $entityProduct = (new EntityProductSell)->findByProductId($productId);
+        if ($entityProduct->hasErrors()) {
+            $this->errors = $entityProduct->errors;
+            $this->response['statusCode'] = $entityProduct->response['statusCode'];
+            $this->response['message'] = $entityProduct->response['message'];
+            return $this;
+        }
+
+        $this->load(['accountId = ? AND entityProductId = ?', $accountId, $entityProduct->id]);
         if ($this->dry()) {
             $this->errors[] = ['product_id' => "Product {$data['product_id']} is not in wishlist"];
             $this->response['statusCode'] = Constants::HTTP_NOT_FOUND; 
@@ -80,7 +87,6 @@ class EntityProductAccountWishlist extends Model
     public function getRules()
     {
         return [
-            'account_id' => 'required|numeric|exists,id,account',
             'product_id' => 'required|numeric|exists,id,product',
             'entity_product_id_account_id' => "composite_unique,{$this->table}",
             'quantity' => 'numeric',
