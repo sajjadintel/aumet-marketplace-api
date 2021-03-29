@@ -390,3 +390,35 @@ CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
     ORDER BY `chatroom`.`id` DESC;
 
 #############################
+
+# 30/03/2021 - Sajad Abbasi
+# add messageCount in chatroom view
+
+CREATE OR REPLACE VIEW `marketplace`.`vwChatroom` AS
+    SELECT
+        `chatroom`.`id` AS `id`,
+        `chatroom`.`entitySellerId` AS `entitySellerId`,
+        `chatroom`.`entityBuyerId` AS `entityBuyerId`,
+        `chatroom`.`pendingReadSeller` AS `pendingReadSeller`,
+        `chatroom`.`pendingReadBuyer` AS `pendingReadBuyer`,
+        `chatroom`.`archivedBuyerAt` AS `archivedBuyerAt`,
+        `chatroom`.`archivedSellerAt` AS `archivedSellerAt`,
+        `chatroom`.`isArchivedSeller` AS `isArchivedSeller`,
+        `chatroom`.`isArchivedBuyer` AS `isArchivedBuyer`,
+        `chatroom`.`isReadBuyer` AS `isReadBuyer`,
+        `chatroom`.`isReadSeller` AS `isReadSeller`,
+        `chatroom`.`createdAt` AS `createdAt`,
+        `chatroom`.`updatedAt` AS `updatedAt`,
+        `chatroom`.`messageCount` AS `messageCount`,
+        `entity_Buyer`.`name_en` AS `entityBuyerName_en`,
+        `entity_Buyer`.`name_ar` AS `entityBuyerName_ar`,
+        `entity_Buyer`.`name_fr` AS `entityBuyerName_fr`,
+        `entity_Seller`.`name_en` AS `entitySellerName_en`,
+        `entity_Seller`.`name_ar` AS `entitySellerName_ar`,
+        `entity_Seller`.`name_fr` AS `entitySellerName_fr`,
+        `entity_Seller`.`image` AS `imageSeller`
+    FROM
+        ((`chatroom`
+        LEFT JOIN `entity` `entity_Buyer` ON (`chatroom`.`entityBuyerId` = `entity_Buyer`.`id`))
+        LEFT JOIN `entity` `entity_Seller` ON (`chatroom`.`entitySellerId` = `entity_Seller`.`id`))
+    ORDER BY `chatroom`.`id` DESC;
