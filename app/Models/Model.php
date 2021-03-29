@@ -102,4 +102,14 @@ abstract class Model extends Cortex
 
         return $pluckedItems;
     }
+
+    public function validate($data)
+    {
+        $data = $this->initializeMissingKeys($data);
+        if ($this->check($data) !== true) {
+            $this->response['statusCode'] = Constants::HTTP_BAD_REQUEST;
+            $this->response['message'] = 'Validation Failed';
+            return $this;
+        }
+    }
 }
